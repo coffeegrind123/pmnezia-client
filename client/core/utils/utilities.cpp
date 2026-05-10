@@ -290,6 +290,14 @@ QString Utils::tun2socksPath()
     return Utils::executable("tun2socks", true);
 }
 
+QString Utils::masterDnsVpnExecPath()
+{
+    // Bundled MasterDnsVPN client binary. Provisioned by the
+    // amnezia-mdnsvpn conan recipe alongside the other deployable
+    // binaries (xray, tun2socks, etc.) — see conanfile.py.
+    return Utils::executable("mdnsvpn", true);
+}
+
 #ifdef Q_OS_WIN
 // Inspired from http://stackoverflow.com/a/15281070/1529139
 // and http://stackoverflow.com/q/40059902/1529139

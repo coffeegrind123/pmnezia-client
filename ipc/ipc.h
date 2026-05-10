@@ -15,7 +15,8 @@ enum PermittedProcess {
     OpenVPN,
     Wireguard,
     Tun2Socks,
-    CertUtil
+    CertUtil,
+    MasterDnsVpn
 };
 
 inline QString permittedProcessPath(PermittedProcess pid)
@@ -29,6 +30,8 @@ inline QString permittedProcessPath(PermittedProcess pid)
             return Utils::certUtilPath();
         case PermittedProcess::Tun2Socks:
             return Utils::tun2socksPath();
+        case PermittedProcess::MasterDnsVpn:
+            return Utils::masterDnsVpnExecPath();
         default:
             return "";
     }
@@ -60,6 +63,16 @@ inline QStringList sanitizeArguments(PermittedProcess proc, const QStringList &a
     case Tun2Socks:
         namedArgs["-device"] = [](const QString& v) { return v.startsWith("tun://"); };
         namedArgs["-proxy"] = [](const QString& v) { return v.startsWith("socks5://"); };
+        break;
+    case MasterDnsVpn:
+        // mdnsvpn -config <path> -nowait
+        // -config takes an absolute path to a TOML file the supervisor
+        // wrote into the privileged-service work dir; -nowait keeps the
+        // binary from prompting on stdin during fatal errors.
+        namedArgs["-config"] = [](const QString& v) {
+            return !v.isEmpty() && (v.startsWith('/') || v.contains(':'));
+        };
+        namedArgs["-nowait"] = nullptr;
         break;
     default:
         //FIXME
