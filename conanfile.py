@@ -30,6 +30,10 @@ class AmneziaVPN(ConanFile):
             self.requires("tun2socks/2.6.0")
             self.requires("openvpn/2.7.0")
             self.requires("v2ray-rules-dat/202603162227")
+            # MasterDnsVPN client binary deployed alongside tun2socks; the
+            # privileged service spawns it as `mdnsvpn -config <path> -nowait`
+            # in the masterDnsVpnProtocol flow.
+            self.requires("amnezia-mdnsvpn/2026.05.10")
 
         if has_ne:
             self.requires("awg-apple/2.0.1")
@@ -40,6 +44,10 @@ class AmneziaVPN(ConanFile):
             self.requires("amnezia-libxray/1.0.0")
             self.requires("awg-android/1.1.7")
             self.requires("openvpn-pt-android/1.0.0")
+            # Gomobile-built AAR wrapping the upstream MasterDnsVPN Go core;
+            # provisions client/android/master_dns_vpn/libMasterDnsVpn/libmasterdnsvpn.aar
+            # for the :master_dns_vpn:libMasterDnsVpn artifact wrapper.
+            self.requires("amnezia-mdnsvpn-android/2026.05.10")
 
         # expicitly use libssh@amnezia to prevent it from being downloaded from conan-center
         self.requires("libssh/0.11.3@amnezia")

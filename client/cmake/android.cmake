@@ -50,6 +50,10 @@ set_property(TARGET ${PROJECT} APPEND PROPERTY QT_ANDROID_EXTRA_LIBS ${AMNEZIA_A
 find_package(amnezia-libxray REQUIRED)
 file(COPY ${AMNEZIA_LIBXRAY_PATH} DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/android/xray/libXray)
 
+find_package(amnezia-mdnsvpn-android REQUIRED)
+file(COPY ${AMNEZIA_MDNSVPN_ANDROID_AAR_PATH}
+     DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/android/master_dns_vpn/libMasterDnsVpn)
+
 find_package(openvpn-pt-android REQUIRED)
 set(LIBS ${LIBS} amnezia::openvpn-pt-android)
 set_property(TARGET ${PROJECT} APPEND PROPERTY QT_ANDROID_EXTRA_LIBS ${OPENVPN_PT_ANDROID_LIBCK_OVPN_PLUGIN_PATH})
