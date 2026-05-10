@@ -36,6 +36,8 @@ include(":awg")
 include(":openvpn")
 include(":xray")
 include(":xray:libXray")
+include(":master_dns_vpn")
+include(":master_dns_vpn:libMasterDnsVpn")
 
 // get values from gradle or local properties
 val androidBuildToolsVersion: String by gradleProperties
