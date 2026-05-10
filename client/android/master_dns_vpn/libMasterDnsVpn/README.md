@@ -8,9 +8,13 @@ Archive produced by `gomobile bind` over the bundled MasterDnsVPN client core.
 The AAR exposes a single Kotlin/Java-callable façade:
 
 ```
-package org.amnezia.vpn.protocol.masterdnsvpn.libMasterDnsVpn
+// gomobile derives the Java package + class names from the Go package
+// name ("libmasterdnsvpn"). With -javapkg=org.amnezia.vpn.protocol.masterdnsvpn
+// the resulting class lives at
+// org.amnezia.vpn.protocol.masterdnsvpn.libmasterdnsvpn.Libmasterdnsvpn
+package org.amnezia.vpn.protocol.masterdnsvpn.libmasterdnsvpn
 
-class LibMasterDnsVpn {
+class Libmasterdnsvpn {
     /**
      * Start the bundled MasterDnsVPN client core. Reads the operator's
      * client_config.toml from `configPath`, opens a SOCKS5 listener on the

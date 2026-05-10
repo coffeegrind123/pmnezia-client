@@ -11,7 +11,7 @@ import org.amnezia.vpn.protocol.ProtocolState.CONNECTED
 import org.amnezia.vpn.protocol.ProtocolState.DISCONNECTED
 import org.amnezia.vpn.protocol.Statistics
 import org.amnezia.vpn.protocol.VpnStartException
-import org.amnezia.vpn.protocol.masterdnsvpn.libMasterDnsVpn.LibMasterDnsVpn
+import org.amnezia.vpn.protocol.masterdnsvpn.libmasterdnsvpn.Libmasterdnsvpn
 import org.amnezia.vpn.protocol.xray.libXray.LibXray
 import org.amnezia.vpn.protocol.xray.libXray.Tun2SocksConfig
 import org.amnezia.vpn.util.Log
@@ -67,7 +67,7 @@ class MasterDnsVpn : Protocol() {
         }
 
         Log.d(TAG, "Starting mdnsvpn core (port=${mdnsvpnConfig.socksPort})")
-        val startErr = LibMasterDnsVpn.startClient(configFile.absolutePath)
+        val startErr = Libmasterdnsvpn.startClient(configFile.absolutePath)
         if (!startErr.isNullOrBlank()) {
             throw VpnStartException("Failed to start mdnsvpn core: $startErr")
         }
@@ -196,7 +196,7 @@ class MasterDnsVpn : Protocol() {
     }
 
     private fun stopMdnsvpnCore() {
-        LibMasterDnsVpn.stopClient().isNotNullOrBlank { err ->
+        Libmasterdnsvpn.stopClient().isNotNullOrBlank { err ->
             Log.e(TAG, "Failed to stop mdnsvpn core: $err")
         }
     }

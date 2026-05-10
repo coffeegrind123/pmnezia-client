@@ -92,10 +92,18 @@ class AmneziaMdnsvpnAndroid(ConanFile):
         self.run("go mod tidy", cwd=str(gomobile_dir))
 
         out = os.path.join(self.build_folder, "libmasterdnsvpn.aar")
+        # gomobile derives the Java package from -javapkg + the Go package name
+        # and the Java class name from the title-cased Go package name. With:
+        #   Go package:  libmasterdnsvpn
+        #   -javapkg:    org.amnezia.vpn.protocol.masterdnsvpn
+        # the resulting class is
+        #   org.amnezia.vpn.protocol.masterdnsvpn.libmasterdnsvpn.Libmasterdnsvpn
+        # which is what MasterDnsVpn.kt imports.
         self.run(
             "gomobile bind "
             "-target=android/arm64,arm,amd64,386 "
             "-androidapi 21 "
+            "-javapkg=org.amnezia.vpn.protocol.masterdnsvpn "
             "-trimpath "
             "-ldflags='-s -w' "
             f"-o {out} .",
