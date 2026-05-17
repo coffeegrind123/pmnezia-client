@@ -84,11 +84,16 @@ QString XrayConfigurator::prepareServerConfig(const ServerCredentials &credentia
     }
 
     QJsonArray clients = settings[amnezia::protocols::xray::clients].toArray();
-    
+
+    // Detect transport type from server config (source of truth)
+    QJsonObject streamSettings = inbound.value(amnezia::protocols::xray::streamSettings).toObject();
+    QString transport = streamSettings.value(amnezia::protocols::xray::network).toString(amnezia::protocols::xray::defaultTransport);
+
     // Create configuration for new client
+    // XHTTP is incompatible with flow xtls-rprx-vision; flow must be empty
     QJsonObject clientConfig {
         {amnezia::protocols::xray::id, clientId},
-        {amnezia::protocols::xray::flow, "xtls-rprx-vision"}
+        {amnezia::protocols::xray::flow, transport == "xhttp" ? QString("") : QString("xtls-rprx-vision")}
     };
     
     clients.append(clientConfig);
@@ -145,10 +150,31 @@ ProtocolConfig XrayConfigurator::createConfig(const ServerCredentials &credentia
         return XrayProtocolConfig{};
     }
 
+    // Read server config to auto-detect transport (server config is source of truth)
+    QString serverConfigStr = m_sshSession->getTextFileFromContainer(
+        container, credentials, amnezia::protocols::xray::serverConfigPath, errorCode);
+    if (errorCode != ErrorCode::NoError) {
+        logger.error() << "Failed to read server config for transport detection";
+        errorCode = ErrorCode::InternalError;
+        return XrayProtocolConfig{};
+    }
+
+    QJsonDocument serverDoc = QJsonDocument::fromJson(serverConfigStr.toUtf8());
+    QJsonObject parsedServerConfig = serverDoc.object();
+    QJsonObject inbound = parsedServerConfig.value(amnezia::protocols::xray::inbounds).toArray().first().toObject();
+    QJsonObject streamSettings = inbound.value(amnezia::protocols::xray::streamSettings).toObject();
+    QString transport = streamSettings.value(amnezia::protocols::xray::network).toString(amnezia::protocols::xray::defaultTransport);
+    bool isXhttp = (transport == "xhttp");
+
+    logger.info() << "Auto-detected server transport:" << transport;
+
+    // Select template based on detected transport
+    ProtocolScriptType templateType = isXhttp ? ProtocolScriptType::xray_template_xhttp : ProtocolScriptType::xray_template;
+
     amnezia::ScriptVars vars = amnezia::genBaseVars(credentials, container, dnsSettings.primaryDns, dnsSettings.secondaryDns);
     vars.append(amnezia::genProtocolVarsForContainer(container, containerConfig));
-    QString config = m_sshSession->replaceVars(amnezia::scriptData(ProtocolScriptType::xray_template, container), vars);
-    
+    QString config = m_sshSession->replaceVars(amnezia::scriptData(templateType, container), vars);
+
     if (config.isEmpty()) {
         logger.error() << "Failed to get config template";
         errorCode = ErrorCode::InternalError;
@@ -163,7 +189,7 @@ ProtocolConfig XrayConfigurator::createConfig(const ServerCredentials &credentia
         return XrayProtocolConfig{};
     }
     xrayPublicKey.replace("\n", "");
-    
+
     QString xrayShortId =
             m_sshSession->getTextFileFromContainer(container, credentials, amnezia::protocols::xray::shortidPath, errorCode);
     if (errorCode != ErrorCode::NoError || xrayShortId.isEmpty()) {
@@ -173,6 +199,19 @@ ProtocolConfig XrayConfigurator::createConfig(const ServerCredentials &credentia
     }
     xrayShortId.replace("\n", "");
 
+    // For XHTTP, extract path from server config's xhttpSettings
+    if (isXhttp) {
+        QJsonObject xhttpSettings = streamSettings.value("xhttpSettings").toObject();
+        QString xhttpPath = xhttpSettings.value("path").toString();
+        if (xhttpPath.isEmpty()) {
+            logger.error() << "Server config missing xhttpSettings.path";
+            errorCode = ErrorCode::InternalError;
+            return XrayProtocolConfig{};
+        }
+        config.replace("$XRAY_XHTTP_PATH", xhttpPath);
+    }
+
+    // Validate all required variables are present
     if (!config.contains("$XRAY_CLIENT_ID") || !config.contains("$XRAY_PUBLIC_KEY") || !config.contains("$XRAY_SHORT_ID")) {
         logger.error() << "Config template missing required variables:"
                       << "XRAY_CLIENT_ID:" << !config.contains("$XRAY_CLIENT_ID")

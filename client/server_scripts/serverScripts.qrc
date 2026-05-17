@@ -53,6 +53,7 @@
         <file>xray/run_container.sh</file>
         <file>xray/start.sh</file>
         <file>xray/template.json</file>
+        <file>xray/template_xhttp.json</file>
     </qresource>
 </RCC>
 

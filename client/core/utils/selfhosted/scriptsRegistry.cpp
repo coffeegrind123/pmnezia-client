@@ -69,6 +69,7 @@ QString amnezia::scriptName(ProtocolScriptType type)
     case ProtocolScriptType::wireguard_template: return QLatin1String("template.conf");
     case ProtocolScriptType::awg_template: return QLatin1String("template.conf");
     case ProtocolScriptType::xray_template: return QLatin1String("template.json");
+    case ProtocolScriptType::xray_template_xhttp: return QLatin1String("template_xhttp.json");
     default: return QString();
     }
 }
@@ -204,6 +205,7 @@ amnezia::ScriptVars amnezia::genXrayVars(const ContainerConfig &containerConfig)
         
         vars.append({ { "$XRAY_SITE_NAME", config.site.isEmpty() ? protocols::xray::defaultSite : config.site } });
         vars.append({ { "$XRAY_SERVER_PORT", config.port.isEmpty() ? protocols::xray::defaultPort : config.port } });
+        vars.append({ { "$XRAY_TRANSPORT", config.transportProto.isEmpty() ? protocols::xray::defaultTransport : config.transportProto } });
     }
     
     return vars;

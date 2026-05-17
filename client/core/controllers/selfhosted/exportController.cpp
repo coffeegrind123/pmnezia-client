@@ -310,11 +310,16 @@ ExportController::ExportResult ExportController::generateXrayConfig(const QStrin
     vlessServer.address = server.value(amnezia::protocols::xray::address).toString();
     vlessServer.port = server.value(amnezia::protocols::xray::port).toInt();
     vlessServer.id = user.value(amnezia::protocols::xray::id).toString();
-    vlessServer.flow = user.value(amnezia::protocols::xray::flow).toString("xtls-rprx-vision");
+    vlessServer.flow = user.value(amnezia::protocols::xray::flow).toString();
     vlessServer.encryption = user.value(amnezia::protocols::xray::encryption).toString("none");
 
     vlessServer.network = streamSettings.value(amnezia::protocols::xray::network).toString("tcp");
     vlessServer.security = streamSettings.value(amnezia::protocols::xray::security).toString("reality");
+
+    if (vlessServer.network == "xhttp") {
+        QJsonObject xhttpSettings = streamSettings.value("xhttpSettings").toObject();
+        vlessServer.xhttpPath = xhttpSettings.value("path").toString();
+    }
 
     if (vlessServer.security == "reality") {
         QJsonObject realitySettings = streamSettings.value(amnezia::protocols::xray::realitySettings).toObject();
