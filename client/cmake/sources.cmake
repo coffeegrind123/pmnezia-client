@@ -73,6 +73,25 @@ set(HEADERS ${HEADERS}
     ${CLIENT_ROOT_DIR}/mozilla/controllerimpl.h
 )
 
+# MasterDnsVPN native engine — sibling to mozilla/. Cross-platform Qt-using
+# C++ that implements the full DNS-tunnel protocol stack in-process; consumed
+# directly by the desktop protocol class and via JNI by the Android module.
+set(HEADERS ${HEADERS}
+    ${CLIENT_ROOT_DIR}/masterdnsvpn/engine.h
+    ${CLIENT_ROOT_DIR}/masterdnsvpn/crypto.h
+    ${CLIENT_ROOT_DIR}/masterdnsvpn/socks5server.h
+    ${CLIENT_ROOT_DIR}/masterdnsvpn/wireframing.h
+    ${CLIENT_ROOT_DIR}/masterdnsvpn/dnsframing.h
+    ${CLIENT_ROOT_DIR}/masterdnsvpn/arq.h
+    ${CLIENT_ROOT_DIR}/masterdnsvpn/resolverpool.h
+    ${CLIENT_ROOT_DIR}/masterdnsvpn/session.h
+    ${CLIENT_ROOT_DIR}/masterdnsvpn/pingpacer.h
+    ${CLIENT_ROOT_DIR}/masterdnsvpn/mtuprober.h
+    ${CLIENT_ROOT_DIR}/masterdnsvpn/compression.h
+    ${CLIENT_ROOT_DIR}/masterdnsvpn/dnsmsg.h
+    ${CLIENT_ROOT_DIR}/masterdnsvpn/dnscache.h
+)
+
 if(NOT IOS AND NOT MACOS_NE)
     set(HEADERS ${HEADERS}
         ${CLIENT_ROOT_DIR}/platforms/ios/QRCodeReaderBase.h
@@ -148,6 +167,22 @@ set(SOURCES ${SOURCES}
     ${CLIENT_ROOT_DIR}/mozilla/models/server.cpp
     ${CLIENT_ROOT_DIR}/mozilla/shared/ipaddress.cpp
     ${CLIENT_ROOT_DIR}/mozilla/shared/leakdetector.cpp
+)
+
+# MasterDnsVPN native engine sources — see HEADERS list above for rationale.
+set(SOURCES ${SOURCES}
+    ${CLIENT_ROOT_DIR}/masterdnsvpn/crypto.cpp
+    ${CLIENT_ROOT_DIR}/masterdnsvpn/socks5server.cpp
+    ${CLIENT_ROOT_DIR}/masterdnsvpn/wireframing.cpp
+    ${CLIENT_ROOT_DIR}/masterdnsvpn/dnsframing.cpp
+    ${CLIENT_ROOT_DIR}/masterdnsvpn/arq.cpp
+    ${CLIENT_ROOT_DIR}/masterdnsvpn/resolverpool.cpp
+    ${CLIENT_ROOT_DIR}/masterdnsvpn/session.cpp
+    ${CLIENT_ROOT_DIR}/masterdnsvpn/engine.cpp
+    ${CLIENT_ROOT_DIR}/masterdnsvpn/mtuprober.cpp
+    ${CLIENT_ROOT_DIR}/masterdnsvpn/compression.cpp
+    ${CLIENT_ROOT_DIR}/masterdnsvpn/dnsmsg.cpp
+    ${CLIENT_ROOT_DIR}/masterdnsvpn/dnscache.cpp
 )
 
 if(NOT IOS AND NOT MACOS_NE)
@@ -265,6 +300,7 @@ if(WIN32 OR (APPLE AND NOT IOS AND NOT MACOS_NE) OR (LINUX AND NOT ANDROID))
         ${CLIENT_ROOT_DIR}/core/protocols/wireGuardProtocol.h
         ${CLIENT_ROOT_DIR}/core/protocols/xrayProtocol.h
         ${CLIENT_ROOT_DIR}/core/protocols/awgProtocol.h
+        ${CLIENT_ROOT_DIR}/core/protocols/masterDnsVpnProtocol.h
         ${CLIENT_ROOT_DIR}/mozilla/localsocketcontroller.h
     )
 
@@ -276,6 +312,7 @@ if(WIN32 OR (APPLE AND NOT IOS AND NOT MACOS_NE) OR (LINUX AND NOT ANDROID))
         ${CLIENT_ROOT_DIR}/core/protocols/wireGuardProtocol.cpp
         ${CLIENT_ROOT_DIR}/core/protocols/xrayProtocol.cpp
         ${CLIENT_ROOT_DIR}/core/protocols/awgProtocol.cpp
+        ${CLIENT_ROOT_DIR}/core/protocols/masterDnsVpnProtocol.cpp
     )
 endif()
 
