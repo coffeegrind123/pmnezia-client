@@ -4,6 +4,26 @@ on:
   push:
     branches:
       - '**'
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag (rolling tag is fine, will be overwritten if it exists)'
+        required: true
+        type: string
+        default: 'dev-latest'
+      release_name:
+        description: 'Release title shown on GitHub'
+        required: true
+        type: string
+        default: 'Dev build (masterdnsvpn + xhttp)'
+      prerelease:
+        description: 'Mark as pre-release'
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
 
 env:
   QT_MIRROR: https://mirrors.ocf.berkeley.edu/qt/ # https://download.qt.io/static/mirrorlist/
@@ -58,7 +78,7 @@ jobs:
 # ------------------------------------------------------
 
   Build-Linux-Ubuntu:
-    runs-on: android-runner
+    runs-on: ubuntu-latest
 
     needs: Bake-Prebuilts-Linux
     if: ${{ always() }}
@@ -118,6 +138,7 @@ jobs:
     - name: 'Upload installer artifact'
       uses: actions/upload-artifact@v7
       with:
+        name: AmneziaVPN-Linux-installer
         path: deploy/build/AmneziaVPN-*-Linux.run
         archive: false
         retention-days: 7
@@ -242,13 +263,15 @@ jobs:
     - name: 'Upload WIX installer artifact'
       uses: actions/upload-artifact@v7
       with:
+        name: AmneziaVPN-Windows-MSI
         path: deploy/build/AmneziaVPN-*-win64.msi
         archive: false
         retention-days: 7
-      
+
     - name: 'Upload IFW installer artifact'
       uses: actions/upload-artifact@v7
       with:
+        name: AmneziaVPN-Windows-IFW
         path: deploy/build/AmneziaVPN-*-win64.exe
         archive: false
         retention-days: 7
@@ -652,7 +675,7 @@ jobs:
 # ------------------------------------------------------
 
   Bake-Prebuilts-Android:
-    runs-on: android-runner
+    runs-on: ubuntu-latest
     needs: Detect-Changes
     if: needs.Detect-Changes.outputs.recipes_changed == 'true'
 
@@ -704,7 +727,7 @@ jobs:
 # ------------------------------------------------------
 
   Build-Android:
-    runs-on: android-runner
+    runs-on: ubuntu-latest
 
     needs: Bake-Prebuilts-Android
     if: ${{ always() }}
@@ -808,19 +831,33 @@ jobs:
     - name: 'Install conan'
       run: pip install "conan==2.26.2"
 
-    - name: 'Decode keystore secret to file'
+    - name: 'Prepare Android keystore (release secret or debug fallback)'
       env:
         KEYSTORE_BASE64: ${{ secrets.ANDROID_RELEASE_KEYSTORE_BASE64 }}
+        RELEASE_KEY_ALIAS: ${{ secrets.ANDROID_RELEASE_KEYSTORE_KEY_ALIAS }}
+        RELEASE_KEY_PASS: ${{ secrets.ANDROID_RELEASE_KEYSTORE_KEY_PASS }}
       shell: bash
       run: |
-        echo $KEYSTORE_BASE64 | base64 --decode > android.keystore
+        if [ -n "$KEYSTORE_BASE64" ]; then
+          echo "Using configured release keystore"
+          echo "$KEYSTORE_BASE64" | base64 --decode > android.keystore
+          echo "QT_ANDROID_KEYSTORE_ALIAS=$RELEASE_KEY_ALIAS" >> $GITHUB_ENV
+          echo "::add-mask::$RELEASE_KEY_PASS"
+          echo "QT_ANDROID_KEYSTORE_STORE_PASS=$RELEASE_KEY_PASS" >> $GITHUB_ENV
+        else
+          echo "No ANDROID_RELEASE_KEYSTORE_BASE64 secret; generating debug keystore"
+          keytool -genkeypair -keystore android.keystore \
+            -storepass debugpass -alias debugkey -keypass debugpass \
+            -keyalg RSA -keysize 2048 -validity 3650 \
+            -dname "CN=AmneziaVPN Debug, OU=Dev, O=Fork, L=NA, S=NA, C=NA"
+          echo "QT_ANDROID_KEYSTORE_ALIAS=debugkey" >> $GITHUB_ENV
+          echo "QT_ANDROID_KEYSTORE_STORE_PASS=debugpass" >> $GITHUB_ENV
+        fi
 
     - name: 'Build project'
       env:
         QT_INSTALL_DIR: ${{ runner.temp }}
         QT_ANDROID_KEYSTORE_PATH: ${{ github.workspace }}/android.keystore
-        QT_ANDROID_KEYSTORE_ALIAS: ${{ secrets.ANDROID_RELEASE_KEYSTORE_KEY_ALIAS }}
-        QT_ANDROID_KEYSTORE_STORE_PASS: ${{ secrets.ANDROID_RELEASE_KEYSTORE_KEY_PASS }}
       shell: bash
       run: |
         deploy/build.sh -t android --sign --aab
@@ -838,6 +875,7 @@ jobs:
     - name: 'Upload universal APK'
       uses: actions/upload-artifact@v7
       with:
+        name: AmneziaVPN-Android-universal
         path: deploy/build/client/android-build/*.apk
         archive: false
         retention-days: 7
@@ -845,6 +883,7 @@ jobs:
     - name: 'Upload AAB'
       uses: actions/upload-artifact@v7
       with:
+        name: AmneziaVPN-Android-AAB
         path: deploy/build/client/android-build/build/outputs/bundle/release/*.aab
         archive: false
         retention-days: 7
@@ -852,6 +891,7 @@ jobs:
     - name: 'Upload arm64-v8a APK'
       uses: actions/upload-artifact@v7
       with:
+        name: AmneziaVPN-Android-arm64-v8a
         path: deploy/build/arm64-v8a/client/android-build/*.apk
         archive: false
         retention-days: 7
@@ -859,6 +899,7 @@ jobs:
     - name: 'Upload armeabi-v7a APK'
       uses: actions/upload-artifact@v7
       with:
+        name: AmneziaVPN-Android-armeabi-v7a
         path: deploy/build/armeabi-v7a/client/android-build/*.apk
         archive: false
         retention-days: 7
@@ -866,6 +907,7 @@ jobs:
     - name: 'Upload x86 APK'
       uses: actions/upload-artifact@v7
       with:
+        name: AmneziaVPN-Android-x86
         path: deploy/build/x86/client/android-build/*.apk
         archive: false
         retention-days: 7
@@ -873,9 +915,77 @@ jobs:
     - name: 'Upload x86_64 APK'
       uses: actions/upload-artifact@v7
       with:
+        name: AmneziaVPN-Android-x86_64
         path: deploy/build/x86_64/client/android-build/*.apk
         archive: false
         retention-days: 7
+
+  Publish-Release:
+    name: 'Publish GitHub Release'
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    needs:
+      - Build-Linux-Ubuntu
+      - Build-Windows
+      - Build-Android
+    permissions:
+      contents: write
+
+    steps:
+    - name: 'Checkout (for version + tagging)'
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+
+    - name: 'Read project version'
+      id: version
+      shell: bash
+      run: |
+        VERSION=$(grep 'set(AMNEZIAVPN_VERSION' CMakeLists.txt | sed -E 's/.*AMNEZIAVPN_VERSION ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+        echo "short_sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+    - name: 'Download all build artifacts'
+      uses: actions/download-artifact@v4
+      with:
+        path: release-artifacts
+        pattern: AmneziaVPN-*
+        merge-multiple: true
+
+    - name: 'List collected artifacts'
+      shell: bash
+      run: |
+        echo "Collected files for release:"
+        ls -la release-artifacts/
+        test "$(ls -A release-artifacts/ 2>/dev/null)" || { echo "No artifacts collected"; exit 1; }
+
+    - name: 'Delete existing release (if any) to refresh rolling tag'
+      shell: bash
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        gh release delete "${{ inputs.release_tag }}" --cleanup-tag --yes || true
+
+    - name: 'Create GitHub Release'
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ inputs.release_tag }}
+        target_commitish: ${{ github.sha }}
+        name: ${{ inputs.release_name }} (v${{ steps.version.outputs.version }} / ${{ steps.version.outputs.short_sha }})
+        body: |
+          Automated build of `${{ github.ref_name }}` at `${{ github.sha }}`.
+
+          - Project version: `${{ steps.version.outputs.version }}`
+          - Includes masterdnsvpn-native + xhttp-transport merges.
+
+          Artifacts in this release:
+          - Linux installer (`.run`)
+          - Windows installer (MSI + IFW exe)
+          - Android (universal APK, AAB, per-ABI APKs: arm64-v8a, armeabi-v7a, x86, x86_64)
+        files: release-artifacts/*
+        prerelease: ${{ inputs.prerelease }}
+        make_latest: 'false'
+        fail_on_unmatched_files: true
 
   Extra:
     runs-on: ubuntu-latest
@@ -891,6 +1001,6 @@ jobs:
 
       - name: Add PR link to build summary
         if: ${{ fromJSON(steps.pull_request.outputs.data)[0].number != '' }}
-        run: | 
+        run: |
           echo "Pull request:" >> $GITHUB_STEP_SUMMARY
           echo "[[#${{ fromJSON(steps.pull_request.outputs.data)[0].number }}] ${{ fromJSON(steps.pull_request.outputs.data)[0].title }}](${{ fromJSON(steps.pull_request.outputs.data)[0].html_url }})" >> $GITHUB_STEP_SUMMARY
