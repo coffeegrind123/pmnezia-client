@@ -1,9 +1,6 @@
 name: 'Deploy workflow'
 
 on:
-  push:
-    branches:
-      - '**'
   workflow_dispatch:
     inputs:
       release_tag:
@@ -21,6 +18,11 @@ on:
         required: true
         type: boolean
         default: true
+      enable_apple_builds:
+        description: 'Also build iOS/macOS/macOS-NE (requires Apple signing secrets)'
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -29,59 +31,8 @@ env:
   QT_MIRROR: https://mirrors.ocf.berkeley.edu/qt/ # https://download.qt.io/static/mirrorlist/
 
 jobs:
-  Detect-Changes:
-    runs-on: ubuntu-latest
-    outputs:
-      recipes_changed: ${{ steps.filter.outputs.recipes }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          base: ${{ github.event.before }}
-          filters: |
-            recipes:
-              - 'recipes/**'
-              - 'conanfile.py'
-
-  Bake-Prebuilts-Linux:
-    runs-on: ubuntu-latest
-    needs: Detect-Changes
-    if: needs.Detect-Changes.outputs.recipes_changed == 'true'
-
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        submodules: 'true'
-        fetch-depth: 10
-
-    - uses: actions/setup-python@v6
-      with:
-        python-version: 3.14
-
-    - name: 'Install conan'
-      run: pip install "conan==2.26.2"
-
-    - name: 'Build dependencies'
-      shell: bash
-      run: |
-        for build_type in Release Debug; do
-          cmake -S . -B build -DPREBUILTS_ONLY=1 "-DCMAKE_BUILD_TYPE=$build_type"
-        done
-
-    - name: 'Authorize in remote'
-      run: conan remote login amnezia "${{ secrets.CONAN_USER }}" -p "${{ secrets.CONAN_PASSWORD }}"
-
-    - name: 'Upload baked prebuilts'
-      run: conan upload -r amnezia "*" -c
-
-# ------------------------------------------------------
-
   Build-Linux-Ubuntu:
     runs-on: ubuntu-latest
-
-    needs: Bake-Prebuilts-Linux
-    if: ${{ always() }}
 
     env:
       QT_VERSION: 6.10.1
@@ -152,42 +103,8 @@ jobs:
 
 # ------------------------------------------------------
 
-  Bake-Prebuilts-Windows:
-    runs-on: windows-latest
-    needs: Detect-Changes
-    if: needs.Detect-Changes.outputs.recipes_changed == 'true'
-
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        submodules: 'true'
-        fetch-depth: 10
-    
-    - uses: actions/setup-python@v6
-      with:
-        python-version: 3.14
-
-    - uses: ilammy/msvc-dev-cmd@v1
-
-    - name: 'Install conan'
-      run: pip install "conan==2.26.2"
-
-    - name: 'Build dependencies'
-      run: cmake -S . -B build -G "Visual Studio 17 2022" -DPREBUILTS_ONLY=1
-    
-    - name: 'Authorize in remote'
-      run: conan remote login amnezia "${{ secrets.CONAN_USER }}" -p "${{ secrets.CONAN_PASSWORD }}"
-
-    - name: 'Upload baked prebuilts'
-      run: conan upload -r amnezia "*" -c
-
-# ------------------------------------------------------
-
   Build-Windows:
     runs-on: windows-latest
-
-    needs: Bake-Prebuilts-Windows
-    if: ${{ always() }}
 
     env:
       QT_VERSION: 6.10.1
@@ -278,48 +195,9 @@ jobs:
 
 # ------------------------------------------------------
 
-  Bake-Prebuilts-iOS:
-    runs-on: macos-latest
-    needs: Detect-Changes
-    if: needs.Detect-Changes.outputs.recipes_changed == 'true'
-
-    strategy:
-      matrix:
-        xcode-version: [26.0]
-
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        submodules: 'true'
-        fetch-depth: 10
-    
-    - uses: actions/setup-python@v6
-      with:
-        python-version: 3.14
-
-    - uses: maxim-lobanov/setup-xcode@v1
-      with:
-        xcode-version: ${{ matrix.xcode-version }}
-
-    - name: 'Install conan'
-      run: pip install "conan==2.26.2"
-
-    - name: 'Build dependencies'
-      run: cmake -S . -B build -G Xcode -DPREBUILTS_ONLY=1 -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_SYSROOT=iphoneos
-    
-    - name: 'Authorize in remote'
-      run: conan remote login amnezia "${{ secrets.CONAN_USER }}" -p "${{ secrets.CONAN_PASSWORD }}"
-
-    - name: 'Upload baked prebuilts'
-      run: conan upload -r amnezia "*" -c
-
-# ------------------------------------------------------
-
   Build-iOS:
     runs-on: macos-latest
-
-    needs: Bake-Prebuilts-iOS
-    if: ${{ always() }}
+    if: inputs.enable_apple_builds
 
     env:
       QT_VERSION: 6.10.1
@@ -416,49 +294,9 @@ jobs:
 
 # ------------------------------------------------------
 
-  Bake-Prebuilts-MacOS:
-    runs-on: macos-latest
-
-    needs: Detect-Changes
-    if: needs.Detect-Changes.outputs.recipes_changed == 'true'
-
-    strategy:
-      matrix:
-        xcode-version: [16.2, 16.4]
-
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        submodules: 'true'
-        fetch-depth: 10
-    
-    - uses: actions/setup-python@v6
-      with:
-        python-version: 3.14
-
-    - uses: maxim-lobanov/setup-xcode@v1
-      with:
-        xcode-version: ${{ matrix.xcode-version }}
-
-    - name: 'Install conan'
-      run: pip install "conan==2.26.2"
-
-    - name: 'Build dependencies'
-      run: cmake -S . -B build -G Xcode -DPREBUILTS_ONLY=1
-    
-    - name: 'Authorize in remote'
-      run: conan remote login amnezia "${{ secrets.CONAN_USER }}" -p "${{ secrets.CONAN_PASSWORD }}"
-
-    - name: 'Upload baked prebuilts'
-      run: conan upload -r amnezia "*" -c
-
-# ------------------------------------------------------
-
   Build-MacOS:
     runs-on: macos-latest
-
-    needs: Bake-Prebuilts-MacOS
-    if: ${{ always() }}
+    if: inputs.enable_apple_builds
 
     env:
       QT_VERSION: 6.10.1
@@ -547,48 +385,9 @@ jobs:
 
 # ------------------------------------------------------
 
-  Bake-Prebuilts-MacOS-NE:
-    runs-on: macos-latest
-    needs: Detect-Changes
-    if: needs.Detect-Changes.outputs.recipes_changed == 'true'
-
-    strategy:
-      matrix:
-        xcode-version: [16.2, 16.4]
-
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        submodules: 'true'
-        fetch-depth: 10
-    
-    - uses: actions/setup-python@v6
-      with:
-        python-version: 3.14
-
-    - uses: maxim-lobanov/setup-xcode@v1
-      with:
-        xcode-version: ${{ matrix.xcode-version }}
-
-    - name: 'Install conan'
-      run: pip install "conan==2.26.2"
-
-    - name: 'Build dependencies'
-      run: cmake -S . -B build -G Xcode -DPREBUILTS_ONLY=1 -DMACOS_NE=TRUE
-    
-    - name: 'Authorize in remote'
-      run: conan remote login amnezia "${{ secrets.CONAN_USER }}" -p "${{ secrets.CONAN_PASSWORD }}"
-
-    - name: 'Upload baked prebuilts'
-      run: conan upload -r amnezia "*" -c
-
-# ------------------------------------------------------
-
   Build-MacOS-NE:
     runs-on: macos-latest
-
-    needs: Bake-Prebuilts-MacOS-NE
-    if: ${{ always() }}
+    if: inputs.enable_apple_builds
 
     env:
       QT_VERSION: 6.10.1
@@ -674,63 +473,8 @@ jobs:
 
 # ------------------------------------------------------
 
-  Bake-Prebuilts-Android:
-    runs-on: ubuntu-latest
-    needs: Detect-Changes
-    if: needs.Detect-Changes.outputs.recipes_changed == 'true'
-
-    env:
-      ANDROID_PLATFORM: android-28
-      NDK_VERSION: 27.0.11718014
-
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        submodules: 'true'
-        fetch-depth: 10
-    
-    - uses: actions/setup-python@v6
-      with:
-        python-version: 3.14
-
-    - name: 'Install conan'
-      run: pip install "conan==2.26.2"
-
-    - name: 'Setup Android SDK'
-      uses: android-actions/setup-android@v4
-      with:
-        packages: "platforms;${{ env.ANDROID_PLATFORM }} ndk;${{ env.NDK_VERSION }}"
-
-    - name: 'Build dependencies'
-      run: |
-        CMAKE_ANDROID_NDK="$ANDROID_HOME/ndk/$NDK_VERSION"
-        args=(
-          -G Ninja
-          -DPREBUILTS_ONLY=1
-          -DCMAKE_SYSTEM_NAME=Android
-          "-DANDROID_PLATFORM=$ANDROID_PLATFORM"
-          "-DCMAKE_ANDROID_NDK=$CMAKE_ANDROID_NDK"
-        )
-
-        for abi in arm64-v8a armeabi-v7a x86 x86_64; do
-          for build_type in Release Debug; do
-            cmake -S . -B build_${abi//-/_} "${args[@]}" "-DCMAKE_ANDROID_ARCH_ABI=$abi" "-DCMAKE_BUILD_TYPE=$build_type"
-          done
-        done
-
-    - name: 'Authorize in remote'
-      run: conan remote login amnezia "${{ secrets.CONAN_USER }}" -p "${{ secrets.CONAN_PASSWORD }}"
-
-    - name: 'Upload baked prebuilts'
-      run: conan upload -r amnezia "*" -c
-
-# ------------------------------------------------------
-
   Build-Android:
     runs-on: ubuntu-latest
-
-    needs: Bake-Prebuilts-Android
-    if: ${{ always() }}
 
     env:
       ANDROID_PLATFORM: android-28
@@ -923,7 +667,6 @@ jobs:
   Publish-Release:
     name: 'Publish GitHub Release'
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch'
     needs:
       - Build-Linux-Ubuntu
       - Build-Windows
