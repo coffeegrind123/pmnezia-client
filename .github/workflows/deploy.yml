@@ -95,7 +95,7 @@ jobs:
         retention-days: 7
 
     - name: 'Upload translations artifact'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: AmneziaVPN_translations
         path: client/translations
@@ -465,7 +465,7 @@ jobs:
         bash deploy/build_macos_ne.sh
 
     - name: 'Upload unpacked artifact'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: AmneziaVPN_MacOS_unpacked
         path: deploy/build/client/AmneziaVPN.app
@@ -689,7 +689,7 @@ jobs:
         echo "short_sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
 
     - name: 'Download all build artifacts'
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         path: release-artifacts
         pattern: AmneziaVPN-*
