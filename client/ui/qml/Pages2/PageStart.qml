@@ -200,47 +200,6 @@ PageType {
         }
     }
 
-    Connections {
-        target: SubscriptionUiController
-
-        function onErrorOccurred(error) {
-            PageController.showErrorMessage(error)
-        }
-    }
-
-    Connections {
-        target: SubscriptionUiController
-
-        function onApiConfigRemoved(message) {
-            PageController.showNotificationMessage(message)
-        }
-
-        function onApiServerRemoved(message) {
-            if (!ServersUiController.getServersCount()) {
-                PageController.goToPageHome()
-            } else {
-                PageController.goToStartPage()
-                PageController.goToPage(PageEnum.PageSettingsServersList)
-            }
-            PageController.showNotificationMessage(message)
-        }
-
-        function onInstallServerFromApiFinished(message, preferredDefaultIndex) {
-            PageController.goToPageHome()
-            PageController.showNotificationMessage(message)
-        }
-
-        function onChangeApiCountryFinished(message) {
-            PageController.goToPageHome()
-            PageController.showNotificationMessage(message)
-        }
-
-        function onReloadServerFromApiFinished(message) {
-            PageController.goToPageHome()
-            PageController.showNotificationMessage(message)
-        }
-    }
-
     StackViewType {
         id: tabBarStackView
         objectName: "tabBarStackView"
@@ -377,13 +336,7 @@ PageType {
             objectName: "settingsTabButton"
 
             isSelected: tabBar.currentIndex === 2
-            image: (ServersUiController.hasServersFromGatewayApi && NewsModel.hasUnread && SettingsController.isNewsNotificationsEnabled()) ? "qrc:/images/controls/settings-news.svg" : "qrc:/images/controls/settings.svg"
-            Binding {
-                target: settingsTabButton
-                property: "defaultColor"
-                value: "transparent"
-                when: (ServersUiController.hasServersFromGatewayApi && NewsModel.hasUnread)
-            }
+            image: "qrc:/images/controls/settings.svg"
             clickedFunc: function () {
                 tabBarStackView.goToTabBarPage(PageEnum.PageSettings)
                 tabBar.currentIndex = 2

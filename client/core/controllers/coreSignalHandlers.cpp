@@ -20,7 +20,6 @@
 #include "ui/controllers/languageUiController.h"
 #include "ui/controllers/selfhosted/installUiController.h"
 #include "ui/controllers/importUiController.h"
-#include "ui/controllers/api/subscriptionUiController.h"
 #include "ui/controllers/updateUiController.h"
 #include "ui/models/serversModel.h"
 #include "core/controllers/serversController.h"
@@ -32,8 +31,6 @@
 #include "core/controllers/selfhosted/exportController.h"
 #include "core/controllers/connectionController.h"
 #include "ui/models/clientManagementModel.h"
-#include "ui/controllers/api/apiNewsUiController.h"
-#include "ui/models/api/apiCountryModel.h"
 #include "ui/models/containersModel.h"
 #include "core/utils/containerEnum.h"
 
@@ -64,8 +61,6 @@ void CoreSignalHandlers::initAllHandlers()
     initInstallControllerHandler();
     initExportControllerHandler();
     initImportControllerHandler();
-    initApiCountryModelUpdateHandler();
-    initSubscriptionRefreshHandler();
     initAdminConfigRevokedHandler();
     initPassphraseRequestHandler();
     initTranslationsUpdatedHandler();
@@ -78,7 +73,6 @@ void CoreSignalHandlers::initAllHandlers()
     initAllowedDnsModelUpdateHandler();
     initAppSplitTunnelingModelUpdateHandler();
     initPrepareConfigHandler();
-    initUnsupportedConnectDrawerHandler();
     initStrictKillSwitchHandler();
     initAndroidSettingsHandler();
     initAndroidConnectionHandler();
@@ -94,9 +88,6 @@ void CoreSignalHandlers::initErrorMessagesHandler()
         emit m_coreController->m_pageController->showErrorMessage(errorCode);
         m_coreController->m_connectionController->setConnectionState(Vpn::ConnectionState::Disconnected);
     });
-
-    connect(m_coreController->m_subscriptionUiController, &SubscriptionUiController::errorOccurred, m_coreController->m_pageController,
-            qOverload<ErrorCode>(&PageController::showErrorMessage));
 
     connect(m_coreController->m_settingsUiController, &SettingsUiController::errorOccurred, m_coreController->m_pageController,
             qOverload<ErrorCode>(&PageController::showErrorMessage));
@@ -169,37 +160,6 @@ void CoreSignalHandlers::initImportControllerHandler()
     });
 }
 
-void CoreSignalHandlers::initApiCountryModelUpdateHandler()
-{
-    connect(m_coreController->m_serversUiController, &ServersUiController::updateApiCountryModel, this, [this]() {
-        const QString processedServerId = m_coreController->m_serversUiController->getProcessedServerId();
-        if (processedServerId.isEmpty()) {
-            return;
-        }
-        
-        QJsonArray availableCountries;
-        QString serverCountryCode;
-
-        const auto apiV2 = m_coreController->m_serversRepository->apiV2Config(processedServerId);
-        if (apiV2.has_value()) {
-            availableCountries = apiV2->apiConfig.availableCountries;
-            serverCountryCode = apiV2->apiConfig.serverCountryCode;
-        }
-        
-        m_coreController->m_apiCountryModel->updateModel(availableCountries, serverCountryCode);
-    });
-}
-
-void CoreSignalHandlers::initSubscriptionRefreshHandler()
-{
-    connect(m_coreController->m_subscriptionUiController, &SubscriptionUiController::subscriptionRefreshNeeded, this, [this]() {
-        const QString defaultServerId = m_coreController->m_serversController->getDefaultServerId();
-        if (!defaultServerId.isEmpty()) {
-            m_coreController->m_subscriptionUiController->getAccountInfo(defaultServerId, false);
-        }
-    });
-}
-
 void CoreSignalHandlers::initAdminConfigRevokedHandler()
 {
     connect(m_coreController->m_installController, &InstallController::clientRevocationRequested, this,
@@ -263,18 +223,8 @@ void CoreSignalHandlers::initServersModelUpdateHandler()
     connect(m_coreController->m_serversRepository, &SecureServersRepository::defaultServerChanged,
             m_coreController->m_serversUiController, &ServersUiController::onDefaultServerChanged);
 
-    connect(m_coreController->m_serversRepository, &SecureServersRepository::serverAdded, this,
-            [this](const QString &serverId) {
-                if (m_coreController->m_serversRepository->apiV2Config(serverId).has_value()) {
-                    m_coreController->m_apiNewsUiController->fetchNews(false);
-                }
-            });
-
     connect(m_coreController->m_settingsUiController, &SettingsUiController::restoreBackupFinished, this, [this]() {
         m_coreController->m_serversUiController->updateModel();
-        if (m_coreController->m_serversUiController->hasServersFromGatewayApi()) {
-            m_coreController->m_apiNewsUiController->fetchNews(false);
-        }
     });
 }
 
@@ -316,22 +266,7 @@ void CoreSignalHandlers::initPrepareConfigHandler()
             return;
         }
 
-        const serverConfigUtils::ConfigType kind = m_coreController->m_serversRepository->serverKind(serverId);
-
-        if (serverConfigUtils::isApiV2Subscription(kind) || serverConfigUtils::isLegacyApiSubscription(kind)) {
-            m_coreController->m_subscriptionUiController->validateConfig();
-        } else {
-            m_coreController->m_installUiController->validateConfig();
-        }
-    });
-
-    connect(m_coreController->m_subscriptionUiController, &SubscriptionUiController::configValidated, this, [this](bool isValid) {
-        if (!isValid) {
-            m_coreController->m_connectionController->setConnectionState(Vpn::ConnectionState::Disconnected);
-            return;
-        }
-
-        m_coreController->m_connectionUiController->openConnection();
+        m_coreController->m_installUiController->validateConfig();
     });
 
     connect(m_coreController->m_installUiController, &InstallUiController::configValidated, this, [this](bool isValid) {
@@ -342,12 +277,6 @@ void CoreSignalHandlers::initPrepareConfigHandler()
 
         m_coreController->m_connectionUiController->openConnection();
     });
-}
-
-void CoreSignalHandlers::initUnsupportedConnectDrawerHandler()
-{
-    connect(m_coreController->m_subscriptionUiController, &SubscriptionUiController::unsupportedConnectDrawerRequested,
-            m_coreController->m_pageController, &PageController::unsupportedConnectDrawerRequested);
 }
 
 void CoreSignalHandlers::initStrictKillSwitchHandler()
@@ -431,14 +360,7 @@ void CoreSignalHandlers::initNotificationHandler()
 void CoreSignalHandlers::initUpdateFoundHandler()
 {
 #if !defined(Q_OS_ANDROID) && !defined(Q_OS_IOS)
-    connect(m_coreController->m_apiNewsUiController, &ApiNewsUiController::fetchNewsFinished, m_coreController->m_updateUiController,
-            &UpdateUiController::checkForUpdates);
-
     connect(m_coreController->m_updateUiController, &UpdateUiController::updateFound, this, [this]() {
-        const QString version = m_coreController->m_updateUiController->getVersion();
-        const QString updateId = version.isEmpty() ? QStringLiteral("update") : QStringLiteral("update-%1").arg(version);
-        m_coreController->m_newsModel->setUpdateNotification(
-                updateId, m_coreController->m_updateUiController->getHeaderText(), m_coreController->m_updateUiController->getChangelogText());
         emit m_coreController->m_pageController->showChangelogDrawer();
     });
 #endif

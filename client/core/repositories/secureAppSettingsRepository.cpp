@@ -17,7 +17,8 @@
 using namespace amnezia;
 
 namespace {
-    constexpr char gatewayEndpoint[] = "http://gw.amnezia.org:80/";
+    // Amnezia gateway removed in this fork; no default endpoint is baked in.
+    constexpr char gatewayEndpoint[] = "";
 }
 
 SecureAppSettingsRepository::SecureAppSettingsRepository(SecureQSettings* settings, QObject *parent)
@@ -246,9 +247,7 @@ void SecureAppSettingsRepository::setAppsSplitTunnelingEnabled(bool enabled)
 
 QString SecureAppSettingsRepository::getGatewayEndpoint(bool isTestPurchase) const
 {
-    if (isTestPurchase) {
-        return QString(DEV_AGW_ENDPOINT);
-    }
+    Q_UNUSED(isTestPurchase)
     return m_gatewayEndpoint;
 }
 
@@ -266,8 +265,8 @@ void SecureAppSettingsRepository::resetGatewayEndpoint()
 
 void SecureAppSettingsRepository::setDevGatewayEndpoint()
 {
-    m_gatewayEndpoint = QString(DEV_AGW_ENDPOINT);
-    setValue("Conf/gatewayEndpoint", DEV_AGW_ENDPOINT);
+    m_gatewayEndpoint = QString();
+    setValue("Conf/gatewayEndpoint", QString());
 }
 
 bool SecureAppSettingsRepository::isDevGatewayEnv(bool isTestPurchase) const

@@ -265,7 +265,7 @@ PageType {
 
         delegate: ColumnLayout {
             width: listView.width
-            property bool isQrCodeVisible: pageShareConnection.isSelfHostedConfig ? ExportController.qrCodesCount > 0 : SubscriptionUiController.qrCodesCount > 0
+            property bool isQrCodeVisible: ExportController.qrCodesCount > 0
 
             Rectangle {
                 id: qrCodeContainer
@@ -284,7 +284,7 @@ PageType {
                     fillMode: Image.PreserveAspectFit
                     sourceSize.width: parent.width
                     sourceSize.height: parent.height
-                    source: pageShareConnection.isSelfHostedConfig ? (isQrCodeVisible ? ExportController.qrCodes[0] : "") : (isQrCodeVisible ? SubscriptionUiController.qrCodes[0] : "")
+                    source: isQrCodeVisible ? ExportController.qrCodes[0] : ""
                     property bool isFocusable: true
                     Keys.onTabPressed: FocusController.nextKeyTabItem()
                     Keys.onBacktabPressed: FocusController.previousKeyTabItem()
@@ -301,9 +301,9 @@ PageType {
                         onTriggered: {
                             if (isQrCodeVisible) {
                                 index++
-                                let qrCodesCount = pageShareConnection.isSelfHostedConfig ? ExportController.qrCodesCount : SubscriptionUiController.qrCodesCount
+                                let qrCodesCount = ExportController.qrCodesCount
                                 if (index >= qrCodesCount) index = 0
-                                parent.source = pageShareConnection.isSelfHostedConfig ? ExportController.qrCodes[index] : SubscriptionUiController.qrCodes[index]
+                                parent.source = ExportController.qrCodes[index]
                             }
                         }
                     }

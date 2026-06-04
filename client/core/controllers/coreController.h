@@ -9,8 +9,6 @@
     #include "ui/utils/systemTrayNotificationHandler.h"
 #endif
 
-#include "ui/controllers/api/subscriptionUiController.h"
-#include "ui/controllers/api/apiNewsUiController.h"
 #include "ui/controllers/appSplitTunnelingUiController.h"
 #include "ui/controllers/allowedDnsUiController.h"
 #include "ui/controllers/connectionUiController.h"
@@ -27,7 +25,6 @@
 #include "ui/controllers/systemController.h"
 #include "ui/controllers/languageUiController.h"
 #include "ui/controllers/updateUiController.h"
-#include "ui/controllers/api/servicesCatalogUiController.h"
 #include "ui/controllers/networkReachabilityController.h"
 
 #include "core/controllers/serversController.h"
@@ -35,9 +32,6 @@
 #include "core/controllers/appSplitTunnelingController.h"
 #include "core/controllers/ipSplitTunnelingController.h"
 #include "core/controllers/allowedDnsController.h"
-#include "core/controllers/api/servicesCatalogController.h"
-#include "core/controllers/api/subscriptionController.h"
-#include "core/controllers/api/newsController.h"
 #include "core/controllers/selfhosted/installController.h"
 #include "core/controllers/settingsController.h"
 #include "core/controllers/connectionController.h"
@@ -53,12 +47,6 @@
 #ifdef Q_OS_WINDOWS
     #include "ui/models/protocols/ikev2ConfigModel.h"
 #endif
-#include "ui/models/api/apiAccountInfoModel.h"
-#include "ui/models/api/apiBenefitsModel.h"
-#include "ui/models/api/apiCountryModel.h"
-#include "ui/models/api/apiDevicesModel.h"
-#include "ui/models/api/apiServicesModel.h"
-#include "ui/models/api/apiSubscriptionPlansModel.h"
 #include "ui/models/appSplitTunnelingModel.h"
 #include "ui/models/clientManagementModel.h"
 #include "ui/models/protocols/awgConfigModel.h"
@@ -76,7 +64,6 @@
 #include "ui/models/services/telemtConfigModel.h"
 
 #include "ui/models/ipSplitTunnelingModel.h"
-#include "ui/models/newsModel.h"
 
 #if !defined(Q_OS_ANDROID) && !defined(Q_OS_IOS)
     #include "ui/utils/notificationHandler.h"
@@ -109,8 +96,6 @@ protected:
     SecureAppSettingsRepository* appSettingsRepositoryProtected() const { return m_appSettingsRepository; }
     ServersModel* serversModelProtected() const { return m_serversModel; }
     ContainersModel* containersModelProtected() const { return m_containersModel; }
-    ApiServicesModel* apiServicesModelProtected() const { return m_apiServicesModel; }
-    NewsModel* newsModelProtected() const { return m_newsModel; }
     AllowedDnsModel* allowedDnsModelProtected() const { return m_allowedDnsModel; }
     AppSplitTunnelingModel* appSplitTunnelingModelProtected() const { return m_appSplitTunnelingModel; }
     IpSplitTunnelingModel* ipSplitTunnelingModelProtected() const { return m_ipSplitTunnelingModel; }
@@ -131,8 +116,6 @@ protected:
     AppSplitTunnelingController* appSplitTunnelingControllerProtected() const { return m_appSplitTunnelingController; }
     AppSplitTunnelingUiController* appSplitTunnelingUiControllerProtected() const { return m_appSplitTunnelingUiController; }
     ServersUiController* serversUiControllerProtected() const { return m_serversUiController; }
-    ServicesCatalogUiController* servicesCatalogUiControllerProtected() const { return m_servicesCatalogUiController; }
-    ApiNewsUiController* apiNewsUiControllerProtected() const { return m_apiNewsUiController; }
 
 private:
     void initRepositories();
@@ -176,19 +159,11 @@ private:
     LanguageUiController* m_languageUiController;
     UpdateUiController* m_updateUiController;
 
-    SubscriptionUiController* m_subscriptionUiController;
-    ApiNewsUiController* m_apiNewsUiController;
-    
-    ServicesCatalogUiController* m_servicesCatalogUiController;
-
     ServersController* m_serversController;
     UsersController* m_usersController;
     AppSplitTunnelingController* m_appSplitTunnelingController;
     IpSplitTunnelingController* m_ipSplitTunnelingController;
     AllowedDnsController* m_allowedDnsController;
-    ServicesCatalogController* m_servicesCatalogController;
-    SubscriptionController* m_subscriptionController;
-    NewsController* m_newsController;
     UpdateController* m_updateController;
     InstallController* m_installController;
     ExportController* m_exportController;
@@ -201,17 +176,9 @@ private:
     LanguageModel* m_languageModel;
     ProtocolsModel* m_protocolsModel;
     IpSplitTunnelingModel* m_ipSplitTunnelingModel;
-    NewsModel* m_newsModel;
     AllowedDnsModel* m_allowedDnsModel;
     AppSplitTunnelingModel* m_appSplitTunnelingModel;
     ClientManagementModel* m_clientManagementModel;
-
-    ApiServicesModel* m_apiServicesModel;
-    ApiSubscriptionPlansModel* m_apiSubscriptionPlansModel;
-    ApiBenefitsModel* m_apiBenefitsModel;
-    ApiCountryModel* m_apiCountryModel;
-    ApiAccountInfoModel* m_apiAccountInfoModel;
-    ApiDevicesModel* m_apiDevicesModel;
 
     OpenVpnConfigModel* m_openVpnConfigModel;
     XrayConfigModel* m_xrayConfigModel;

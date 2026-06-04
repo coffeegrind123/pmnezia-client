@@ -19,8 +19,6 @@ private:
     void initInstallControllerHandler();
     void initExportControllerHandler();
     void initImportControllerHandler();
-    void initApiCountryModelUpdateHandler();
-    void initSubscriptionRefreshHandler();
     void initAdminConfigRevokedHandler();
     void initPassphraseRequestHandler();
     void initTranslationsUpdatedHandler();
@@ -33,7 +31,6 @@ private:
     void initAllowedDnsModelUpdateHandler();
     void initAppSplitTunnelingModelUpdateHandler();
     void initPrepareConfigHandler();
-    void initUnsupportedConnectDrawerHandler();
     void initStrictKillSwitchHandler();
     void initAndroidSettingsHandler();
     void initAndroidConnectionHandler();

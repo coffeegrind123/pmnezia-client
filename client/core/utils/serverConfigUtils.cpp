@@ -56,19 +56,9 @@ ConfigType configTypeFromJson(const QJsonObject &serverConfigObject)
     const int configVersion = serverConfigObject.value(amnezia::configKey::configVersion).toInt();
 
     switch (configVersion) {
-    case ConfigSource::Telegram: {
-        constexpr QLatin1String freeV2Endpoint(FREE_V2_ENDPOINT);
-        constexpr QLatin1String premiumV1Endpoint(PREM_V1_ENDPOINT);
-
-        const QString apiEndpointValue = serverConfigObject.value(apiDefs::key::apiEndpoint).toString();
-
-        if (apiEndpointValue.contains(premiumV1Endpoint)) {
-            return ConfigType::AmneziaPremiumV1;
-        }
-        if (apiEndpointValue.contains(freeV2Endpoint)) {
-            return ConfigType::AmneziaFreeV2;
-        }
-    }
+    case ConfigSource::Telegram:
+        // Amnezia premium/free gateway endpoints removed in this fork; such
+        // configs fall through to self-hosted classification below.
         [[fallthrough]];
     case ConfigSource::AmneziaGateway: {
         constexpr QLatin1String servicePremium("amnezia-premium");

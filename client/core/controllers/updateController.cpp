@@ -5,14 +5,11 @@
 #include <QUrl>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QSysInfo>
 #include <QTimer>
 
 #include "amneziaApplication.h"
 #include "logger.h"
 #include "version.h"
-#include "core/controllers/gatewayController.h"
-#include "core/utils/constants/apiKeys.h"
 #include "core/utils/selfhosted/scriptsRegistry.h"
 
 namespace
@@ -53,12 +50,10 @@ QString UpdateController::getVersion() const
 
 void UpdateController::checkForUpdates()
 {
-    if (m_updateCheckRunning || !m_appSettingsRepository) {
-        return;
-    }
-    m_updateCheckRunning = true;
-
-    fetchGatewayUrl();
+    // Auto-update discovery via the Amnezia gateway has been removed (it
+    // transmitted os_version + installation_uuid). This fork distributes
+    // builds via GitHub releases, so the in-app update check is disabled.
+    return;
 }
 
 void UpdateController::finishUpdateCheck()
@@ -92,38 +87,8 @@ void UpdateController::doGetAsync(const QString &endpoint, std::function<void(bo
 
 void UpdateController::fetchGatewayUrl()
 {
-    auto gatewayController = QSharedPointer<GatewayController>::create(m_appSettingsRepository->getGatewayEndpoint(),
-                                                                       m_appSettingsRepository->isDevGatewayEnv(),
-                                                                       7000,
-                                                                       m_appSettingsRepository->isStrictKillSwitchEnabled());
-
-    QJsonObject apiPayload;
-    apiPayload[apiDefs::key::cliVersion] = QString(APP_VERSION);
-    apiPayload[apiDefs::key::osVersion] = QSysInfo::productType();
-    apiPayload[apiDefs::key::installationUuid] = m_appSettingsRepository->getInstallationUuid(true);
-
-    // Workaround: wait before contacting gateway to avoid rate limit triggered by other requests (news etc.)
-    QTimer::singleShot(1000, this, [this, gatewayController, apiPayload]() {
-        gatewayController->postAsync(QStringLiteral("%1v1/updater_endpoint"), apiPayload)
-            .then(this, [this, gatewayController](QPair<ErrorCode, QByteArray> result) {
-                auto [err, gatewayResponse] = result;
-                if (err != ErrorCode::NoError) {
-                    logger.error() << "Gateway request failed, error code:" << static_cast<int>(err);
-                    finishUpdateCheck();
-                    return;
-                }
-
-                QJsonObject gatewayData = QJsonDocument::fromJson(gatewayResponse).object();
-
-                QString baseUrl = gatewayData.value("url").toString();
-                if (baseUrl.endsWith('/')) {
-                    baseUrl.chop(1);
-                }
-                m_baseUrl = baseUrl;
-
-                fetchVersionInfo();
-            });
-    });
+    // Gateway-based update discovery removed; see checkForUpdates().
+    finishUpdateCheck();
 }
 
 void UpdateController::fetchVersionInfo()

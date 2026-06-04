@@ -114,27 +114,6 @@ void CoreController::initModels()
 
     m_clientManagementModel = new ClientManagementModel(this);
     setQmlContextProperty("ClientManagementModel", m_clientManagementModel);
-
-    m_apiServicesModel = new ApiServicesModel(this);
-    setQmlContextProperty("ApiServicesModel", m_apiServicesModel);
-
-    m_apiCountryModel = new ApiCountryModel(this);
-    setQmlContextProperty("ApiCountryModel", m_apiCountryModel);
-
-    m_apiSubscriptionPlansModel = new ApiSubscriptionPlansModel(this);
-    setQmlContextProperty("ApiSubscriptionPlansModel", m_apiSubscriptionPlansModel);
-
-    m_apiBenefitsModel = new ApiBenefitsModel(this);
-    setQmlContextProperty("ApiBenefitsModel", m_apiBenefitsModel);
-
-    m_apiAccountInfoModel = new ApiAccountInfoModel(this);
-    setQmlContextProperty("ApiAccountInfoModel", m_apiAccountInfoModel);
-
-    m_apiDevicesModel = new ApiDevicesModel(this);
-    setQmlContextProperty("ApiDevicesModel", m_apiDevicesModel);
-
-    m_newsModel = new NewsModel(m_appSettingsRepository, this);
-    setQmlContextProperty("NewsModel", m_newsModel);
 }
 
 void CoreController::initRepositories()
@@ -154,9 +133,6 @@ void CoreController::initCoreControllers()
     m_usersController = new UsersController(m_serversRepository, this);
     m_ipSplitTunnelingController = new IpSplitTunnelingController(m_appSettingsRepository, this);
     m_allowedDnsController = new AllowedDnsController(m_appSettingsRepository);
-    m_servicesCatalogController = new ServicesCatalogController(m_appSettingsRepository);
-    m_subscriptionController = new SubscriptionController(m_serversRepository, m_appSettingsRepository);
-    m_newsController = new NewsController(m_appSettingsRepository, m_serversRepository);
     m_updateController = new UpdateController(m_appSettingsRepository, this);
     
     m_installController = new InstallController(m_serversRepository, m_appSettingsRepository, this);
@@ -219,18 +195,6 @@ void CoreController::initControllers()
     m_networkReachabilityController = new NetworkReachabilityController(this);
     setQmlContextProperty("NetworkReachabilityController", m_networkReachabilityController);
     setQmlContextProperty("NetworkReachability", m_networkReachabilityController);
-
-    m_servicesCatalogUiController = new ServicesCatalogUiController(m_servicesCatalogController, m_apiServicesModel, this);
-    setQmlContextProperty("ServicesCatalogUiController", m_servicesCatalogUiController);
-
-    m_subscriptionUiController = new SubscriptionUiController(m_serversController, m_apiServicesModel, m_servicesCatalogController, m_subscriptionController,
-                                                              m_apiSubscriptionPlansModel, m_apiBenefitsModel, m_apiAccountInfoModel,
-                                                              m_apiCountryModel, m_apiDevicesModel, m_settingsController,
-                                                              m_connectionController, this);
-    setQmlContextProperty("SubscriptionUiController", m_subscriptionUiController);
-
-    m_apiNewsUiController = new ApiNewsUiController(m_newsModel, m_newsController, this);
-    setQmlContextProperty("ApiNewsController", m_apiNewsUiController);
 
     m_updateUiController = new UpdateUiController(m_updateController, this);
     setQmlContextProperty("UpdateController", m_updateUiController);

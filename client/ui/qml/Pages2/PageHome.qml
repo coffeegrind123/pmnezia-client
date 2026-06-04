@@ -346,22 +346,7 @@ PageType {
                         onClicked: {
                             ServersUiController.setProcessedServerId(ServersUiController.defaultServerId)
 
-                            if (ServersUiController.isServerFromApi(ServersUiController.processedServerId)) {
-                                if (ServersUiController.isServerCountrySelectionAvailable(ServersUiController.processedServerId)) {
-                                    PageController.goToPage(PageEnum.PageSettingsApiAvailableCountries)
-                                } else {
-                                    PageController.showBusyIndicator(true)
-                                    let result = SubscriptionUiController.getAccountInfo(ServersUiController.processedServerId, false)
-                                    PageController.showBusyIndicator(false)
-                                    if (!result) {
-                                        return
-                                    }
-
-                                    PageController.goToPage(PageEnum.PageSettingsApiServerInfo)
-                                }
-                            } else {
-                                PageController.goToPage(PageEnum.PageSettingsServerInfo)
-                            }
+                            PageController.goToPage(PageEnum.PageSettingsServerInfo)
                         }
                     }
                 }

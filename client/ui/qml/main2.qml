@@ -206,27 +206,6 @@ Window  {
     }
 
     Item {
-        objectName: "captchaDialogItem"
-
-        anchors.fill: parent
-
-        CaptchaDialogType {
-            id: captchaDialog
-
-            onCaptchaSolved: function(captchaId, solution) {
-                PageController.showBusyIndicator(true)
-                Qt.callLater(function() {
-                    SubscriptionUiController.onCaptchaSolved(captchaId, solution)
-                })
-            }
-
-            onRefreshCaptchaRequested: function() {
-                SubscriptionUiController.onRefreshCaptchaRequested()
-            }
-        }
-    }
-
-    Item {
         objectName: "privateKeyPassphraseDrawerItem"
 
         anchors.fill: parent
@@ -313,60 +292,11 @@ Window  {
         }
     }
 
-    Item {
-        objectName: "subscriptionExpiredDrawerItem"
-
-        anchors.fill: parent
-
-        SubscriptionExpiredDrawer {
-            id: subscriptionExpiredDrawer
-
-            anchors.fill: parent
-        }
-    }
-
     Connections {
         target: PageController
 
         function onUnsupportedConnectDrawerRequested() {
             root.showUnsupportedConnectDrawer()
-        }
-    }
-
-    Connections {
-        target: SubscriptionUiController
-
-        function onSubscriptionExpiredOnServer() {
-            subscriptionExpiredDrawer.openTriggered()
-        }
-
-        function onCaptchaRequired(captchaId, captchaImageBase64, hint) {
-            if (captchaDialog.opened) {
-                PageController.showBusyIndicator(false)
-            }
-            captchaDialog.captchaId = captchaId
-            captchaDialog.captchaImageBase64 = captchaImageBase64
-            captchaDialog.hint = hint
-            captchaDialog.open()
-        }
-
-        function onCaptchaFlowDismissRequested() {
-            PageController.showBusyIndicator(false)
-            captchaDialog.close()
-        }
-
-        function onErrorOccurred(error) {
-            if (captchaDialog.opened) {
-                PageController.showBusyIndicator(false)
-            }
-        }
-    }
-
-    Connections {
-        target: SubscriptionUiController
-
-        function onRenewalLinkReceived(url) {
-            Qt.openUrlExternally(url)
         }
     }
 
