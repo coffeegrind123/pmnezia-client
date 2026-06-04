@@ -90,7 +90,7 @@ jobs:
       uses: actions/upload-artifact@v7
       with:
         name: AmneziaVPN-Linux-installer
-        path: deploy/build/AmneziaVPN-*-Linux.run
+        path: deploy/build/AmneziaVPN_*_linux_x64.run
         archive: false
         retention-days: 7
 
@@ -181,7 +181,7 @@ jobs:
       uses: actions/upload-artifact@v7
       with:
         name: AmneziaVPN-Windows-MSI
-        path: deploy/build/AmneziaVPN-*-win64.msi
+        path: deploy/build/AmneziaVPN_*_windows_x64.msi
         archive: false
         retention-days: 7
 
@@ -189,7 +189,7 @@ jobs:
       uses: actions/upload-artifact@v7
       with:
         name: AmneziaVPN-Windows-IFW
-        path: deploy/build/AmneziaVPN-*-win64.exe
+        path: deploy/build/AmneziaVPN_*_windows_x64.exe
         archive: false
         retention-days: 7
 
@@ -379,7 +379,7 @@ jobs:
     - name: 'Upload installer artifact'
       uses: actions/upload-artifact@v7
       with:
-        path: deploy/build/AmneziaVPN-*-Darwin.pkg
+        path: deploy/build/AmneziaVPN_*_macos_x64.pkg
         archive: false
         retention-days: 7
 
@@ -692,7 +692,7 @@ jobs:
       uses: actions/download-artifact@v8
       with:
         path: release-artifacts
-        pattern: AmneziaVPN-*
+        pattern: AmneziaVPN_*.*
         merge-multiple: true
 
     - name: 'List collected artifacts'
