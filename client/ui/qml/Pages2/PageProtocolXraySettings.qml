@@ -17,6 +17,10 @@ import "../Components"
 PageType {
     id: root
 
+    enableTimer: false
+
+    property bool portDirty: false
+
     function formatTransport(value) {
         if (value === "raw") return "RAW (TCP)"
         if (value === "xhttp") return "XHTTP"
@@ -39,8 +43,8 @@ PageType {
         anchors.right: parent.right
         anchors.topMargin: 20 + PageController.safeAreaTopMargin
 
-        onFocusChanged: {
-            if (this.activeFocus) {
+        onActiveFocusChanged: {
+            if (backButton.enabled && backButton.activeFocus) {
                 listView.positionViewAtBeginning()
             }
         }
@@ -60,9 +64,19 @@ PageType {
         delegate: ColumnLayout {
             width: listView.width
 
-            property alias focusItemId: textFieldWithHeaderType.textField
-
             spacing: 0
+
+            Text {
+                Layout.fillWidth: true
+                Layout.leftMargin: 16
+                Layout.rightMargin: 16
+                Layout.topMargin: 8
+                visible: !listView.enabled
+                wrapMode: Text.WordWrap
+                color: AmneziaStyle.color.paleGray
+                font.pixelSize: 14
+                text: qsTr("You have read-only access to this server. XRay settings cannot be edited.")
+            }
 
             RowLayout {
                 Layout.fillWidth: true
@@ -73,6 +87,8 @@ PageType {
                 BaseHeaderType {
                     Layout.fillWidth: true
                     headerText: qsTr("XRay VLESS settings")
+                    descriptionLinkText: qsTr("More about settings")
+                    descriptionLinkUrl: "https://docs.amnezia.org"
                 }
 
                 ImageButtonType {
@@ -85,91 +101,40 @@ PageType {
                 }
             }
 
-            LabelTextType {
-                Layout.fillWidth: true
-                Layout.leftMargin: 16
-                Layout.rightMargin: 16
-                Layout.topMargin: 4
-                text: qsTr("More about settings")
-                color: AmneziaStyle.color.goldenApricot
-                font.pixelSize: 16
-                lineHeight: 24 + LanguageUiController.getLineHeightAppend()
-                MouseArea {
-                    anchors.fill: parent
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: Qt.openUrlExternally("https://docs.amnezia.org")
-                }
-            }
-
-            CaptionTextType {
-                Layout.fillWidth: true
-                Layout.topMargin: 24
-                Layout.leftMargin: 16
-                Layout.rightMargin: 16
-                text: qsTr("Transport")
-            }
-
-            Rectangle {
-                id: transportSelector
-
-                Layout.fillWidth: true
-                Layout.topMargin: 8
-                Layout.leftMargin: 16
-                Layout.rightMargin: 16
-
-                implicitWidth: transportButtonGroup.implicitWidth
-                implicitHeight: transportButtonGroup.implicitHeight
-
-                color: AmneziaStyle.color.onyxBlack
-                radius: 16
-
-                RowLayout {
-                    id: transportButtonGroup
-                    spacing: 0
-
-                    HorizontalRadioButton {
-                        id: tcpButton
-                        checked: transport === "tcp"
-                        hoverEnabled: listView.enabled
-                        implicitWidth: (transportSelector.width - 32) / 2
-                        text: "TCP (Vision)"
-                        onClicked: {
-                            if (transport !== "tcp") {
-                                transport = "tcp"
-                            }
-                        }
-                    }
-
-                    HorizontalRadioButton {
-                        id: xhttpButton
-                        checked: transport === "xhttp"
-                        hoverEnabled: listView.enabled
-                        implicitWidth: (transportSelector.width - 32) / 2
-                        text: "XHTTP"
-                        onClicked: {
-                            if (transport !== "xhttp") {
-                                transport = "xhttp"
-                            }
-                        }
-                    }
-                }
-            }
-
             TextFieldWithHeaderType {
                 id: textFieldWithHeaderType
                 Layout.fillWidth: true
-                Layout.topMargin: 16
+                Layout.topMargin: 32
                 Layout.leftMargin: 16
                 Layout.rightMargin: 16
                 enabled: listView.enabled
                 headerText: qsTr("Port")
-                textField.text: port
+
+                Binding {
+                    target: textFieldWithHeaderType.textField
+                    property: "text"
+                    value: port
+                    when: !textFieldWithHeaderType.textField.activeFocus
+                    restoreMode: Binding.RestoreNone
+                }
+
                 textField.maximumLength: 5
                 textField.validator: IntValidator {
                     bottom: 1; top: 65535
                 }
+                textField.onActiveFocusChanged: {
+                    if (textField.activeFocus && textField.text === "" && port !== "") {
+                        textField.text = port
+                    }
+                }
+                textField.onTextChanged: {
+                    root.portDirty = (textField.text !== port)
+                }
                 textField.onEditingFinished: {
-                    if (textField.text !== port) port = textField.text
+                    if (textField.text !== port) {
+                        port = textField.text
+                    }
+                    root.portDirty = false
                 }
                 checkEmptyText: true
             }
@@ -227,9 +192,9 @@ PageType {
                 Layout.bottomMargin: 8
                 Layout.leftMargin: 16
                 Layout.rightMargin: 16
-                // Show Save immediately while user edits port, even before focus loss.
-                visible: listView.enabled && (XrayConfigModel.hasUnsavedChanges || textFieldWithHeaderType.textField.text !== port)
-                enabled: visible && textFieldWithHeaderType.errorText === ""
+                visible: listView.enabled
+                         && (XrayConfigModel.hasUnsavedChanges || root.portDirty)
+                enabled: visible && textFieldWithHeaderType.textField.text !== ""
                 text: qsTr("Save")
                 onClicked: function() {
                     forceActiveFocus()
@@ -238,13 +203,17 @@ PageType {
                     var yesButtonText = qsTr("Continue")
                     var noButtonText = qsTr("Cancel")
                     var yesButtonFunction = function() {
-                        if (ConnectionController.isConnected && ServersModel.getDefaultServerData("defaultContainer") === ServersUiController.processedContainerIndex) {
+                        if (ConnectionController.isConnected && ServersUiController.serverDefaultContainer(ServersUiController.defaultServerId) === ServersUiController.processedContainerIndex) {
                             PageController.showNotificationMessage(qsTr("Unable change settings while there is an active connection"))
                             return
                         }
 
+                        if (textFieldWithHeaderType.textField.text !== port) {
+                            port = textFieldWithHeaderType.textField.text
+                        }
+
                         PageController.goToPage(PageEnum.PageSetupWizardInstalling);
-                        InstallController.updateContainer(ServersUiController.getServerId(ServersUiController.processedServerIndex), ServersUiController.processedContainerIndex, ProtocolEnum.Xray)
+                        InstallController.updateContainer(ServersUiController.processedServerId, ServersUiController.processedContainerIndex, ProtocolEnum.Xray)
                     }
                     var noButtonFunction = function() {
                         if (!GC.isMobile()) saveButton.forceActiveFocus()
@@ -263,6 +232,8 @@ PageType {
                 clickedFunction: function() {
                     var yesButtonFunction = function() {
                         XrayConfigModel.resetToDefaults()
+                        PageController.showNotificationMessage(
+                            qsTr("Settings were reset to defaults. Tap Save to apply them on the server."))
                     }
                     showQuestionDrawer(qsTr("Reset settings?"), qsTr("All XRay settings will be restored to defaults."),
                         qsTr("Reset"), qsTr("Cancel"), yesButtonFunction, function() {
