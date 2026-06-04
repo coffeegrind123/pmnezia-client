@@ -242,14 +242,16 @@ void MtuProber::onCandidateFailed()
         finishFailed();
         return;
     case Stage::BinaryStep:
-        // mid failed → search lower half.
-        m_state.right = m_state.candidate - 1;
-        advanceSearch();
+        // mid failed → search lower half. advanceSearch(false) shrinks `right`;
+        // it must NOT also bump `left` (the success-path update), which would
+        // collapse the window around the failed mid and end the search one step
+        // early — converging on the first passing mid instead of the highest.
+        advanceSearch(false);
         return;
     }
 }
 
-void MtuProber::advanceSearch()
+void MtuProber::advanceSearch(bool passed)
 {
     // What was just probed?
     switch (m_state.stage) {
@@ -268,8 +270,13 @@ void MtuProber::advanceSearch()
         m_state.stage = Stage::BinaryStep;
         break;
     case Stage::BinaryStep:
-        // mid succeeded → search upper half.
-        m_state.left = m_state.candidate + 1;
+        // Narrow toward the boundary: a passing mid searches the upper half,
+        // a failing mid the lower half. Exactly one bound moves per step.
+        if (passed) {
+            m_state.left = m_state.candidate + 1;
+        } else {
+            m_state.right = m_state.candidate - 1;
+        }
         break;
     }
 

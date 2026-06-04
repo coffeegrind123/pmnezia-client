@@ -153,7 +153,7 @@ private:
     void issueProbe(qint64 nowMs);
     void onCandidatePassed();
     void onCandidateFailed();
-    void advanceSearch();
+    void advanceSearch(bool passed = true);
     void finishOk();
     void finishFailed();
     QByteArray buildProbePayload(int payloadLen, quint32 challenge, int effectiveDownloadSize) const;

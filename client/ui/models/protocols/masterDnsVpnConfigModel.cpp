@@ -123,7 +123,12 @@ void MasterDnsVpnConfigModel::applyDefaultsToServerConfig(
     if (config.bind.isEmpty()) {
         config.bind = QStringLiteral("0.0.0.0");
     }
-    if (config.encryptionMethod < protocols::masterDnsVpn::encryptionMethodNone
+    // Treat the struct's unset default (0 == encryptionMethodNone) as "blank",
+    // mirroring fromJson() where an absent key resolves to defaultEncryptionMethod
+    // and the empty-string handling of the other fields above. A freshly
+    // constructed config therefore gets the default rather than silently
+    // staying at None.
+    if (config.encryptionMethod <= protocols::masterDnsVpn::encryptionMethodNone
         || config.encryptionMethod > protocols::masterDnsVpn::encryptionMethodAes256Gcm) {
         config.encryptionMethod = protocols::masterDnsVpn::defaultEncryptionMethod;
     }
