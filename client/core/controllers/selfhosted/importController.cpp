@@ -16,6 +16,7 @@
 #include "core/utils/containerEnum.h"
 #include "core/utils/containers/containerUtils.h"
 #include "core/utils/protocolEnum.h"
+#include "core/models/protocols/masterDnsVpnProtocolConfig.h"
 #include "core/utils/serverConfigUtils.h"
 #include "core/utils/constants/apiKeys.h"
 #include "core/utils/constants/apiConstants.h"
@@ -53,6 +54,12 @@ namespace
         const QString amneziaPremiumConfigPattern = "auth_data";
         const QString backupPattern = "Servers/serversList";
 
+        // MasterDnsVPN client_config JSON (upstream UPPER_SNAKE schema). Two
+        // distinctive keys avoid matching anything else; the Amnezia-envelope
+        // check above already wins for a wrapped config that also carries them.
+        const QString masterDnsVpnPatternDomains = "DOMAINS";
+        const QString masterDnsVpnPatternMethod = "DATA_ENCRYPTION_METHOD";
+
         if (config.contains(backupPattern)) {
             return ConfigTypes::Backup;
         } else if (config.contains(amneziaConfigPattern) || config.contains(amneziaFreeConfigPattern)
@@ -62,6 +69,8 @@ namespace
             return ConfigTypes::Amnezia;
         } else if (config.contains(wireguardConfigPatternSectionInterface) && config.contains(wireguardConfigPatternSectionPeer)) {
             return ConfigTypes::WireGuard;
+        } else if (config.contains(masterDnsVpnPatternDomains) && config.contains(masterDnsVpnPatternMethod)) {
+            return ConfigTypes::MasterDnsVpn;
         } else if ((config.contains(xrayConfigPatternInbound)) && (config.contains(xrayConfigPatternOutbound))) {
             return ConfigTypes::Xray;
         } else if (config.contains(openVpnConfigPatternCli)
@@ -161,6 +170,25 @@ ImportController::ImportResult ImportController::extractConfigFromData(const QSt
         }
     }
 
+    if (config.startsWith("mdnsvpn://")) {
+        configType = ConfigTypes::MasterDnsVpn;
+        // Share blob shape: mdnsvpn://b64?<base64-json>. Tolerate a bare
+        // mdnsvpn://<base64-json> too. The base64 is standard (alphabet has no
+        // '?'), so the first '?' reliably delimits the b64 marker from the
+        // payload.
+        QString rest = config.mid(QStringLiteral("mdnsvpn://").size());
+        const int q = rest.indexOf('?');
+        const QString b64 = (q >= 0) ? rest.mid(q + 1) : rest;
+        const QByteArray decoded = QByteArray::fromBase64(b64.toUtf8());
+        result.config = extractMasterDnsVpnConfig(QString::fromUtf8(decoded));
+        if (!result.config.empty()) {
+            result.configType = configType;
+            return result;
+        }
+        result.errorCode = ErrorCode::ImportInvalidConfigError;
+        return result;
+    }
+
     configType = checkConfigFormat(config);
     if (configType == ConfigTypes::Invalid) {
         config.replace("vpn://", "");
@@ -198,6 +226,14 @@ ImportController::ImportResult ImportController::extractConfigFromData(const QSt
     }
     case ConfigTypes::Xray: {
         result.config = extractXrayConfig(config, configType);
+        if (!result.config.empty()) {
+            return result;
+        }
+        result.errorCode = ErrorCode::ImportInvalidConfigError;
+        return result;
+    }
+    case ConfigTypes::MasterDnsVpn: {
+        result.config = extractMasterDnsVpnConfig(config);
         if (!result.config.empty()) {
             return result;
         }
@@ -247,6 +283,12 @@ ImportController::ImportResult ImportController::extractConfigFromQr(const QByte
     ImportResult result;
 
     QString dataStr = QString::fromUtf8(data);
+    // Scheme-prefixed share strings (e.g. the MasterDnsVPN `mdnsvpn://b64?`
+    // blob) aren't content-sniffable, so route them straight through the
+    // string importer which handles the scheme.
+    if (dataStr.startsWith("mdnsvpn://")) {
+        return extractConfigFromData(dataStr, "");
+    }
     ConfigTypes configType = checkConfigFormat(dataStr);
     if (configType != ConfigTypes::Invalid) {
         return extractConfigFromData(dataStr, "");
@@ -704,6 +746,72 @@ QJsonObject ImportController::extractXrayConfig(const QString &data, ConfigTypes
         config[configKey::description] = description;
     }
     config[configKey::hostName] = hostName;
+
+    return config;
+}
+
+QJsonObject ImportController::extractMasterDnsVpnConfig(const QString &data, const QString &description) const
+{
+    QJsonParseError parserErr;
+    QJsonDocument doc = QJsonDocument::fromJson(data.toUtf8(), &parserErr);
+    if (parserErr.error != QJsonParseError::NoError || !doc.isObject()) {
+        return {};
+    }
+    const QJsonObject src = doc.object();
+
+    // Map the upstream MasterDnsVPN client_config schema (UPPER_SNAKE keys, as
+    // emitted by awg-easy-rs's `mdnsvpn://b64?` share blob and the upstream
+    // `mdnsvpn -json_base64` format) onto the native model. The model's
+    // camelCase keys differ from this schema, so the translation is explicit.
+    MasterDnsVpnProtocolConfig protoConfig;
+
+    MasterDnsVpnServerConfig &server = protoConfig.serverConfig;
+    server.domains = src.value("DOMAINS").toArray();
+    server.encryptionMethod =
+            src.value("DATA_ENCRYPTION_METHOD").toInt(protocols::masterDnsVpn::defaultEncryptionMethod);
+    server.encryptionKey = src.value("ENCRYPTION_KEY").toString();
+    server.protocolType = src.value("PROTOCOL_TYPE").toString();
+    server.isThirdPartyConfig = true;
+
+    // Essentials — without a tunnel domain and a key the engine can't dial.
+    if (server.domains.isEmpty() || server.encryptionKey.isEmpty()) {
+        return {};
+    }
+
+    MasterDnsVpnClientConfig client;
+    // LISTEN_PORT may arrive typed as a number (JSON) or a string; the model
+    // stores it as a string.
+    const QJsonValue listenPort = src.value("LISTEN_PORT");
+    client.listenPort =
+            listenPort.isString() ? listenPort.toString() : QString::number(listenPort.toInt());
+    client.socks5User = src.value("SOCKS5_USER").toString();
+    client.socks5Pass = src.value("SOCKS5_PASS").toString();
+    client.resolvers = src.value("RESOLVERS").toArray();
+    client.balancingStrategy = src.value("RESOLVER_BALANCING_STRATEGY").toInt(5);
+    client.packetDuplication = src.value("PACKET_DUPLICATION_COUNT").toInt(3);
+    client.setupPacketDuplication = src.value("SETUP_PACKET_DUPLICATION_COUNT").toInt(4);
+    // Preserve the verbatim source for round-trip fidelity and forward compat:
+    // engine-tuning keys we don't model (AUTO_*, LOG_LEVEL, LISTEN_IP, ...)
+    // ride along here and are ignored by the engine.
+    client.additionalConfig = src;
+    protoConfig.setClientConfig(client);
+
+    // Wrap into the canonical Amnezia container shape — mirrors
+    // ContainerConfig::toJson(): containers[].<protoName> = ProtocolConfig::toJson().
+    QJsonObject container;
+    container[configKey::container] = ContainerUtils::containerToString(DockerContainer::MasterDnsVpn);
+    container[ProtocolUtils::protoToString(Proto::MasterDnsVpn)] = protoConfig.toJson();
+
+    QJsonArray containers;
+    containers.push_back(container);
+
+    QJsonObject config;
+    config[configKey::containers] = containers;
+    config[configKey::defaultContainer] = ContainerUtils::containerToString(DockerContainer::MasterDnsVpn);
+    config[configKey::description] =
+            description.isEmpty() ? m_serversRepository->nextAvailableServerName() : description;
+    // Surface the first tunnel domain as the server card's host label.
+    config[configKey::hostName] = server.domains.first().toString();
 
     return config;
 }

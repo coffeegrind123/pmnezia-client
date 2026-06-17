@@ -21,6 +21,7 @@ namespace
         Awg,
         Xray,
         ShadowSocks,
+        MasterDnsVpn,
         Backup,
         Invalid
     };
@@ -76,6 +77,11 @@ private:
     QJsonObject extractOpenVpnConfig(const QString &data) const;
     QJsonObject extractWireGuardConfig(const QString &data, ConfigTypes &configType) const;
     QJsonObject extractXrayConfig(const QString &data, ConfigTypes configType, const QString &description = "") const;
+    // Build an Amnezia server config from a MasterDnsVPN client_config JSON
+    // (the upstream UPPER_SNAKE schema produced by awg-easy-rs's
+    // `mdnsvpn://b64?` share blob and `mdnsvpn -json_base64`). `data` is the
+    // decoded JSON string.
+    QJsonObject extractMasterDnsVpnConfig(const QString &data, const QString &description = "") const;
     void checkForMaliciousStrings(const QJsonObject &serverConfig, QString &warningText) const;
     void processAmneziaConfig(QJsonObject &config) const;
 

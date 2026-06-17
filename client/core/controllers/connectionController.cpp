@@ -272,8 +272,15 @@ QJsonObject ConnectionController::createConnectionConfiguration(const QPair<QStr
     };
 
     auto configurator = ConfiguratorBase::create(proto, nullptr);
-    ProtocolConfig processedConfig = configurator->processConfigWithLocalSettings(connectionSettings,
-                                                                                  containerConfig.protocolConfig);
+    // SOCKS5-proxy-mode protocols whose stored ProtocolConfig is already
+    // complete (e.g. MasterDnsVpn) have no dedicated configurator — the
+    // local-settings step (DNS injection into a native config string) is a
+    // no-op for them. Pass the config through unchanged rather than
+    // dereferencing a null configurator.
+    ProtocolConfig processedConfig =
+            configurator ? configurator->processConfigWithLocalSettings(connectionSettings,
+                                                                        containerConfig.protocolConfig)
+                         : containerConfig.protocolConfig;
 
     QJsonObject vpnConfigData = processedConfig.getClientConfigJson();
     if (ContainerUtils::isAwgContainer(container) || container == DockerContainer::WireGuard) {
