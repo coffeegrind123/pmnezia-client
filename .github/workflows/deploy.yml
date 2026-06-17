@@ -1,6 +1,12 @@
-name: 'Deploy workflow'
+name: 'Build and Release'
 
 on:
+  # Build + ship a rolling 'dev-latest' release on every push to the
+  # mainline branch (mirrors awg-easy-rs). Apple jobs stay off on push
+  # (their `if: inputs.enable_apple_builds` is falsy without inputs); use
+  # the manual workflow_dispatch below to build them with signing secrets.
+  push:
+    branches: [dev, main]
   workflow_dispatch:
     inputs:
       release_tag:
@@ -659,14 +665,14 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        gh release delete "${{ inputs.release_tag }}" --cleanup-tag --yes || true
+        gh release delete "${{ inputs.release_tag || 'dev-latest' }}" --cleanup-tag --yes || true
 
     - name: 'Create GitHub Release'
       uses: softprops/action-gh-release@v2
       with:
-        tag_name: ${{ inputs.release_tag }}
+        tag_name: ${{ inputs.release_tag || 'dev-latest' }}
         target_commitish: ${{ github.sha }}
-        name: ${{ inputs.release_name }} (v${{ steps.version.outputs.version }} / ${{ steps.version.outputs.short_sha }})
+        name: ${{ inputs.release_name || 'Dev build (masterdnsvpn + xhttp)' }} (v${{ steps.version.outputs.version }} / ${{ steps.version.outputs.short_sha }})
         body: |
           Automated build of `${{ github.ref_name }}` at `${{ github.sha }}`.
 
@@ -678,7 +684,7 @@ jobs:
           - Windows installer (MSI + IFW exe)
           - Android (universal APK, AAB, per-ABI APKs: arm64-v8a, armeabi-v7a, x86, x86_64)
         files: release-artifacts/*
-        prerelease: ${{ inputs.prerelease }}
+        prerelease: ${{ github.event_name != 'workflow_dispatch' || inputs.prerelease }}
         make_latest: 'false'
         fail_on_unmatched_files: true
 
