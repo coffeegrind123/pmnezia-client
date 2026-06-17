@@ -171,7 +171,7 @@ void CoreController::initControllers()
     m_languageUiController = new LanguageUiController(m_settingsController, m_languageModel, this);
     setQmlContextProperty("LanguageUiController", m_languageUiController);
 
-    m_settingsUiController = new SettingsUiController(m_settingsController, m_serversController, m_languageUiController, this);
+    m_settingsUiController = new SettingsUiController(m_settingsController, m_serversController, this);
     setQmlContextProperty("SettingsController", m_settingsUiController);
 
     m_pageController = new PageController(m_serversController, m_settingsController, this);
@@ -247,9 +247,6 @@ void CoreController::initSignalHandlers()
 
     // Trigger initial update after handlers are connected
     m_serversUiController->updateModel();
-    if (m_serversUiController->hasServersFromGatewayApi()) {
-        m_apiNewsUiController->fetchNews(false);
-    }
 }
 
 void CoreController::updateTranslator(const QLocale &locale)
