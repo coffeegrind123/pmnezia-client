@@ -102,7 +102,9 @@ jobs:
 # ------------------------------------------------------
 
   Build-Windows:
-    runs-on: windows-latest
+    # Pinned: windows-latest now ships VS2026 ("Visual Studio 18 2026"),
+    # which the openvpn Conan dep's CMake can't target. VS2022 generator works.
+    runs-on: windows-2022
 
     env:
       QT_VERSION: 6.10.1
