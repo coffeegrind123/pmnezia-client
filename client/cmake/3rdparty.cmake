@@ -10,6 +10,14 @@ include(${CLIENT_ROOT_DIR}/3rd/qrcodegen/qrcodegen.cmake)
 
 add_compile_definitions(_WINSOCKAPI_)
 
+# Stop <windows.h> from defining the min()/max() macros, which mangle
+# std::min/std::max call sites (e.g. client/masterdnsvpn/*) into syntax
+# errors under MSVC. Defined on the command line, so it lands before any
+# windows.h include across every client target.
+if(WIN32)
+    add_compile_definitions(NOMINMAX)
+endif()
+
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 set(BUILD_WITH_QT6 ON)
 add_subdirectory(${CLIENT_ROOT_DIR}/3rd/qtkeychain EXCLUDE_FROM_ALL)
