@@ -3,7 +3,7 @@ package org.amnezia.vpn.protocol.qqdns
 import android.net.VpnService.Builder
 import org.amnezia.vpn.protocol.BadConfigException
 import org.amnezia.vpn.protocol.VpnStartException
-import org.amnezia.vpn.protocol.awg.Awg
+import org.amnezia.vpn.protocol.wireguard.Wireguard
 import org.amnezia.vpn.protocol.wireguard.WireguardConfig
 import org.amnezia.vpn.util.Log
 import org.amnezia.vpn.util.net.InetNetwork
@@ -15,7 +15,7 @@ private const val TAG = "QqDns"
  * Android-side glue for the QQ-DNS (UDP-over-DNS) transport.
  *
  * QQ-DNS is not a self-contained tunnel: the native engine binds a loopback
- * UDP port and **AmneziaWG runs on top of it**. So this class extends [Awg]
+ * UDP port and **AmneziaWG runs on top of it**. So this class extends the WireGuard base
  * (reusing the whole WireGuard-for-Android backend) and only:
  *
  *   1. starts the native engine and learns its loopback UDP port,
@@ -25,14 +25,14 @@ private const val TAG = "QqDns"
  *      already bypasses the tun; the base also protect()s the WG socket).
  *
  * Everything else — TUN setup, wireguard-go turn-on, routing, split
- * tunnelling, stats — comes from the [Awg]/`Wireguard` base unchanged.
+ * tunnelling, stats — comes from the `Wireguard` base unchanged.
  *
  * KNOWN RUNTIME TODO: resolver exclusion relies on VpnService.Builder
  * excludeRoute (API 33+, as the MasterDnsVPN protocol also uses). On older
  * devices, or setups where that isn't honoured, the engine's resolver sockets
  * would need explicit protect() via their fds — needs on-device verification.
  */
-class QqDns : Awg() {
+class QqDns : Wireguard() {
 
     override val ifName: String = "qqdns0"
 

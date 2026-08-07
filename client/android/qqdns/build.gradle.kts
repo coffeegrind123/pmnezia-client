@@ -16,7 +16,6 @@ dependencies {
     compileOnly(project(":protocolApi"))
     // QQ-DNS runs AmneziaWG on top of a loopback UDP port the native engine
     // binds, so it extends the AWG protocol and reuses the WireGuard backend.
-    implementation(project(":awg"))
     implementation(project(":wireguard"))
     implementation(libs.kotlinx.coroutines)
 }
