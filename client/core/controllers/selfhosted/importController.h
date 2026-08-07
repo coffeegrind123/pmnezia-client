@@ -80,8 +80,12 @@ private:
     // Build an Amnezia server config from a MasterDnsVPN client_config JSON
     // (the upstream UPPER_SNAKE schema produced by awg-easy-rs's
     // `mdnsvpn://b64?` share blob and `mdnsvpn -json_base64`). `data` is the
-    // decoded JSON string.
-    QJsonObject extractMasterDnsVpnConfig(const QString &data, const QString &description = "") const;
+    // decoded JSON string. `urlResolvers` carries the resolver list from the
+    // share URL's `&resolvers=` parameter: upstream tags Resolvers `toml:"-"`
+    // and its JSON loader skips such fields, so the server no longer emits a
+    // RESOLVERS member and the URL is the only place the list survives.
+    QJsonObject extractMasterDnsVpnConfig(const QString &data, const QString &description = "",
+                                          const QStringList &urlResolvers = {}) const;
     void checkForMaliciousStrings(const QJsonObject &serverConfig, QString &warningText) const;
     void processAmneziaConfig(QJsonObject &config) const;
 

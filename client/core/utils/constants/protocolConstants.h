@@ -258,7 +258,26 @@ namespace amnezia
             constexpr int encryptionMethodAes128Gcm = 3;
             constexpr int encryptionMethodAes192Gcm = 4;
             constexpr int encryptionMethodAes256Gcm = 5;
-            constexpr int defaultEncryptionMethod = encryptionMethodXor;
+
+            // Only the AES-GCM methods authenticate the ciphertext. None is
+            // plaintext, XOR is a repeating-key xor, and the mdnsvpn core's
+            // ChaCha20 is bare ChaCha20 without Poly1305 — so on 0/1/2 an
+            // active on-path attacker can tamper with tunnel payloads
+            // undetected. Mirrors keys::is_aead in awg-easy-rs.
+            constexpr bool isAeadEncryptionMethod(int method)
+            {
+                return method >= encryptionMethodAes128Gcm && method <= encryptionMethodAes256Gcm;
+            }
+
+            // Method fresh deployments get. Matches awg-easy-rs's
+            // RECOMMENDED_ENCRYPTION_METHOD. Safe for any existing key: the
+            // mdnsvpn core derives the AES key as sha256(rawKey) for methods 2
+            // and 5, so switching an existing key from XOR needs no re-keying —
+            // but it does need every distributed client config re-issued, since
+            // the method is baked into each one. Imported configs are therefore
+            // left on whatever method the server declares.
+            constexpr int recommendedEncryptionMethod = encryptionMethodAes256Gcm;
+            constexpr int defaultEncryptionMethod = recommendedEncryptionMethod;
         }
 
         namespace mtProxy

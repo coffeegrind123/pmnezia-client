@@ -165,6 +165,28 @@ PageType {
                 }
             }
 
+            // Only AES-GCM (3..5) authenticates the ciphertext. None is
+            // plaintext, XOR is a repeating-key xor, and this core's ChaCha20
+            // is bare ChaCha20 without Poly1305 — so on 0/1/2 an active
+            // on-path attacker can tamper with tunnel payloads undetected.
+            // Mirrors the advisory awg-easy-rs writes into server_config.toml.
+            WarningType {
+                objectName: "nonAeadEncryptionWarning"
+
+                Layout.fillWidth: true
+                Layout.topMargin: 8
+                Layout.leftMargin: 16
+                Layout.rightMargin: 16
+
+                visible: encryptionMethod < 3 || encryptionMethod > 5
+
+                backGroundColor: AmneziaStyle.color.transparent
+                iconPath: "qrc:/images/controls/alert-circle.svg"
+                imageColor: AmneziaStyle.color.goldenApricot
+                textColor: AmneziaStyle.color.goldenApricot
+                textString: qsTr("This method is not authenticated encryption — an active on-path attacker can tamper with tunnel payloads undetected. Use AES-256-GCM unless you have a specific reason not to. Changing it requires re-issuing every client config, since the method is baked into each one.")
+            }
+
             // Outbound mode: SOCKS5 = clients choose the destination per stream;
             // TCP = server forwards every connection to a fixed forwardIp:port
             // (useful for chaining mdnsvpn into a downstream proxy panel).

@@ -172,15 +172,42 @@ ImportController::ImportResult ImportController::extractConfigFromData(const QSt
 
     if (config.startsWith("mdnsvpn://")) {
         configType = ConfigTypes::MasterDnsVpn;
-        // Share blob shape: mdnsvpn://b64?<base64-json>. Tolerate a bare
-        // mdnsvpn://<base64-json> too. The base64 is standard (alphabet has no
-        // '?'), so the first '?' reliably delimits the b64 marker from the
-        // payload.
+        // Share blob shape: mdnsvpn://b64?<base64-json>[&resolvers=<csv>].
+        // Tolerate a bare mdnsvpn://<base64-json> too. The base64 is standard
+        // (alphabet is A-Za-z0-9+/=), so neither '?' nor '&' can occur inside
+        // it and both delimiters are unambiguous.
         QString rest = config.mid(QStringLiteral("mdnsvpn://").size());
         const int q = rest.indexOf('?');
-        const QString b64 = (q >= 0) ? rest.mid(q + 1) : rest;
-        const QByteArray decoded = QByteArray::fromBase64(b64.toUtf8());
-        result.config = extractMasterDnsVpnConfig(QString::fromUtf8(decoded));
+        QString payload = (q >= 0) ? rest.mid(q + 1) : rest;
+
+        // The trailing `&resolvers=` list is an awg-easy-rs extension carrying
+        // the resolver set that used to ride inside the JSON body. It must be
+        // split off before decoding: QByteArray::fromBase64 is non-strict and
+        // silently absorbs the alphabet-legal characters of "resolvers" into
+        // the payload, which corrupts the decode whenever the base64 carries
+        // no '=' padding to stop it early.
+        QStringList urlResolvers;
+        const int amp = payload.indexOf('&');
+        if (amp >= 0) {
+            const QString query = payload.mid(amp + 1);
+            payload.truncate(amp);
+            for (const QString &param : query.split('&', Qt::SkipEmptyParts)) {
+                if (!param.startsWith(QStringLiteral("resolvers="))) {
+                    continue;
+                }
+                const QString list = QUrl::fromPercentEncoding(
+                        param.mid(QStringLiteral("resolvers=").size()).toUtf8());
+                for (const QString &r : list.split(',', Qt::SkipEmptyParts)) {
+                    const QString trimmed = r.trimmed();
+                    if (!trimmed.isEmpty()) {
+                        urlResolvers.append(trimmed);
+                    }
+                }
+            }
+        }
+
+        const QByteArray decoded = QByteArray::fromBase64(payload.toUtf8());
+        result.config = extractMasterDnsVpnConfig(QString::fromUtf8(decoded), "", urlResolvers);
         if (!result.config.empty()) {
             result.configType = configType;
             return result;
@@ -719,7 +746,8 @@ QJsonObject ImportController::extractXrayConfig(const QString &data, ConfigTypes
     return config;
 }
 
-QJsonObject ImportController::extractMasterDnsVpnConfig(const QString &data, const QString &description) const
+QJsonObject ImportController::extractMasterDnsVpnConfig(const QString &data, const QString &description,
+                                                        const QStringList &urlResolvers) const
 {
     QJsonParseError parserErr;
     QJsonDocument doc = QJsonDocument::fromJson(data.toUtf8(), &parserErr);
@@ -755,7 +783,17 @@ QJsonObject ImportController::extractMasterDnsVpnConfig(const QString &data, con
             listenPort.isString() ? listenPort.toString() : QString::number(listenPort.toInt());
     client.socks5User = src.value("SOCKS5_USER").toString();
     client.socks5Pass = src.value("SOCKS5_PASS").toString();
+    // Resolver list. A RESOLVERS member is accepted for configs produced by
+    // older servers, but current awg-easy-rs deliberately omits it (upstream
+    // ignores it), so the share URL's `&resolvers=` list is the live source.
     client.resolvers = src.value("RESOLVERS").toArray();
+    if (client.resolvers.isEmpty() && !urlResolvers.isEmpty()) {
+        QJsonArray resolvers;
+        for (const QString &r : urlResolvers) {
+            resolvers.push_back(r);
+        }
+        client.resolvers = resolvers;
+    }
     client.balancingStrategy = src.value("RESOLVER_BALANCING_STRATEGY").toInt(5);
     client.packetDuplication = src.value("PACKET_DUPLICATION_COUNT").toInt(3);
     client.setupPacketDuplication = src.value("SETUP_PACKET_DUPLICATION_COUNT").toInt(4);
