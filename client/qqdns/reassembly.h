@@ -22,11 +22,11 @@
 #define QQDNS_REASSEMBLY_H
 
 #include <QByteArray>
-#include <QVector>
 
 #include <array>
 #include <cstdint>
 #include <memory>
+#include <vector>
 
 namespace amnezia::qqdns {
 
@@ -72,7 +72,9 @@ private:
     };
 
     qint64 m_assembleMs;
-    QVector<Slot> m_slots;
+    // std::vector (not QVector/QList): Slot holds a unique_ptr, so it is
+    // move-only, and Qt's copy-on-write containers require a copyable value type.
+    std::vector<Slot> m_slots;
 };
 
 } // namespace amnezia::qqdns

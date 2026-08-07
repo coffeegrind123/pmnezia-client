@@ -2,7 +2,10 @@
 
 #include "qq_dns_service.h"
 
-#include "engine.h"
+// Explicit path: both client/masterdnsvpn/ and client/qqdns/ ship an
+// "engine.h", and the masterdnsvpn include dir is listed first — a bare
+// #include "engine.h" here would resolve to the wrong one.
+#include "../../client/qqdns/engine.h"
 
 #include <QDebug>
 #include <QJsonDocument>
