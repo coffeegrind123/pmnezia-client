@@ -78,6 +78,7 @@
         <file>Pages2/PageProtocolWireGuardSettings.qml</file>
         <file>Pages2/PageProtocolXraySettings.qml</file>
         <file>Pages2/PageProtocolMasterDnsVpnSettings.qml</file>
+        <file>Pages2/PageProtocolQqDnsSettings.qml</file>
 
         <file>Pages2/PageProtocolXraySnapshots.qml</file>
         <file>Pages2/PageProtocolXrayFlowSettings.qml</file>

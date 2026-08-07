@@ -123,6 +123,7 @@ PageLoader::PageEnum ProtocolsModel::serverProtocolPage(Proto protocol) const
     case Proto::Ikev2: return PageLoader::PageEnum::PageProtocolIKev2Settings;
     case Proto::Xray: return PageLoader::PageEnum::PageProtocolXraySettings;
     case Proto::MasterDnsVpn: return PageLoader::PageEnum::PageProtocolMasterDnsVpnSettings;
+    case Proto::QqDns: return PageLoader::PageEnum::PageProtocolQqDnsSettings;
 
     // non-vpn
     case Proto::TorWebSite: return PageLoader::PageEnum::PageServiceTorWebsiteSettings;

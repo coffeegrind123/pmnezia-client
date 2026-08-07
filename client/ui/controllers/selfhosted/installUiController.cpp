@@ -46,6 +46,7 @@ InstallUiController::InstallUiController(InstallController *installController,
                                          OpenVpnConfigModel *openVpnConfigModel,
                                          XrayConfigModel *xrayConfigModel,
                                          MasterDnsVpnConfigModel *masterDnsVpnConfigModel,
+                                         QqDnsConfigModel *qqDnsConfigModel,
                                          TorConfigModel *torConfigModel,
 #ifdef Q_OS_WINDOWS
                                          Ikev2ConfigModel *ikev2ConfigModel,
@@ -67,6 +68,7 @@ InstallUiController::InstallUiController(InstallController *installController,
       m_openVpnConfigModel(openVpnConfigModel),
       m_xrayConfigModel(xrayConfigModel),
       m_masterDnsVpnConfigModel(masterDnsVpnConfigModel),
+      m_qqDnsConfigModel(qqDnsConfigModel),
       m_torConfigModel(torConfigModel),
 #ifdef Q_OS_WINDOWS
       m_ikev2ConfigModel(ikev2ConfigModel),
@@ -241,6 +243,10 @@ bool InstallUiController::buildContainerConfigFromModel(int containerIndex, int 
     }
     case Proto::MasterDnsVpn: {
         containerConfig.protocolConfig = m_masterDnsVpnConfigModel->getProtocolConfig();
+        break;
+    }
+    case Proto::QqDns: {
+        containerConfig.protocolConfig = m_qqDnsConfigModel->getProtocolConfig();
         break;
     }
     case Proto::TorWebSite: {
@@ -714,6 +720,9 @@ void InstallUiController::updateProtocolConfigModel(const QString &serverId, int
     case Proto::SSXray: updateIfPresent(m_xrayConfigModel, containerConfig.getXrayProtocolConfig()); break;
     case Proto::MasterDnsVpn:
         updateIfPresent(m_masterDnsVpnConfigModel, containerConfig.getMasterDnsVpnProtocolConfig());
+        break;
+    case Proto::QqDns:
+        updateIfPresent(m_qqDnsConfigModel, containerConfig.getQqDnsProtocolConfig());
         break;
     case Proto::TorWebSite: updateIfPresent(m_torConfigModel, containerConfig.getTorProtocolConfig()); break;
     case Proto::Sftp: updateIfPresent(m_sftpConfigModel, containerConfig.getSftpProtocolConfig()); break;

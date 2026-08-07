@@ -91,6 +91,8 @@ void CoreController::initModels()
 
     m_masterDnsVpnConfigModel = new MasterDnsVpnConfigModel(this);
     setQmlContextProperty("MasterDnsVpnConfigModel", m_masterDnsVpnConfigModel);
+    m_qqDnsConfigModel = new QqDnsConfigModel(this);
+    setQmlContextProperty("QqDnsConfigModel", m_qqDnsConfigModel);
 
     m_xrayConfigSnapshotsModel = new XrayConfigSnapshotsModel(m_appSettingsRepository, m_xrayConfigModel, this);
     setQmlContextProperty("XrayConfigSnapshotsModel", m_xrayConfigSnapshotsModel);
@@ -157,7 +159,7 @@ void CoreController::initControllers()
 
     m_installUiController = new InstallUiController(m_installController, m_serversController, m_settingsController, m_protocolsModel, m_usersController,
                                                      m_awgConfigModel, m_wireGuardConfigModel, m_openVpnConfigModel, m_xrayConfigModel,
-                                                     m_masterDnsVpnConfigModel, m_torConfigModel,
+                                                     m_masterDnsVpnConfigModel, m_qqDnsConfigModel, m_torConfigModel,
 #ifdef Q_OS_WINDOWS
                                                      m_ikev2ConfigModel,
 #endif
