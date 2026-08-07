@@ -53,7 +53,7 @@ private:
     QJsonObject m_engineConfig;   // the qqdns wrapper (engine reads it directly)
     // Held as the base type so the header needs no complete `Awg` (Qt 6.10's
     // QPointer requires a complete QObject-derived type); only virtual
-    // start()/stop()/signals are used. Constructed as an `Awg` in the .cpp.
+    // start()/stop()/signals are used. Constructed as a WireguardProtocol in the .cpp (matches the factory).
     QPointer<VpnProtocol> m_awg;  // inner AmneziaWG, endpoint on the loopback engine
     QStringList m_resolverRoutes; // "ip/32" per resolver, for the exemption
     bool m_resolverRoutesAdded = false;

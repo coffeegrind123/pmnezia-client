@@ -2,8 +2,8 @@
 
 #include "qqDnsProtocol.h"
 
-#include "core/protocols/awgProtocol.h"
 #include "core/protocols/protocolUtils.h"
+#include "core/protocols/wireGuardProtocol.h"
 #include "core/utils/constants/configKeys.h"
 #include "core/utils/ipcClient.h"
 #include "core/utils/networkUtilities.h"
@@ -109,9 +109,11 @@ ErrorCode QqDnsProtocol::start()
                     return ErrorCode::InternalError;
                 }
 
-                // Bring AmneziaWG up on top of the loopback engine port.
+                // Bring AmneziaWG up on top of the loopback engine port. The
+                // factory constructs AWG containers as WireguardProtocol (it
+                // reads the "protocol" field + awg_config_data), so do the same.
                 const QJsonObject awgRaw = buildInnerAwgConfig(enginePort);
-                m_awg = new Awg(awgRaw, this);
+                m_awg = new WireguardProtocol(awgRaw, this);
                 connect(m_awg.data(), &VpnProtocol::connectionStateChanged, this,
                         [this](Vpn::ConnectionState s) {
                             // Once Awg has installed its 0.0.0.0/0 route, pin the
