@@ -91,6 +91,10 @@ set(HEADERS ${HEADERS}
     ${CLIENT_ROOT_DIR}/masterdnsvpn/compression.h
     ${CLIENT_ROOT_DIR}/masterdnsvpn/dnsmsg.h
     ${CLIENT_ROOT_DIR}/masterdnsvpn/dnscache.h
+    ${CLIENT_ROOT_DIR}/qqdns/codec.h
+    ${CLIENT_ROOT_DIR}/qqdns/dnsframing.h
+    ${CLIENT_ROOT_DIR}/qqdns/reassembly.h
+    ${CLIENT_ROOT_DIR}/qqdns/engine.h
 )
 
 if(NOT IOS AND NOT MACOS_NE)
@@ -185,6 +189,10 @@ set(SOURCES ${SOURCES}
     ${CLIENT_ROOT_DIR}/masterdnsvpn/compression.cpp
     ${CLIENT_ROOT_DIR}/masterdnsvpn/dnsmsg.cpp
     ${CLIENT_ROOT_DIR}/masterdnsvpn/dnscache.cpp
+    ${CLIENT_ROOT_DIR}/qqdns/codec.cpp
+    ${CLIENT_ROOT_DIR}/qqdns/dnsframing.cpp
+    ${CLIENT_ROOT_DIR}/qqdns/reassembly.cpp
+    ${CLIENT_ROOT_DIR}/qqdns/engine.cpp
 )
 
 if(NOT IOS AND NOT MACOS_NE)
@@ -305,6 +313,7 @@ if(WIN32 OR (APPLE AND NOT IOS AND NOT MACOS_NE) OR (LINUX AND NOT ANDROID))
         ${CLIENT_ROOT_DIR}/core/protocols/xrayProtocol.h
         ${CLIENT_ROOT_DIR}/core/protocols/awgProtocol.h
         ${CLIENT_ROOT_DIR}/core/protocols/masterDnsVpnProtocol.h
+        ${CLIENT_ROOT_DIR}/core/protocols/qqDnsProtocol.h
         ${CLIENT_ROOT_DIR}/mozilla/localsocketcontroller.h
     )
 
@@ -317,6 +326,7 @@ if(WIN32 OR (APPLE AND NOT IOS AND NOT MACOS_NE) OR (LINUX AND NOT ANDROID))
         ${CLIENT_ROOT_DIR}/core/protocols/xrayProtocol.cpp
         ${CLIENT_ROOT_DIR}/core/protocols/awgProtocol.cpp
         ${CLIENT_ROOT_DIR}/core/protocols/masterDnsVpnProtocol.cpp
+        ${CLIENT_ROOT_DIR}/core/protocols/qqDnsProtocol.cpp
     )
 endif()
 

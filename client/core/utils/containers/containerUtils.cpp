@@ -73,6 +73,7 @@ QMap<DockerContainer, QString> ContainerUtils::containerHumanNames()
              { DockerContainer::Ipsec, QObject::tr("IPsec") },
              { DockerContainer::SSXray, "Shadowsocks"},
              { DockerContainer::MasterDnsVpn, QObject::tr("MasterDnsVPN") },
+             { DockerContainer::QqDns, QObject::tr("QQ-DNS") },
 
              { DockerContainer::TorWebSite, QObject::tr("Website in Tor network") },
              { DockerContainer::Dns, QObject::tr("AmneziaDNS") },
@@ -238,6 +239,7 @@ Proto ContainerUtils::defaultProtocol(DockerContainer c)
     case DockerContainer::Ipsec: return Proto::Ikev2;
     case DockerContainer::SSXray: return Proto::SSXray;
     case DockerContainer::MasterDnsVpn: return Proto::MasterDnsVpn;
+    case DockerContainer::QqDns: return Proto::QqDns;
 
     case DockerContainer::TorWebSite: return Proto::TorWebSite;
     case DockerContainer::Dns: return Proto::Dns;
@@ -415,6 +417,7 @@ int ContainerUtils::installPageOrder(DockerContainer container)
     case DockerContainer::Ipsec: return 7;
     case DockerContainer::SSXray: return 8;
     case DockerContainer::MasterDnsVpn: return 9;
+    case DockerContainer::QqDns: return 10;
     case DockerContainer::MtProxy:
     case DockerContainer::Telemt:
         return 20;

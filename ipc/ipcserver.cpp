@@ -18,6 +18,7 @@
 #include "killswitch.h"
 #include "xray.h"
 #include "master_dns_vpn_service.h"
+#include "qq_dns_service.h"
 
 #ifdef Q_OS_WIN
     #include "tapcontroller_win.h"
@@ -342,4 +343,25 @@ bool IpcServer::masterDnsVpnStop()
 quint16 IpcServer::masterDnsVpnSocksPort()
 {
     return MasterDnsVpnService::getInstance().socksPort();
+}
+
+bool IpcServer::qqDnsStart(const QString& cfg)
+{
+#ifdef MZ_DEBUG
+    qDebug() << "IpcServer::qqDnsStart";
+#endif
+    return QqDnsService::getInstance().start(cfg);
+}
+
+bool IpcServer::qqDnsStop()
+{
+#ifdef MZ_DEBUG
+    qDebug() << "IpcServer::qqDnsStop";
+#endif
+    return QqDnsService::getInstance().stop();
+}
+
+quint16 IpcServer::qqDnsLocalPort()
+{
+    return QqDnsService::getInstance().localUdpPort();
 }

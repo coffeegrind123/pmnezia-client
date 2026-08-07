@@ -161,6 +161,7 @@ namespace amnezia
         constexpr QLatin1String amneziaXray("amnezia-xray");
         constexpr QLatin1String amneziaSsxray("amnezia-ssxray");
         constexpr QLatin1String amneziaMasterDnsVpn("amnezia-masterdnsvpn");
+        constexpr QLatin1String amneziaQqDns("amnezia-qqdns");
 
         // MasterDnsVPN-specific JSON keys for the protocol_config_data wrapper.
         constexpr QLatin1String mdvDomains("domains");
@@ -183,6 +184,25 @@ namespace amnezia
         constexpr QLatin1String mdvSetupPacketDuplication("setupPacketDuplication");
         constexpr QLatin1String mdvUploadCompression("uploadCompression");
         constexpr QLatin1String mdvDownloadCompression("downloadCompression");
+
+        // QQ-DNS (UDP-over-DNS) JSON keys for the protocol_config_data wrapper.
+        // The wrapper is the engine blob (snake_case, see protocolConstants
+        // qqDns) plus an embedded "awg" object and an optional additionalConfig.
+        constexpr QLatin1String qqDnsIps("dns_ips");
+        constexpr QLatin1String qqSendDomains("send_domains");
+        constexpr QLatin1String qqRecvDomains("recv_domains");
+        constexpr QLatin1String qqSendInterfaceIp("send_interface_ip");
+        constexpr QLatin1String qqReceiveInterfaceIp("receive_interface_ip");
+        constexpr QLatin1String qqReceivePort("receive_port");
+        constexpr QLatin1String qqMaxDomainLen("max_domain_len");
+        constexpr QLatin1String qqMaxSubLen("max_sub_len");
+        constexpr QLatin1String qqRetries("retries");
+        constexpr QLatin1String qqSendQueryType("send_query_type");
+        constexpr QLatin1String qqPacketsSendIntervalMs("packets_send_interval_ms");
+        constexpr QLatin1String qqPacketsWaitTimeLimitMs("packets_wait_time_limit_ms");
+        constexpr QLatin1String qqSendSockNumbers("send_sock_numbers");
+        constexpr QLatin1String qqAwg("awg");
+        constexpr QLatin1String qqAdditionalConfig("additionalConfig");
 
         constexpr QLatin1String clientName("clientName");
         constexpr QLatin1String userData("userData");

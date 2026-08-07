@@ -122,6 +122,7 @@ include_directories(mozilla)
 include_directories(mozilla/shared)
 include_directories(mozilla/models)
 include_directories(masterdnsvpn)
+include_directories(qqdns)
 
 configure_file(${CMAKE_CURRENT_LIST_DIR}/../version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h)
 

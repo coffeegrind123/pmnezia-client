@@ -7,6 +7,7 @@
 #if defined(Q_OS_WINDOWS) || defined(Q_OS_MACX) and !defined MACOS_NE || (defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID))
     #include "masterDnsVpnProtocol.h"
     #include "openVpnProtocol.h"
+    #include "qqDnsProtocol.h"
     #include "wireGuardProtocol.h"
     #include "xrayProtocol.h"
 #endif
@@ -121,6 +122,7 @@ VpnProtocol *VpnProtocol::factory(DockerContainer container, const QJsonObject &
     case DockerContainer::Xray: return new XrayProtocol(configuration);
     case DockerContainer::SSXray: return new XrayProtocol(configuration);
     case DockerContainer::MasterDnsVpn: return new MasterDnsVpnProtocol(configuration);
+    case DockerContainer::QqDns: return new QqDnsProtocol(configuration);
 #endif
     default: return nullptr;
     }

@@ -26,6 +26,7 @@ namespace amnezia
             Xray,
             SSXray,
             MasterDnsVpn,
+            QqDns,
 
             // non-vpn
             TorWebSite,

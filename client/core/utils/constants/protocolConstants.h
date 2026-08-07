@@ -280,6 +280,50 @@ namespace amnezia
             constexpr int defaultEncryptionMethod = recommendedEncryptionMethod;
         }
 
+        namespace qqDns
+        {
+            // QQ-Tunnel UDP-over-DNS transport. Unlike MasterDnsVPN it does not
+            // produce a SOCKS5 tunnel: the in-process engine binds a loopback
+            // UDP port and AmneziaWG runs on top of it, so QqDnsProtocol
+            // composes under Awg (endpoint rewritten to 127.0.0.1:<port>).
+
+            // Default UDP port the operator's server listens on for tunnel
+            // queries (an NS-delegated subdomain points public resolvers here).
+            constexpr char defaultPort[] = "53";
+
+            // Keys of the engine blob passed to amnezia::qqdns::Engine::start.
+            // The model stores the config already in this snake_case shape plus
+            // an embedded "awg" object; the protocol strips "awg" out and hands
+            // the rest to the engine, so no field translation is needed.
+            constexpr char dnsIps[] = "dns_ips";
+            constexpr char sendDomains[] = "send_domains";
+            constexpr char recvDomains[] = "recv_domains";
+            constexpr char sendInterfaceIp[] = "send_interface_ip";
+            constexpr char receiveInterfaceIp[] = "receive_interface_ip";
+            constexpr char receivePort[] = "receive_port";
+            constexpr char hInPort[] = "h_in_port";
+            constexpr char maxDomainLen[] = "max_domain_len";
+            constexpr char maxSubLen[] = "max_sub_len";
+            constexpr char retries[] = "retries";
+            constexpr char sendQueryType[] = "send_query_type";
+            constexpr char packetsSendIntervalMs[] = "packets_send_interval_ms";
+            constexpr char packetsWaitTimeLimitMs[] = "packets_wait_time_limit_ms";
+            constexpr char sendSockNumbers[] = "send_sock_numbers";
+
+            // The embedded AmneziaWG protocol_config_data QqDnsProtocol wraps.
+            constexpr char awg[] = "awg";
+            constexpr char additionalConfig[] = "additionalConfig";
+
+            // Sensible defaults matching the reference client.
+            constexpr int defaultMaxDomainLen = 253;
+            constexpr int defaultMaxSubLen = 63;
+            constexpr int defaultRetries = 1;
+            constexpr int defaultSendQueryType = 1; // A
+            constexpr int defaultPacketsSendIntervalMs = 1;
+            constexpr int defaultPacketsWaitTimeLimitMs = 1000;
+            constexpr int defaultSendSockNumbers = 16;
+        }
+
         namespace mtProxy
         {
             constexpr char secretKey[]            = "mtproxy_secret";

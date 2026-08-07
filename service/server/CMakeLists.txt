@@ -46,6 +46,11 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/../../client/masterdnsvpn/dnsmsg.h
     ${CMAKE_CURRENT_LIST_DIR}/../../client/masterdnsvpn/mtuprober.h
     ${CMAKE_CURRENT_LIST_DIR}/../../client/masterdnsvpn/pingpacer.h
+    ${CMAKE_CURRENT_LIST_DIR}/qq_dns_service.h
+    ${CMAKE_CURRENT_LIST_DIR}/../../client/qqdns/codec.h
+    ${CMAKE_CURRENT_LIST_DIR}/../../client/qqdns/dnsframing.h
+    ${CMAKE_CURRENT_LIST_DIR}/../../client/qqdns/reassembly.h
+    ${CMAKE_CURRENT_LIST_DIR}/../../client/qqdns/engine.h
     ${CMAKE_CURRENT_BINARY_DIR}/version.h
 )
 
@@ -76,6 +81,11 @@ set(SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/../../client/masterdnsvpn/dnscache.cpp
     ${CMAKE_CURRENT_LIST_DIR}/../../client/masterdnsvpn/dnsmsg.cpp
     ${CMAKE_CURRENT_LIST_DIR}/../../client/masterdnsvpn/mtuprober.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/qq_dns_service.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/../../client/qqdns/codec.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/../../client/qqdns/dnsframing.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/../../client/qqdns/reassembly.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/../../client/qqdns/engine.cpp
 )
 
 # Mozilla headres
@@ -106,6 +116,7 @@ include_directories(../../client/mozilla)
 include_directories(../../client/mozilla/shared)
 include_directories(../../client/mozilla/models)
 include_directories(../../client/masterdnsvpn)
+include_directories(../../client/qqdns)
 include_directories(../../client/platforms/)
 
 # Mozilla sources

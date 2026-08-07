@@ -65,6 +65,7 @@ QMap<Proto, QString> ProtocolUtils::protocolHumanNames()
              { Proto::Xray, "XRay" },
              { Proto::SSXray, "Shadowsocks"},
              { Proto::MasterDnsVpn, "MasterDnsVPN" },
+             { Proto::QqDns, "QQ-DNS" },
 
              { Proto::TorWebSite, "Website in Tor network" },
              { Proto::Dns, "DNS Service" },
@@ -92,6 +93,7 @@ ServiceType ProtocolUtils::protocolService(Proto p)
     case Proto::Ikev2: return ServiceType::Vpn;
     case Proto::Xray: return ServiceType::Vpn;
     case Proto::MasterDnsVpn: return ServiceType::Vpn;
+    case Proto::QqDns: return ServiceType::Vpn;
 
     case Proto::TorWebSite: return ServiceType::Other;
     case Proto::Dns: return ServiceType::Other;
@@ -127,6 +129,7 @@ int ProtocolUtils::defaultPort(Proto p)
     case Proto::Awg: return QString(protocols::awg::defaultPort).toInt();
     case Proto::Xray: return QString(protocols::xray::defaultPort).toInt();
     case Proto::MasterDnsVpn: return QString(protocols::masterDnsVpn::defaultPort).toInt();
+    case Proto::QqDns: return QString(protocols::qqDns::defaultPort).toInt();
     case Proto::Ikev2: return -1;
 
     case Proto::TorWebSite: return -1;
@@ -149,6 +152,7 @@ bool ProtocolUtils::defaultPortChangeable(Proto p)
     case Proto::Ikev2: return false;
     case Proto::Xray: return true;
     case Proto::MasterDnsVpn: return true;
+    case Proto::QqDns: return true;
 
     case Proto::TorWebSite: return false;
     case Proto::Dns: return false;
@@ -171,6 +175,7 @@ TransportProto ProtocolUtils::defaultTransportProto(Proto p)
     case Proto::Xray: return TransportProto::Tcp;
     case Proto::SSXray: return TransportProto::Tcp;
     case Proto::MasterDnsVpn: return TransportProto::Udp; // tunnel envelopes ride DNS over UDP
+    case Proto::QqDns: return TransportProto::Udp; // WireGuard rides UDP-over-DNS
 
     // non-vpn
     case Proto::TorWebSite: return TransportProto::Tcp;
@@ -193,6 +198,7 @@ bool ProtocolUtils::defaultTransportProtoChangeable(Proto p)
     case Proto::Ikev2: return false;
     case Proto::Xray: return false;
     case Proto::MasterDnsVpn: return false;
+    case Proto::QqDns: return false;
 
     // non-vpn
     case Proto::TorWebSite: return false;
