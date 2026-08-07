@@ -6,8 +6,10 @@
 #include "core/protocols/protocolUtils.h"
 #include "core/utils/constants/configKeys.h"
 #include "core/utils/ipcClient.h"
+#include "core/utils/networkUtilities.h"
 #include "ipc.h"
 
+#include <QJsonArray>
 #include <QJsonDocument>
 
 QqDnsProtocol::QqDnsProtocol(const QJsonObject &configuration, QObject *parent)
@@ -18,6 +20,32 @@ QqDnsProtocol::QqDnsProtocol(const QJsonObject &configuration, QObject *parent)
     // so we pass the whole thing through as its config.
     m_engineConfig =
             configuration.value(ProtocolUtils::key_proto_config_data(Proto::QqDns)).toObject();
+
+    // Physical default gateway, captured before the tunnel comes up — the
+    // resolver route exemptions are pinned via it.
+    m_routeGateway = NetworkUtilities::getGatewayAndIface().first;
+
+    // Resolver IPs (strip any "ip:port" / "[v6]:port") as /32 (or /128) routes.
+    const QJsonArray dnsIps = m_engineConfig.value(configKey::qqDnsIps).toArray();
+    for (const QJsonValue &v : dnsIps) {
+        QString ip = v.toString().trimmed();
+        if (ip.isEmpty()) {
+            continue;
+        }
+        bool v6 = false;
+        if (ip.startsWith('[')) {
+            const int c = ip.indexOf(']');
+            if (c > 0) {
+                ip = ip.mid(1, c - 1);
+            }
+            v6 = true;
+        } else if (ip.indexOf(':') > 0 && ip.indexOf(':') == ip.lastIndexOf(':')) {
+            ip = ip.left(ip.indexOf(':'));
+        } else if (ip.contains(':')) {
+            v6 = true; // bare IPv6
+        }
+        m_resolverRoutes.append(ip + (v6 ? QStringLiteral("/128") : QStringLiteral("/32")));
+    }
 }
 
 QqDnsProtocol::~QqDnsProtocol()
@@ -85,7 +113,15 @@ ErrorCode QqDnsProtocol::start()
                 const QJsonObject awgRaw = buildInnerAwgConfig(enginePort);
                 m_awg = new Awg(awgRaw, this);
                 connect(m_awg.data(), &VpnProtocol::connectionStateChanged, this,
-                        [this](Vpn::ConnectionState s) { setConnectionState(s); });
+                        [this](Vpn::ConnectionState s) {
+                            // Once Awg has installed its 0.0.0.0/0 route, pin the
+                            // more-specific resolver exemptions on top so the
+                            // engine's DNS queries don't loop into the tunnel.
+                            if (s == Vpn::ConnectionState::Connected) {
+                                addResolverRouteExemptions();
+                            }
+                            setConnectionState(s);
+                        });
                 connect(m_awg.data(), &VpnProtocol::protocolError, this,
                         [this](ErrorCode e) { setLastError(e); });
 
@@ -96,6 +132,28 @@ ErrorCode QqDnsProtocol::start()
                 return ec;
             },
             []() { return ErrorCode::AmneziaServiceConnectionFailed; });
+}
+
+void QqDnsProtocol::addResolverRouteExemptions()
+{
+    if (m_resolverRoutesAdded || m_resolverRoutes.isEmpty() || m_routeGateway.isEmpty()) {
+        return;
+    }
+    m_resolverRoutesAdded = true;
+    // NOTE: this is the portable "specific route wins" mechanism. On setups
+    // where AmneziaWG uses fwmark + policy routing (rather than a plain
+    // default route) the resolver traffic may instead need SO_MARK on the
+    // engine sockets — that path needs on-device verification.
+    IpcClient::withInterface([this](QSharedPointer<IpcInterfaceReplica> iface) {
+        auto reply = iface->routeAddList(m_routeGateway, m_resolverRoutes);
+        if (!reply.waitForFinished() || reply.returnValue() != m_resolverRoutes.size()) {
+            qWarning() << "qqdns: failed to pin all resolver route exemptions via"
+                       << m_routeGateway;
+        } else {
+            qDebug() << "qqdns: pinned" << m_resolverRoutes.size()
+                     << "resolver route exemptions via" << m_routeGateway;
+        }
+    });
 }
 
 void QqDnsProtocol::stop()

@@ -23,6 +23,7 @@
 
 #include <QJsonObject>
 #include <QPointer>
+#include <QStringList>
 
 #include "core/utils/errorCodes.h"
 #include "vpnProtocol.h"
@@ -45,8 +46,16 @@ private:
     // protocol to awg and rewriting the endpoint to 127.0.0.1:<enginePort>.
     QJsonObject buildInnerAwgConfig(quint16 enginePort) const;
 
-    QJsonObject m_engineConfig; // the qqdns wrapper (engine reads it directly)
-    QPointer<Awg> m_awg;        // inner AmneziaWG, endpoint on the loopback engine
+    // Pin a /32 route for each resolver via the physical gateway so the
+    // service-side engine's outbound DNS queries bypass the inner Awg's
+    // 0.0.0.0/0 route instead of looping back into the tunnel. Runs once, when
+    // the inner Awg reaches Connected (so it wins over Awg's freshly-set routes).
+    void addResolverRouteExemptions();
+
+    QJsonObject m_engineConfig;   // the qqdns wrapper (engine reads it directly)
+    QPointer<Awg> m_awg;          // inner AmneziaWG, endpoint on the loopback engine
+    QStringList m_resolverRoutes; // "ip/32" per resolver, for the exemption
+    bool m_resolverRoutesAdded = false;
 };
 
 #endif // QQDNSPROTOCOL_H

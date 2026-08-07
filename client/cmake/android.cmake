@@ -46,6 +46,9 @@ set(SOURCES ${SOURCES}
     # Java_org_amnezia_vpn_protocol_masterdnsvpn_MasterDnsVpnNative_*
     # via the same .so the activity already pulls in.
     ${CMAKE_CURRENT_SOURCE_DIR}/masterdnsvpn/android_jni.cpp
+    # JNI bridge into the native QQ-DNS engine (same .so). Exposes the loopback
+    # UDP port the Android VpnService points AmneziaWG at.
+    ${CMAKE_CURRENT_SOURCE_DIR}/qqdns/android_jni.cpp
 )
 
 
