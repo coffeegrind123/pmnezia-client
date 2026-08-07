@@ -3,6 +3,7 @@ package org.amnezia.vpn
 import org.amnezia.vpn.protocol.Protocol
 import org.amnezia.vpn.protocol.awg.Awg
 import org.amnezia.vpn.protocol.masterdnsvpn.MasterDnsVpn
+import org.amnezia.vpn.protocol.qqdns.QqDns
 import org.amnezia.vpn.protocol.openvpn.OpenVpn
 import org.amnezia.vpn.protocol.wireguard.Wireguard
 import org.amnezia.vpn.protocol.xray.Xray
@@ -58,6 +59,14 @@ enum class VpnProto(
         MasterDnsVpnService::class.java
     ) {
         override fun createProtocol(): Protocol = MasterDnsVpn.instance
+    },
+
+    QQDNS(
+        "QQ-DNS",
+        "org.amnezia.vpn:amneziaQqDnsService",
+        QqDnsService::class.java
+    ) {
+        override fun createProtocol(): Protocol = QqDns.instance
     };
 
     private var _protocol: Protocol? = null
