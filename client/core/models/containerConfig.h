@@ -53,6 +53,8 @@ struct ContainerConfig {
 
     MasterDnsVpnProtocolConfig* getMasterDnsVpnProtocolConfig();
     const MasterDnsVpnProtocolConfig* getMasterDnsVpnProtocolConfig() const;
+    QqDnsProtocolConfig* getQqDnsProtocolConfig();
+    const QqDnsProtocolConfig* getQqDnsProtocolConfig() const;
 
     SftpProtocolConfig* getSftpProtocolConfig();
     const SftpProtocolConfig* getSftpProtocolConfig() const;

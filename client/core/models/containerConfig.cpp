@@ -103,6 +103,16 @@ const MasterDnsVpnProtocolConfig* ContainerConfig::getMasterDnsVpnProtocolConfig
     return protocolConfig.as<MasterDnsVpnProtocolConfig>();
 }
 
+QqDnsProtocolConfig* ContainerConfig::getQqDnsProtocolConfig()
+{
+    return protocolConfig.as<QqDnsProtocolConfig>();
+}
+
+const QqDnsProtocolConfig* ContainerConfig::getQqDnsProtocolConfig() const
+{
+    return protocolConfig.as<QqDnsProtocolConfig>();
+}
+
 SftpProtocolConfig* ContainerConfig::getSftpProtocolConfig()
 {
     return protocolConfig.as<SftpProtocolConfig>();

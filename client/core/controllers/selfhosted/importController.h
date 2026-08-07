@@ -22,6 +22,7 @@ namespace
         Xray,
         ShadowSocks,
         MasterDnsVpn,
+        QqDns,
         Backup,
         Invalid
     };
@@ -86,6 +87,9 @@ private:
     // RESOLVERS member and the URL is the only place the list survives.
     QJsonObject extractMasterDnsVpnConfig(const QString &data, const QString &description = "",
                                           const QStringList &urlResolvers = {}) const;
+    // QQ-DNS (UDP-over-DNS) import: a JSON object with a "qqdns" transport block
+    // and an embedded "awg" AmneziaWG config. Builds the canonical container.
+    QJsonObject extractQqDnsConfig(const QString &data, const QString &description = "") const;
     void checkForMaliciousStrings(const QJsonObject &serverConfig, QString &warningText) const;
     void processAmneziaConfig(QJsonObject &config) const;
 

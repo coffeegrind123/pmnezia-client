@@ -18,6 +18,7 @@
 #include "core/models/protocols/openVpnProtocolConfig.h"
 #include "core/models/protocols/xrayProtocolConfig.h"
 #include "core/models/protocols/masterDnsVpnProtocolConfig.h"
+#include "core/models/protocols/qqDnsProtocolConfig.h"
 #include "core/models/protocols/sftpProtocolConfig.h"
 #include "core/models/protocols/socks5ProxyProtocolConfig.h"
 #include "core/models/protocols/ikev2ProtocolConfig.h"
@@ -38,6 +39,7 @@ struct ProtocolConfig {
         OpenVpnProtocolConfig,
         XrayProtocolConfig,
         MasterDnsVpnProtocolConfig,
+        QqDnsProtocolConfig,
         SftpProtocolConfig,
         Socks5ProxyProtocolConfig,
         MtProxyProtocolConfig,

@@ -32,6 +32,8 @@ Proto ProtocolConfig::type() const
             return Proto::Xray;
         } else if constexpr (std::is_same_v<T, MasterDnsVpnProtocolConfig>) {
             return Proto::MasterDnsVpn;
+        } else if constexpr (std::is_same_v<T, QqDnsProtocolConfig>) {
+            return Proto::QqDns;
         } else if constexpr (std::is_same_v<T, SftpProtocolConfig>) {
             return Proto::Sftp;
         } else if constexpr (std::is_same_v<T, Socks5ProxyProtocolConfig>) {
@@ -308,6 +310,8 @@ bool ProtocolConfig::isThirdPartyConfig() const
                       std::is_same_v<T, MasterDnsVpnProtocolConfig> ||
                       std::is_same_v<T, Ikev2ProtocolConfig>) {
             return arg.serverConfig.isThirdPartyConfig;
+        } else if constexpr (std::is_same_v<T, QqDnsProtocolConfig>) {
+            return arg.isThirdPartyConfig;
         }
         return false;
     }, data);
@@ -334,6 +338,8 @@ ProtocolConfig ProtocolConfig::fromJson(const QJsonObject& json, Proto type)
         return ProtocolConfig{XrayProtocolConfig::fromJson(json)};
     case Proto::MasterDnsVpn:
         return ProtocolConfig{MasterDnsVpnProtocolConfig::fromJson(json)};
+    case Proto::QqDns:
+        return ProtocolConfig{QqDnsProtocolConfig::fromJson(json)};
     case Proto::Sftp:
         return ProtocolConfig{SftpProtocolConfig::fromJson(json)};
     case Proto::Socks5Proxy:

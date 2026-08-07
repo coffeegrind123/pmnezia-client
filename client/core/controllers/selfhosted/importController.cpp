@@ -17,6 +17,7 @@
 #include "core/utils/containers/containerUtils.h"
 #include "core/utils/protocolEnum.h"
 #include "core/models/protocols/masterDnsVpnProtocolConfig.h"
+#include "core/models/protocols/qqDnsProtocolConfig.h"
 #include "core/utils/serverConfigUtils.h"
 #include "core/utils/constants/apiKeys.h"
 #include "core/utils/constants/apiConstants.h"
@@ -71,6 +72,12 @@ namespace
             return ConfigTypes::WireGuard;
         } else if (config.contains(masterDnsVpnPatternDomains) && config.contains(masterDnsVpnPatternMethod)) {
             return ConfigTypes::MasterDnsVpn;
+        } else if (config.contains("send_domains") && config.contains("recv_domains")) {
+            // QQ-DNS import JSON: a "qqdns" transport block + an embedded "awg"
+            // config. The two snake_case domain keys are distinctive; the
+            // Amnezia-envelope / WireGuard checks above already win for wrapped
+            // configs that happen to carry them.
+            return ConfigTypes::QqDns;
         } else if ((config.contains(xrayConfigPatternInbound)) && (config.contains(xrayConfigPatternOutbound))) {
             return ConfigTypes::Xray;
         } else if (config.contains(openVpnConfigPatternCli)
@@ -261,6 +268,14 @@ ImportController::ImportResult ImportController::extractConfigFromData(const QSt
     }
     case ConfigTypes::MasterDnsVpn: {
         result.config = extractMasterDnsVpnConfig(config);
+        if (!result.config.empty()) {
+            return result;
+        }
+        result.errorCode = ErrorCode::ImportInvalidConfigError;
+        return result;
+    }
+    case ConfigTypes::QqDns: {
+        result.config = extractQqDnsConfig(config);
         if (!result.config.empty()) {
             return result;
         }
@@ -819,6 +834,65 @@ QJsonObject ImportController::extractMasterDnsVpnConfig(const QString &data, con
             description.isEmpty() ? m_serversRepository->nextAvailableServerName() : description;
     // Surface the first tunnel domain as the server card's host label.
     config[configKey::hostName] = server.domains.first().toString();
+
+    return config;
+}
+
+QJsonObject ImportController::extractQqDnsConfig(const QString &data, const QString &description) const
+{
+    QJsonParseError parserErr;
+    const QJsonDocument doc = QJsonDocument::fromJson(data.toUtf8(), &parserErr);
+    if (parserErr.error != QJsonParseError::NoError || !doc.isObject()) {
+        return {};
+    }
+    const QJsonObject src = doc.object();
+
+    // Accept either a nested { "qqdns": {…}, "awg": {…} } document or a flat
+    // object that carries the transport fields directly plus "awg".
+    const QJsonObject qq =
+            src.contains(configKey::qqAwg) || src.contains(QStringLiteral("qqdns"))
+            ? src.value(QStringLiteral("qqdns")).toObject()
+            : src;
+    const QJsonObject transport = qq.isEmpty() ? src : qq;
+
+    QqDnsProtocolConfig proto = QqDnsProtocolConfig::fromJson(transport);
+    if (proto.sendDomains.isEmpty() || proto.recvDomains.isEmpty() || proto.dnsIps.isEmpty()) {
+        return {};
+    }
+
+    // Normalise the embedded AmneziaWG config: the protocol expects
+    // awg["awg_config_data"], so wrap a bare awg_config_data object if needed.
+    QJsonObject awgSrc = src.value(configKey::qqAwg).toObject();
+    if (awgSrc.isEmpty()) {
+        awgSrc = qq.value(configKey::qqAwg).toObject();
+    }
+    QJsonObject awgWrapper;
+    const QString awgDataKey = ProtocolUtils::key_proto_config_data(Proto::Awg);
+    if (awgSrc.contains(awgDataKey)) {
+        awgWrapper = awgSrc;
+    } else if (!awgSrc.isEmpty()) {
+        awgWrapper[awgDataKey] = awgSrc;
+    }
+    proto.awg = awgWrapper;
+    proto.isThirdPartyConfig = true;
+
+    // Wrap into the canonical Amnezia container shape.
+    QJsonObject container;
+    container[configKey::container] = ContainerUtils::containerToString(DockerContainer::QqDns);
+    container[ProtocolUtils::protoToString(Proto::QqDns)] = proto.toJson();
+
+    QJsonArray containers;
+    containers.push_back(container);
+
+    QJsonObject config;
+    config[configKey::containers] = containers;
+    config[configKey::defaultContainer] = ContainerUtils::containerToString(DockerContainer::QqDns);
+    config[configKey::description] =
+            description.isEmpty() ? m_serversRepository->nextAvailableServerName() : description;
+    // Surface the first send-domain as the server card's host label.
+    if (!proto.sendDomains.isEmpty()) {
+        config[configKey::hostName] = proto.sendDomains.first().toString();
+    }
 
     return config;
 }
