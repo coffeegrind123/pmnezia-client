@@ -67,11 +67,6 @@ int UpdateUiController::getUpdateState() const
                               : static_cast<int>(UpdateState::State::Idle);
 }
 
-bool UpdateUiController::isStoreUpdate() const
-{
-    return m_updateController ? m_updateController->isStoreUpdate() : false;
-}
-
 bool UpdateUiController::isCheckRunning() const
 {
     return m_updateController ? m_updateController->isUpdateCheckRunning() : false;

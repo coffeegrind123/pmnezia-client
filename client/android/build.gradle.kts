@@ -76,13 +76,12 @@ android {
     flavorDimensions += "billing"
 
     productFlavors {
+        // Sole flavor. Upstream pairs this with a "play" flavor carrying Google Play Billing;
+        // this fork ships only from GitHub, so that flavor and the :billing module are gone.
+        // The dimension is kept so the output paths below, and the ones androiddeployqt and CI
+        // expect, are unchanged.
         create("oss") {
             dimension = "billing"
-            buildConfigField("boolean", "IS_PLAY_BUILD", "false")
-        }
-        create("play") {
-            dimension = "billing"
-            buildConfigField("boolean", "IS_PLAY_BUILD", "true")
         }
     }
 
@@ -94,14 +93,6 @@ android {
             // androyddeployqt creates the folders below
             assets.setSrcDirs(listOf("assets"))
             jniLibs.setSrcDirs(listOf("libs"))
-        }
-
-        getByName("oss") {
-            java.setSrcDirs(listOf("oss"))
-        }
-
-        getByName("play") {
-            java.setSrcDirs(listOf("play"))
         }
     }
 
@@ -133,9 +124,7 @@ android {
     //   AAB: build/outputs/bundle/{buildType}/{base}-{buildType}.aab (no flavor subdir)
     // where {base} = outputBaseName (set by Qt Creator) or "android-build" (CI fallback).
     // Release APK gets -unsigned suffix (Qt cmake signs it); debug does not.
-    // Copy only oss flavor to the flat output dir that androiddeployqt/Qt Creator expect.
-    // Play flavor is built via android_play_apk/android_play_aab cmake targets and uses
-    // its native Gradle output paths directly.
+    // Copy the oss flavor output to the flat dir that androiddeployqt/Qt Creator expect.
     applicationVariants.all {
         val flavorName = productFlavors.firstOrNull()?.name ?: ""
         val buildTypeName = buildType.name
@@ -173,24 +162,6 @@ android {
     }
 }
 
-// Google Play Billing is only ever needed by the "play" flavor. Disable that variant unless it is
-// explicitly requested, so an ordinary build neither configures nor resolves the Play Billing
-// artifact. Without this, assembleRelease/bundleRelease build both flavors and every build - an
-// F-Droid or reproducible build server included - has to fetch com.android.billingclient.
-// The android_play_apk / android_play_aab CMake targets pass -PamneziaBuildPlay=true.
-val amneziaBuildPlay: Boolean = providers.gradleProperty("amneziaBuildPlay").orNull.toBoolean()
-
-androidComponents {
-    beforeVariants { variant ->
-        if (!amneziaBuildPlay && variant.productFlavors.any { (dimension, flavor) ->
-                dimension == "billing" && flavor == "play"
-            }
-        ) {
-            variant.enable = false
-        }
-    }
-}
-
 dependencies {
     implementation(project(":qt"))
     implementation(project(":utils"))
@@ -210,9 +181,4 @@ dependencies {
     implementation(libs.zxingcpp.android)
     implementation(libs.androidx.datastore)
     implementation(libs.androidx.biometric)
-
-    playImplementation(project(":billing"))
 }
-
-fun DependencyHandler.playImplementation(dependency: Any): Dependency? =
-    add("playImplementation", dependency)

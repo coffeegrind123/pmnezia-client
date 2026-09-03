@@ -17,10 +17,6 @@
 #include "core/utils/selfhosted/scriptsRegistry.h"
 #include "version.h"
 
-#if defined(Q_OS_ANDROID)
-    #include "platforms/android/android_controller.h"
-#endif
-
 namespace
 {
     Logger logger("UpdateController");
@@ -36,7 +32,7 @@ namespace
         return QString::fromLatin1(APP_GITHUB_UPDATE_REPO).trimmed();
     }
 
-    [[maybe_unused]] QString releasesPageUrl()
+    QString releasesPageUrl()
     {
         return QStringLiteral("https://github.com/%1/releases").arg(updateRepo());
     }
@@ -231,17 +227,6 @@ QStringList UpdateController::getBugFixes() const
 UpdateState::State UpdateController::getUpdateState() const
 {
     return m_updateState;
-}
-
-bool UpdateController::isStoreUpdate() const
-{
-#if defined(Q_OS_IOS) || defined(MACOS_NE)
-    return true;
-#elif defined(Q_OS_ANDROID)
-    return AndroidController::instance()->isPlay();
-#else
-    return false;
-#endif
 }
 
 void UpdateController::setUpdateState(UpdateState::State state)
@@ -448,42 +433,20 @@ void UpdateController::finishCheck(bool found)
     emit updateFound();
 }
 
-void UpdateController::openStorePage() const
-{
-#if defined(Q_OS_IOS)
-    QDesktopServices::openUrl(QUrl(QLatin1String(APP_IOS_STORE_URL_FALLBACK)));
-#elif defined(MACOS_NE)
-    QDesktopServices::openUrl(QUrl(QStringLiteral("https://apps.apple.com/app/id1600529900")));
-#elif defined(Q_OS_ANDROID)
-    // Only the Play flavor should ever be sent to Play. A build installed from GitHub (F-Droid,
-    // Obtainium, a sideloaded APK) has no Play listing to open, and on a device without Play
-    // Services the intent would simply fail, so send it to the release it actually came from.
-    if (AndroidController::instance()->isPlay()) {
-        QDesktopServices::openUrl(
-                QUrl(QStringLiteral("https://play.google.com/store/apps/details?id=%1").arg(QLatin1String(APP_ANDROID_PACKAGE))));
-    } else {
-        QDesktopServices::openUrl(QUrl(m_releasePageUrl.isEmpty() ? releasesPageUrl() : m_releasePageUrl));
-    }
-#endif
-}
-
 void UpdateController::startUpdate()
 {
-    if (isStoreUpdate()) {
-        openStorePage();
-        return;
-    }
-
-#if defined(Q_OS_ANDROID)
-    // GitHub build on Android: open the release page in a browser, the system downloads the APK.
-    const QString androidReleaseUrl = m_releasePageUrl.isEmpty() ? releasesPageUrl() : m_releasePageUrl;
-    if (androidReleaseUrl.isEmpty()) {
+    // This fork has exactly one distribution channel: GitHub releases. There is no store listing
+    // to hand off to, so platforms that cannot run a downloaded installer open the release page
+    // and the rest download and run it.
+#if defined(Q_OS_ANDROID) || defined(Q_OS_IOS) || defined(MACOS_NE)
+    const QString releaseUrl = m_releasePageUrl.isEmpty() ? releasesPageUrl() : m_releasePageUrl;
+    if (releaseUrl.isEmpty()) {
         logger.error() << "Release page URL is empty";
         setUpdateState(UpdateState::State::DownloadError);
         return;
     }
-    QDesktopServices::openUrl(QUrl(androidReleaseUrl));
-#elif !defined(Q_OS_IOS) && !defined(MACOS_NE)
+    QDesktopServices::openUrl(QUrl(releaseUrl));
+#else
     downloadInstaller();
 #endif
 }

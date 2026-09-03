@@ -118,14 +118,6 @@ namespace amnezia
         FatalError = 1204,
         AbortError = 1205,
 
-        // Billing errors
-        BillingCanceled = 1300,
-        BillingError = 1301,
-        BillingGooglePlayError = 1302,
-        BillingUnavailable = 1303,
-        SubscriptionAlreadyOwned = 1304,
-        SubscriptionUnavailable = 1305,
-        BillingNetworkError = 1306,
       };
       Q_ENUM_NS(ErrorCode)
     }

@@ -12,7 +12,6 @@ find_library(FW_AUTHENTICATIONSERVICES AuthenticationServices)
 find_library(FW_UIKIT UIKit)
 find_library(FW_AVFOUNDATION AVFoundation)
 find_library(FW_FOUNDATION Foundation)
-find_library(FW_STOREKIT StoreKit)
 find_library(FW_USERNOTIFICATIONS UserNotifications)
 find_library(FW_NETWORKEXTENSION NetworkExtension)
 
@@ -21,7 +20,6 @@ set(LIBS ${LIBS}
     ${FW_UIKIT}
     ${FW_AVFOUNDATION}
     ${FW_FOUNDATION}
-    ${FW_STOREKIT}
     ${FW_USERNOTIFICATIONS}
     ${FW_NETWORKEXTENSION}
 )

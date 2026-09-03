@@ -234,13 +234,10 @@ PageType {
 
             enabled: UpdateController.updateState !== UpdateState.Downloading
 
-            leftImageSource: !UpdateController.isStoreUpdate && UpdateController.updateState === UpdateState.ReadyToInstall
+            leftImageSource: UpdateController.updateState === UpdateState.ReadyToInstall
                              ? "qrc:/images/controls/download.svg" : ""
 
             text: {
-                if (UpdateController.isStoreUpdate) {
-                    return qsTr("Update app")
-                }
                 switch (UpdateController.updateState) {
                 case UpdateState.Downloading: return qsTr("Downloading update...")
                 case UpdateState.ReadyToInstall: return qsTr("Install update")
@@ -250,11 +247,6 @@ PageType {
             }
 
             clickedFunc: function() {
-                if (UpdateController.isStoreUpdate) {
-                    UpdateController.update()
-                    return
-                }
-
                 switch (UpdateController.updateState) {
                 case UpdateState.ReadyToInstall:
                     UpdateController.install()

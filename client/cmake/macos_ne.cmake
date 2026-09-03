@@ -15,7 +15,6 @@ set(LIBS ${LIBS} Qt6::ShaderTools Qt6::Widgets)
 find_library(FW_AUTHENTICATIONSERVICES AuthenticationServices)
 find_library(FW_AVFOUNDATION AVFoundation)
 find_library(FW_FOUNDATION Foundation)
-find_library(FW_STOREKIT StoreKit)
 find_library(FW_SERVICEMGMT ServiceManagement)
 find_library(FW_USERNOTIFICATIONS UserNotifications)
 find_library(FW_NETWORKEXTENSION NetworkExtension)
@@ -24,7 +23,6 @@ set(LIBS ${LIBS}
     ${FW_AUTHENTICATIONSERVICES}
     ${FW_AVFOUNDATION}
     ${FW_FOUNDATION}
-    ${FW_STOREKIT}
     ${FW_SERVICEMGMT}
     ${FW_USERNOTIFICATIONS}
     ${FW_NETWORKEXTENSION}

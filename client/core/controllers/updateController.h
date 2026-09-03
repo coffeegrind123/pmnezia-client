@@ -41,7 +41,6 @@ public:
     QStringList getImprovements() const;
     QStringList getBugFixes() const;
     UpdateState::State getUpdateState() const;
-    bool isStoreUpdate() const;
     bool isUpdateCheckRunning() const;
 
 public slots:
@@ -61,7 +60,6 @@ private:
     void setUpdateCheckRunning(bool running);
     void downloadInstaller();
     QString composeDownloadUrl() const;
-    void openStorePage() const;
 
     // GitHub releases update discovery (replaces the gateway v1/app_update call).
     void requestReleases(const QUrl &url, bool byTag);

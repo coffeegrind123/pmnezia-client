@@ -89,7 +89,6 @@ class AmneziaActivity : QtActivity() {
     private var notificationStateReceiver: BroadcastReceiver? = null
     private lateinit var vpnServiceMessenger: IpcMessenger
     private var pfd: ParcelFileDescriptor? = null
-    private lateinit var billingRepository: BillingRepository
 
     private val actionResultHandlers = mutableMapOf<Int, ActivityResultHandler>()
     private val permissionRequestHandlers = mutableMapOf<Int, PermissionRequestHandler>()
@@ -207,7 +206,6 @@ class AmneziaActivity : QtActivity() {
         registerBroadcastReceivers()
         intent?.let(::processIntent)
         runBlocking { vpnProto = proto.await() }
-        billingRepository = BillingPaymentRepository(applicationContext)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -1182,43 +1180,6 @@ class AmneziaActivity : QtActivity() {
     override fun dispatchTrackballEvent(ev: MotionEvent?): Boolean {
         ev?.let { return handleMouseEvent(ev) { super.dispatchTrackballEvent(it) }}
         return super.dispatchTrackballEvent(ev)
-    }
-
-    @Suppress("unused")
-    fun isPlay(): Boolean = BuildConfig.FLAVOR == "play"
-
-    @Suppress("unused")
-    fun getCountryCode(): String {
-        return blockingCall { billingRepository.getCountryCode() }
-    }
-
-    @Suppress("unused")
-    fun getSubscriptionPlans(): String {
-        return blockingCall { billingRepository.getSubscriptionPlans() }
-    }
-
-    @Suppress("unused")
-    fun purchaseSubscription(offerToken: String): String {
-        return blockingCall { billingRepository.purchaseSubscription(this@AmneziaActivity, offerToken) }
-    }
-
-    @Suppress("unused")
-    fun upgradeSubscription(offerToken: String, oldPurchaseToken: String): String {
-        Log.v(TAG, "Upgrade subscription")
-        return blockingCall {
-            billingRepository.upgradeSubscription(this@AmneziaActivity, offerToken, oldPurchaseToken)
-        }
-    }
-
-    @Suppress("unused")
-    fun acknowledgePurchase(purchaseToken: String): String {
-        Log.v(TAG, "Acknowledge purchase")
-        return blockingCall { billingRepository.acknowledge(purchaseToken) }
-    }
-
-    @Suppress("unused")
-    fun queryPurchases(): String {
-        return blockingCall { billingRepository.queryPurchases() }
     }
 
     /**

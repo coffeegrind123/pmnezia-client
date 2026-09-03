@@ -16,7 +16,6 @@ class SecureAppSettingsRepository;
 namespace apiUtils
 {
     QString getAppLanguageCode(const SecureAppSettingsRepository *appSettingsRepository);
-    QString getDistributionChannel();
 
     // Flag lookup: prefer serverCountryCodeL10n (ISO code from Stack); fall back to serverCountryCode
     // for old stacks. Routing code may contain region/pool suffixes — strip at most one dash segment
