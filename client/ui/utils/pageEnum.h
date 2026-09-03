@@ -1,0 +1,91 @@
+#ifndef PAGE_ENUM_H
+#define PAGE_ENUM_H
+
+#include <QObject>
+#include <QQmlEngine>
+
+namespace PageLoader
+{
+    Q_NAMESPACE
+    enum class PageEnum {
+        PageStart = 0,
+        PageHome,
+        PageShare,
+        PageDeinstalling,
+        PageAbout,
+
+        PageSettingsServersList,
+        PageSettings,
+        PageSettingsServerData,
+        PageSettingsServerInfo,
+        PageSettingsServerProtocols,
+        PageSettingsServerServices,
+        PageSettingsServerProtocol,
+        PageSettingsConnection,
+        PageSettingsDns,
+        PageSettingsApplication,
+        PageSettingsBackup,
+        PageSettingsAbout,
+        PageSettingsLogging,
+        PageSettingsSplitTunneling,
+        PageSettingsAppSplitTunneling,
+        PageSettingsKillSwitch,
+        PageSettingsKillSwitchExceptions,
+
+        PageServiceSftpSettings,
+        PageServiceTorWebsiteSettings,
+        PageServiceDnsSettings,
+        PageServiceSocksProxySettings,
+        PageServiceMtProxySettings,
+        PageServiceTelemtSettings,
+        PageServiceTProxySettings,
+
+        PageSetupWizardStart,
+        PageSetupWizardCredentials,
+        PageSetupWizardProtocols,
+        PageSetupWizardEasy,
+        PageSetupWizardProtocolSettings,
+        PageSetupWizardInstalling,
+        PageSetupWizardConfigSource,
+        PageSetupWizardTextKey,
+        PageSetupWizardViewConfig,
+        PageSetupWizardQrReader,
+
+        PageProtocolOpenVpnSettings,
+        PageProtocolXraySettings,
+        PageProtocolMasterDnsVpnSettings,
+        PageProtocolQqDnsSettings,
+        PageProtocolWireGuardSettings,
+        PageProtocolAwgSettings,
+        PageProtocolIKev2Settings,
+        PageProtocolRaw,
+
+        PageProtocolWireGuardClientSettings,
+        PageProtocolAwgClientSettings,
+
+        PageShareFullAccess,
+        PageShareConnection,
+
+        PageDevMenu,
+
+        PageProtocolXraySnapshots,
+        PageProtocolXrayTransportSettings,
+        PageProtocolXrayXmuxSettings,
+        PageProtocolXrayXPaddingSettings,
+        PageProtocolXrayFlowSettings,
+        PageProtocolXraySecuritySettings,
+        PageProtocolXrayXPaddingBytesSettings,
+
+        PageSettingsLanguage,
+
+        PageUpdate,
+    };
+    Q_ENUM_NS(PageEnum)
+
+    static void declareQmlPageEnum()
+    {
+        qmlRegisterUncreatableMetaObject(PageLoader::staticMetaObject, "PageEnum", 1, 0, "PageEnum", "Error: only enums");
+    }
+}
+
+#endif // PAGE_ENUM_H

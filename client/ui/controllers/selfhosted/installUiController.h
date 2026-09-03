@@ -33,6 +33,7 @@
 #include "core/models/protocols/socks5ProxyProtocolConfig.h"
 #include "ui/models/services/mtProxyConfigModel.h"
 #include "ui/models/services/telemtConfigModel.h"
+#include "ui/models/services/tProxyConfigModel.h"
 
 class InstallUiController : public QObject
 {
@@ -57,6 +58,7 @@ public:
                                Socks5ProxyConfigModel* socks5ConfigModel,
                                MtProxyConfigModel* mtConfigModel,
                                TelemtConfigModel* telemtConfigModel,
+                               TProxyConfigModel* tProxyConfigModel,
                                ConnectionController* connectionController,
                                QObject *parent = nullptr);
     ~InstallUiController();
@@ -161,6 +163,7 @@ private:
     Socks5ProxyConfigModel* m_socks5ConfigModel;
     MtProxyConfigModel* m_mtProxyConfigModel;
     TelemtConfigModel* m_telemtConfigModel;
+    TProxyConfigModel* m_tProxyConfigModel;
     ConnectionController* m_connectionController;
 
     ServerCredentials m_processedServerCredentials;

@@ -63,6 +63,7 @@
 #include "ui/models/services/socks5ProxyConfigModel.h"
 #include "ui/models/services/mtProxyConfigModel.h"
 #include "ui/models/services/telemtConfigModel.h"
+#include "ui/models/services/tProxyConfigModel.h"
 
 #include "ui/models/ipSplitTunnelingModel.h"
 
@@ -84,6 +85,7 @@ public:
 
     PageController* pageController() const;
     void setQmlRoot();
+    void checkForAppUpdates();
 
     void openConnectionByIndex(int serverIndex);
     void importConfigFromData(const QString &data);
@@ -197,6 +199,7 @@ private:
     Socks5ProxyConfigModel* m_socks5ConfigModel;
     MtProxyConfigModel* m_mtProxyConfigModel;
     TelemtConfigModel* m_telemtConfigModel;
+    TProxyConfigModel* m_tProxyConfigModel;
 
     CoreSignalHandlers* m_signalHandlers;
 };

@@ -36,6 +36,7 @@ set(HEADERS ${HEADERS}
     ${CLIENT_ROOT_DIR}/core/installers/socks5Installer.h
     ${CLIENT_ROOT_DIR}/core/installers/mtProxyInstaller.h
     ${CLIENT_ROOT_DIR}/core/installers/telemtInstaller.h
+    ${CLIENT_ROOT_DIR}/core/installers/tProxyInstaller.h
     ${CLIENT_ROOT_DIR}/core/controllers/appSplitTunnelingController.h
     ${CLIENT_ROOT_DIR}/core/controllers/ipSplitTunnelingController.h
     ${CLIENT_ROOT_DIR}/core/controllers/allowedDnsController.h
@@ -47,6 +48,7 @@ set(HEADERS ${HEADERS}
     ${CLIENT_ROOT_DIR}/core/repositories/secureAppSettingsRepository.h
     ${CLIENT_ROOT_DIR}/core/protocols/qmlRegisterProtocols.h
     ${CLIENT_ROOT_DIR}/ui/utils/pages.h
+    ${CLIENT_PAGE_ENUM_HEADER}
     ${CLIENT_ROOT_DIR}/ui/utils/qAutoStart.h
     ${CLIENT_ROOT_DIR}/ui/utils/mtProxyPublicHostInput.h
     ${CLIENT_ROOT_DIR}/core/protocols/vpnProtocol.h
@@ -61,6 +63,7 @@ set(HEADERS ${HEADERS}
     ${CLIENT_ROOT_DIR}/ui/utils/qmlUtils.h
     ${CLIENT_ROOT_DIR}/core/utils/api/apiUtils.h
     ${CLIENT_ROOT_DIR}/core/utils/osSignalHandler.h
+    ${CLIENT_ROOT_DIR}/core/utils/swiftBridge.h
     ${CLIENT_ROOT_DIR}/core/utils/utilities.h
     ${CLIENT_ROOT_DIR}/core/utils/managementServer.h
     ${CLIENT_ROOT_DIR}/core/utils/constants.h
@@ -135,6 +138,7 @@ set(SOURCES ${SOURCES}
     ${CLIENT_ROOT_DIR}/core/installers/socks5Installer.cpp
     ${CLIENT_ROOT_DIR}/core/installers/mtProxyInstaller.cpp
     ${CLIENT_ROOT_DIR}/core/installers/telemtInstaller.cpp
+    ${CLIENT_ROOT_DIR}/core/installers/tProxyInstaller.cpp
     ${CLIENT_ROOT_DIR}/core/controllers/appSplitTunnelingController.cpp
     ${CLIENT_ROOT_DIR}/core/controllers/ipSplitTunnelingController.cpp
     ${CLIENT_ROOT_DIR}/core/controllers/allowedDnsController.cpp

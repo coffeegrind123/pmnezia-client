@@ -100,6 +100,8 @@ namespace amnezia
         constexpr QLatin1String rejectAfterTime("RejectAfterTime");
         constexpr QLatin1String keepaliveTimeout("KeepaliveTimeout");
         constexpr QLatin1String maxHandshakeAttempts("MaxHandshakeAttempts");
+        constexpr QLatin1String randomTrailers("RandomTrailers");
+        constexpr QLatin1String disableCookies("DisableCookies");
 
         inline QStringList awgProtocolKeys()
         {
@@ -125,7 +127,9 @@ namespace amnezia
                      rekeyTimeout,
                      rejectAfterTime,
                      keepaliveTimeout,
-                     maxHandshakeAttempts };
+                     maxHandshakeAttempts,
+                     randomTrailers,
+                     disableCookies };
         }
 
         constexpr QLatin1String openvpn("openvpn");
@@ -138,6 +142,7 @@ namespace amnezia
         constexpr QLatin1String socks5proxy("socks5proxy");
         constexpr QLatin1String mtproxy("mtproxy");
         constexpr QLatin1String telemt("telemt");
+        constexpr QLatin1String tproxy("tproxy");
 
         constexpr QLatin1String splitTunnelSites("splitTunnelSites");
         constexpr QLatin1String splitTunnelType("splitTunnelType");

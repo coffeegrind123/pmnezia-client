@@ -68,6 +68,9 @@ struct ContainerConfig {
     TelemtProtocolConfig* getTelemtProtocolConfig();
     const TelemtProtocolConfig* getTelemtProtocolConfig() const;
 
+    TProxyProtocolConfig* getTProxyProtocolConfig();
+    const TProxyProtocolConfig* getTProxyProtocolConfig() const;
+
     Ikev2ProtocolConfig* getIkev2ProtocolConfig();
     const Ikev2ProtocolConfig* getIkev2ProtocolConfig() const;
     
