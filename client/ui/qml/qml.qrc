@@ -3,7 +3,6 @@
         <file>Components/UpdateSupportDrawer.qml</file>
         <file>Components/AdLabel.qml</file>
         <file>Components/ConnectButton.qml</file>
-        <file>Components/ConnectionTypeSelectionDrawer.qml</file>
         <file>Components/GamepadLoader.qml</file>
         <file>Components/HomeContainersListView.qml</file>
         <file>Components/HomeSplitTunnelingDrawer.qml</file>
@@ -12,7 +11,6 @@
         <file>Components/SelectLanguageDrawer.qml</file>
         <file>Components/ServersListView.qml</file>
         <file>Components/SettingsContainersListView.qml</file>
-        <file>Components/BenefitRow.qml</file>
         <file>Components/TransportProtoSelector.qml</file>
         <file>Components/AddSitePanel.qml</file>
         <file>Config/GlobalConfig.qml</file>
@@ -20,7 +18,6 @@
         <file>Controls2/BackButtonType.qml</file>
         <file>Controls2/BasicButtonType.qml</file>
         <file>Controls2/BusyIndicatorType.qml</file>
-        <file>Controls2/CaptchaDialogType.qml</file>
         <file>Controls2/CardType.qml</file>
         <file>Controls2/ChangelogSectionType.qml</file>
         <file>Controls2/BackdropBlurType.qml</file>
@@ -39,7 +36,6 @@
         <file>Controls2/HorizontalRadioButton.qml</file>
         <file>Controls2/ImageButtonType.qml</file>
         <file>Controls2/LabelWithButtonType.qml</file>
-        <file>Controls2/LabelWithImageType.qml</file>
         <file>Controls2/ListViewWithLabelsType.qml</file>
         <file>Controls2/ListViewWithRadioButtonType.qml</file>
         <file>Controls2/PageType.qml</file>
