@@ -1,9 +1,11 @@
 #ifndef UPDATECONTROLLER_H
 #define UPDATECONTROLLER_H
 
+#include <QJsonObject>
 #include <QObject>
 #include <QQmlEngine>
 #include <QStringList>
+#include <QUrl>
 
 #include "core/repositories/secureAppSettingsRepository.h"
 
@@ -61,6 +63,11 @@ private:
     QString composeDownloadUrl() const;
     void openStorePage() const;
 
+    // GitHub releases update discovery (replaces the gateway v1/app_update call).
+    void requestReleases(const QUrl &url, bool byTag);
+    void finishCheck(bool found);
+    bool applyRelease(const QJsonObject &release);
+
     SecureAppSettingsRepository* m_appSettingsRepository;
 
     QString m_version;
@@ -72,6 +79,9 @@ private:
     QStringList m_bugFixes;
     QString m_downloadBaseUrl;
     QString m_releasePageUrl;
+    // Exact asset URL picked out of the release for this platform. Preferred over composing a
+    // file name from m_downloadBaseUrl, since the release is the authority on what it published.
+    QString m_assetDownloadUrl;
 
     UpdateState::State m_updateState = UpdateState::State::Idle;
     bool m_updateCheckRunning = false;

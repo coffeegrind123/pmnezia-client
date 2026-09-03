@@ -58,3 +58,20 @@ endif()
 if(NOT CLIENT_NOTIFICATION_IDENTIFIER)
     set(CLIENT_NOTIFICATION_IDENTIFIER "${CLIENT_TS_PREFIX}" CACHE STRING "Local notification request identifier")
 endif()
+
+# -- in-app update discovery
+# This fork ships through GitHub releases rather than the Amnezia gateway, so the update
+# check queries the GitHub releases API directly. Leaving CLIENT_GITHUB_UPDATE_REPO empty
+# disables the check entirely (the controller then reports "up to date" without any request).
+if(NOT DEFINED CLIENT_GITHUB_UPDATE_REPO)
+    set(CLIENT_GITHUB_UPDATE_REPO "coffeegrind123/amnezia-client" CACHE STRING "owner/repo queried for in-app updates; empty disables the check")
+endif()
+# The release the CI publishes uses a rolling tag, so query it by name. Empty means
+# "newest published release", which uses the releases list rather than a tag lookup.
+if(NOT DEFINED CLIENT_GITHUB_UPDATE_TAG)
+    set(CLIENT_GITHUB_UPDATE_TAG "dev-latest" CACHE STRING "Release tag queried for in-app updates; empty = newest published release")
+endif()
+# The rolling release is published with prerelease=true, so it must be accepted.
+if(NOT DEFINED CLIENT_GITHUB_UPDATE_ALLOW_PRERELEASE)
+    set(CLIENT_GITHUB_UPDATE_ALLOW_PRERELEASE 1 CACHE STRING "Accept prerelease GitHub releases as updates (1/0)")
+endif()

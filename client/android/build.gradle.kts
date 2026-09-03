@@ -173,6 +173,24 @@ android {
     }
 }
 
+// Google Play Billing is only ever needed by the "play" flavor. Disable that variant unless it is
+// explicitly requested, so an ordinary build neither configures nor resolves the Play Billing
+// artifact. Without this, assembleRelease/bundleRelease build both flavors and every build - an
+// F-Droid or reproducible build server included - has to fetch com.android.billingclient.
+// The android_play_apk / android_play_aab CMake targets pass -PamneziaBuildPlay=true.
+val amneziaBuildPlay: Boolean = providers.gradleProperty("amneziaBuildPlay").orNull.toBoolean()
+
+androidComponents {
+    beforeVariants { variant ->
+        if (!amneziaBuildPlay && variant.productFlavors.any { (dimension, flavor) ->
+                dimension == "billing" && flavor == "play"
+            }
+        ) {
+            variant.enable = false
+        }
+    }
+}
+
 dependencies {
     implementation(project(":qt"))
     implementation(project(":utils"))
@@ -189,7 +207,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines)
     implementation(libs.kotlinx.serialization.protobuf)
     implementation(libs.bundles.androidx.camera)
-    implementation(libs.google.mlkit)
+    implementation(libs.zxingcpp.android)
     implementation(libs.androidx.datastore)
     implementation(libs.androidx.biometric)
 

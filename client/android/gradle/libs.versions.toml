@@ -12,7 +12,7 @@ androidx-security-crypto = "1.1.0-alpha06"
 androidx-datastore = "1.1.1"
 kotlinx-coroutines = "1.8.1"
 kotlinx-serialization = "1.6.3"
-google-mlkit = "17.3.0"
+zxingcpp = "3.1.1"
 
 [libraries]
 android-billing = { module = "com.android.billingclient:billing-ktx", version.ref = "android-billing" }
@@ -29,7 +29,7 @@ androidx-security-crypto = { module = "androidx.security:security-crypto-ktx", v
 androidx-datastore = { module = "androidx.datastore:datastore-preferences", version.ref = "androidx-datastore" }
 kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 kotlinx-serialization-protobuf = { module = "org.jetbrains.kotlinx:kotlinx-serialization-protobuf", version.ref = "kotlinx-serialization" }
-google-mlkit = { module = "com.google.mlkit:barcode-scanning", version.ref = "google-mlkit" }
+zxingcpp-android = { module = "io.github.zxing-cpp:android", version.ref = "zxingcpp" }
 
 [bundles]
 androidx-camera = [

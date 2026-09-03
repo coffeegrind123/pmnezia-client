@@ -106,7 +106,7 @@ add_custom_target(android_gradle_clean
 # Always-available debug target: build Play Debug APK and copy to standard output path
 # so Qt Creator's deploy step picks it up automatically
 add_custom_target(android_play_debug_install
-    COMMAND ./gradlew assemblePlayDebug
+    COMMAND ./gradlew -PamneziaBuildPlay=true assemblePlayDebug
     COMMAND sh -c "cp build/outputs/apk/play/debug/*.apk build/outputs/apk/android-build-${PROJECT}-debug.apk"
     WORKING_DIRECTORY "${_android_build_dir}"
     COMMENT "Building Android Play Debug APK and copying to deploy path"
@@ -120,13 +120,13 @@ if(ANDROID_BUILD_PLAY)
         set(_gradle_suffix "Release")
     endif()
     add_custom_target(android_play_apk
-        COMMAND ./gradlew assemblePlay${_gradle_suffix}
+        COMMAND ./gradlew -PamneziaBuildPlay=true assemblePlay${_gradle_suffix}
         WORKING_DIRECTORY "${_android_build_dir}"
         COMMENT "Building Android Play APK (assemblePlay${_gradle_suffix})"
         DEPENDS ${PROJECT}
     )
     add_custom_target(android_play_aab
-        COMMAND ./gradlew bundlePlay${_gradle_suffix}
+        COMMAND ./gradlew -PamneziaBuildPlay=true bundlePlay${_gradle_suffix}
         WORKING_DIRECTORY "${_android_build_dir}"
         COMMENT "Building Android Play AAB (bundlePlay${_gradle_suffix})"
         DEPENDS ${PROJECT}
