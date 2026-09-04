@@ -2,7 +2,7 @@ name: 'Build and Release'
 
 on:
   # Build + ship a rolling 'dev-latest' release on every push to the
-  # mainline branch (mirrors awg-easy-rs). Apple jobs stay off on push
+  # mainline branch (mirrors coffeeblack-vpn). Apple jobs stay off on push
   # (their `if: inputs.enable_apple_builds` is falsy without inputs); use
   # the manual workflow_dispatch below to build them with signing secrets.
   push:

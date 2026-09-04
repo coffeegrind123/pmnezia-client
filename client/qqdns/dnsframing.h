@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
 // DNS wire framing for the QQ-DNS transport — a faithful C++ port of the
-// Rust reference (awg-easy-rs `src/qqdns/dns.rs`), which is in turn a port of
+// Rust reference (coffeeblack-vpn `src/qqdns/dns.rs`), which is in turn a port of
 // QQ-Tunnel's `utility/dns.py`. Minimal, allocation-light DNS message handling:
 // build a data-bearing query, parse an inbound query far enough to recover its
 // labels, and synthesise the NOERROR/empty response the authoritative side

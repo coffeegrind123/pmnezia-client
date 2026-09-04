@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
 // Per-datagram fragment reassembler for QQ-DNS — a C++ port of the Rust
-// reference (awg-easy-rs `src/qqdns/reassembly.rs`) / QQ-Tunnel's
+// reference (coffeeblack-vpn `src/qqdns/reassembly.rs`) / QQ-Tunnel's
 // `data_handler.py`. Fragments of one datagram share a dataOffset (the key);
 // each carries its fragmentPart index (0..63) and a last-fragment flag. A
 // datagram is complete once the last fragment is seen and every index up to it

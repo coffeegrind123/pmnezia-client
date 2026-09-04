@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
 // Wire codec for the QQ-DNS transport — a faithful C++ port of the Rust
-// reference (awg-easy-rs `src/qqdns/codec.rs`) / QQ-Tunnel's `base32.py` +
+// reference (coffeeblack-vpn `src/qqdns/codec.rs`) / QQ-Tunnel's `base32.py` +
 // `data_cap.py`. Turns a raw UDP datagram into a list of DNS-label-encoded
 // QNAMEs (one per fragment) and back. Byte-compatible with the reference so
-// this client interoperates on the wire with the awg-easy-rs server.
+// this client interoperates on the wire with the coffeeblack-vpn server.
 //
 // One fragment's data labels, before the send-domain suffix is appended
 // (all chars lowercase base32, a-z2-7):

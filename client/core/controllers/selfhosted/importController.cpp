@@ -116,7 +116,7 @@ ImportController::ImportResult ImportController::extractConfigFromData(const QSt
         const int q = rest.indexOf('?');
         QString payload = (q >= 0) ? rest.mid(q + 1) : rest;
 
-        // The trailing `&resolvers=` list is an awg-easy-rs extension carrying
+        // The trailing `&resolvers=` list is an coffeeblack-vpn extension carrying
         // the resolver set that used to ride inside the JSON body. It must be
         // split off before decoding: QByteArray::fromBase64 is non-strict and
         // silently absorbs the alphabet-legal characters of "resolvers" into
@@ -618,7 +618,7 @@ QJsonObject ImportController::extractMasterDnsVpnConfig(const QString &data, con
     const QJsonObject src = doc.object();
 
     // Map the upstream MasterDnsVPN client_config schema (UPPER_SNAKE keys, as
-    // emitted by awg-easy-rs's `mdnsvpn://b64?` share blob and the upstream
+    // emitted by coffeeblack-vpn's `mdnsvpn://b64?` share blob and the upstream
     // `mdnsvpn -json_base64` format) onto the native model. The model's
     // camelCase keys differ from this schema, so the translation is explicit.
     MasterDnsVpnProtocolConfig protoConfig;
@@ -645,7 +645,7 @@ QJsonObject ImportController::extractMasterDnsVpnConfig(const QString &data, con
     client.socks5User = src.value("SOCKS5_USER").toString();
     client.socks5Pass = src.value("SOCKS5_PASS").toString();
     // Resolver list. A RESOLVERS member is accepted for configs produced by
-    // older servers, but current awg-easy-rs deliberately omits it (upstream
+    // older servers, but current coffeeblack-vpn deliberately omits it (upstream
     // ignores it), so the share URL's `&resolvers=` list is the live source.
     client.resolvers = src.value("RESOLVERS").toArray();
     if (client.resolvers.isEmpty() && !urlResolvers.isEmpty()) {

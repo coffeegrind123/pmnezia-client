@@ -64,7 +64,7 @@ endif()
 # check queries the GitHub releases API directly. Leaving CLIENT_GITHUB_UPDATE_REPO empty
 # disables the check entirely (the controller then reports "up to date" without any request).
 if(NOT DEFINED CLIENT_GITHUB_UPDATE_REPO)
-    set(CLIENT_GITHUB_UPDATE_REPO "coffeegrind123/amnezia-client" CACHE STRING "owner/repo queried for in-app updates; empty disables the check")
+    set(CLIENT_GITHUB_UPDATE_REPO "coffeegrind123/pmnezia-client" CACHE STRING "owner/repo queried for in-app updates; empty disables the check")
 endif()
 # The release the CI publishes uses a rolling tag, so query it by name. Empty means
 # "newest published release", which uses the releases list rather than a tag lookup.

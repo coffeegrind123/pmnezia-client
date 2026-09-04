@@ -1,181 +1,216 @@
-# AmneziaVPN (coffeegrind123 fork)
+# PmneziaVPN
 
-[![Build Status](https://github.com/coffeegrind123/amnezia-client/actions/workflows/deploy.yml/badge.svg?branch=dev)](https://github.com/coffeegrind123/amnezia-client/actions/workflows/deploy.yml?query=branch:dev)
+[![Build](https://github.com/coffeegrind123/pmnezia-client/actions/workflows/deploy.yml/badge.svg?branch=dev)](https://github.com/coffeegrind123/pmnezia-client/actions/workflows/deploy.yml?query=branch:dev)
+[![License](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE)
+[![Downloads](https://img.shields.io/badge/downloads-dev--latest-brightgreen)](https://github.com/coffeegrind123/pmnezia-client/releases/tag/dev-latest)
 
-A fork of [`amnezia-vpn/amnezia-client`](https://github.com/amnezia-vpn/amnezia-client), cut down to a dedicated client for [`coffeegrind123/awg-easy-rs`](https://github.com/coffeegrind123/awg-easy-rs). It ships its own rolling pre-release builds for Windows, Linux and Android.
+A VPN client for [**coffeeblack-vpn**](https://github.com/coffeegrind123/coffeeblack-vpn) servers, forked from
+[`amnezia-vpn/amnezia-client`](https://github.com/amnezia-vpn/amnezia-client) and reduced to the transports that
+server actually issues.
 
-- Upstream project: <https://github.com/amnezia-vpn/amnezia-client>
-- Upstream documentation: <https://docs.amnezia.org>
+coffeeblack-vpn provisions itself and hands out client configurations through its own web interface. This client
+therefore does one job: **import a configuration and connect.** Everything upstream carries for provisioning a
+server over SSH has been removed, along with every protocol coffeeblack-vpn does not serve.
 
----
-
-## What this fork is
-
-awg-easy-rs deploys itself and hands out client configs through its own web UI, so this client **only imports configs and connects**. Everything upstream carries for provisioning a server over SSH is gone, as is every protocol awg-easy-rs does not serve.
-
-**Transports kept** — exactly the set awg-easy-rs issues configs for:
-
-| Transport | Notes |
-| --- | --- |
-| **AmneziaWG** | `amnezia-awg` and `amnezia-awg2`. The low-latency datapath. |
-| **WireGuard** | An awg-easy-rs config with the AWG3 obfuscation knobs left off carries no `Jc`/`S1-S4`/`H1-H4` lines, so it imports as plain WireGuard. Same protocol implementation as AmneziaWG. |
-| **XRay** | VLESS + Reality + Vision over TCP, and the `xhttp` stream mode (HTTP/2 over a secret path) that awg-easy-rs also serves. |
-| **MasterDnsVPN** | DNS-tunnel transport (`Proto::MasterDnsVpn`), a native C++ `VpnProtocol`. Carries TCP/SOCKS5 inside DNS queries. |
-| **QQ-DNS** | UDP-over-DNS (`Proto::QqDns`) — carries the AmneziaWG datapath itself when only port 53 escapes. |
-
-**Removed:** the SSH server-deployment stack (container install/configure/remove, `server_scripts/`, the setup wizard's credential and install pages, client management and config sharing); the Amnezia gateway API, subscriptions, premium and in-app ads; and the OpenVPN, IKEv2/IPsec, Cloak, Shadowsocks, MTProxy, TProxy, SFTP, SOCKS5, Tor-website and AmneziaDNS protocols and services, along with their `vmess://` / `trojan://` / `ss://` / `ssd://` import paths.
-
-Config import still accepts: AmneziaWG and WireGuard `.conf`, `vless://`, `mdnsvpn://b64?`, QQ-DNS JSON, the native Amnezia `vpn://` envelope, and QR codes of any of them.
-
-### Added on top of upstream
-
-| Area | What |
-| --- | --- |
-| **MasterDnsVPN engine** | A full native C++ port of the upstream Go client, in-tree at `client/masterdnsvpn/` — DNS/wire framing, per-stream ARQ with adaptive RTO and bounded NACKs, an 8-strategy resolver pool, MTU probing, ZSTD/LZ4/raw-deflate compression, a SOCKS5 server, and an Android JNI bridge. Parity-tested against upstream's own Go test vectors. |
-| **QQ-DNS engine** | Native UDP-over-DNS at `client/qqdns/`, carrying the AmneziaWG datapath itself, plus its own Android `VpnService` module for the QQ-DNS-under-AmneziaWG handoff. |
-| **xhttp transport** | XRay VLESS + Reality over HTTP/2 on a secret path, alongside the TCP/Vision path ([upstream PR #2339](https://github.com/amnezia-vpn/amnezia-client/pull/2339)). |
-| **No Google Play** | ML Kit barcode scanning replaced with zxing-cpp (Apache-2.0), so the app builds and runs on devices without Play Services. |
-| **In-app updates** | The app checks this fork's GitHub Releases and can download and run the installer itself — the Play-store update path it replaces is gone. |
-| **Leaner deps** | qt5compat dropped tree-wide (`Qt5Compat.GraphicalEffects` replaced by in-tree shaders), the service is Gui-free, and Qt Xml / Multimedia / ImageFormats, `Qt.labs.platform` and libssh are gone. |
-
-Everything else tracks upstream `dev`; this fork is rebased/merged against it regularly.
-
-### Branding
-
-The app ships as **PmneziaVPN**, but the tree is deliberately kept on upstream's
-Amnezia naming so that merges from `amnezia-vpn/amnezia-client` keep applying.
-The rename is applied per build instead: `deploy/rebrand.sh` rewrites the working
-tree from values in `deploy/brand.env`, and CI runs it right after checkout. To
-change the brand, edit `deploy/brand.env` and nothing else - the workflow reads
-the same file so artifact names stay in sync with what the build emits.
-
-Four things are deliberately **not** renamed, and the script fails the build if
-any of them is:
-
-| Kept | Why |
-| --- | --- |
-| `AmneziaWG` | The protocol, not the app. awg-easy-rs serves it under this name and the config format uses it; renaming would leave this client calling the protocol something the server that issued the config does not. |
-| `amnezia-libxray`, `amnezia-xray-bindings`, `amnezia::` | Conan package names and the CMake imported-target namespace they export. Renaming makes conan look for packages that do not exist. |
-| `namespace amnezia` | Internal C++ namespace - invisible to users, and spelled identically to the CMake target namespace above. |
-| `AMNEZIAVPN_VERSION` | Read out of `CMakeLists.txt` by the release job to derive the version. |
-
-The replacement tokens are chosen so none of the above can be hit: `AmneziaVPN`
-is disjoint from `AmneziaWG`, and bare `Amnezia` is never substituted.
+> **Unofficial fork.** Not affiliated with or endorsed by the Amnezia team. For the official client, support and
+> signed builds, see [amnezia.org](https://amnezia.org).
 
 ---
 
-## Downloads
+## Contents
 
-Pre‑built binaries are published as a **rolling pre‑release** on this fork:
+- [Supported transports](#supported-transports)
+- [Installation](#installation)
+- [Importing a configuration](#importing-a-configuration)
+- [Differences from upstream](#differences-from-upstream)
+- [Building from source](#building-from-source)
+- [Branding](#branding)
+- [Releases](#releases)
+- [License](#license)
 
-➡️ **<https://github.com/coffeegrind123/amnezia-client/releases/tag/dev-latest>**
+---
 
-> [!NOTE]
-> Because this is a **fork**, GitHub does not show the *Releases* widget on the repository home page, and the build is marked as a pre‑release (so it never gets the "Latest" badge). Use the direct link above or the [Releases tab](https://github.com/coffeegrind123/amnezia-client/releases) — the tag alone on the home page is expected.
+## Supported transports
 
-Each `dev-latest` build contains:
+| Transport | Role | Notes |
+| --- | --- | --- |
+| **AmneziaWG** | Primary | Obfuscated WireGuard over UDP. Low latency, full tunnel. Containers `amnezia-awg` and `amnezia-awg2`. |
+| **WireGuard** | Fallback | coffeeblack-vpn's AmneziaWG 3 obfuscation knobs are off by default, so a configuration issued without them carries no `Jc`/`S1–S4`/`H1–H4` lines and imports as plain WireGuard. Same protocol implementation. |
+| **XRay** | Censorship-resistant | VLESS + Reality + Vision over TCP, and the `xhttp` stream mode (HTTP/2 over a secret path). |
+| **MasterDnsVPN** | Blackout survival | DNS tunnel carrying TCP/SOCKS5 inside DNS queries. Native C++ engine. |
+| **QQ-DNS** | Blackout survival | UDP-over-DNS carrying the AmneziaWG datapath itself, for networks where only port 53 escapes. |
 
-| Platform | Assets |
+The protocol name **AmneziaWG** is upstream's and is deliberately preserved — coffeeblack-vpn serves it under that
+name and the configuration format uses it.
+
+---
+
+## Installation
+
+Pre-built binaries are published as a rolling pre-release:
+
+**[→ Latest build](https://github.com/coffeegrind123/pmnezia-client/releases/tag/dev-latest)**
+
+| Platform | Artifacts |
 | --- | --- |
-| Windows | `AmneziaVPN_<ver>_windows_x64.exe` (IFW installer), `AmneziaVPN_<ver>_windows_x64.msi` (WIX installer) |
-| Linux | `AmneziaVPN_<ver>_linux_x64.run` (IFW installer) |
-| Android | `AmneziaVPN_<ver>_android9+_universal.apk`, per‑ABI APKs (`arm64-v8a`, `armeabi-v7a`, `x86`, `x86_64`), and `AmneziaVPN_<ver>.aab` |
+| Windows | `PmneziaVPN_<ver>_windows_x64.exe` (IFW), `PmneziaVPN_<ver>_windows_x64.msi` (WiX) |
+| Linux | `PmneziaVPN_<ver>_linux_x64.run` (IFW) |
+| Android | `PmneziaVPN_<ver>_android9+_universal.apk`, per-ABI APKs (`arm64-v8a`, `armeabi-v7a`, `x86`, `x86_64`), and `.aab` |
 
-macOS / iOS builds are **not** produced by default — they require Apple signing secrets and are gated behind a workflow input (see below). For signed Apple builds, use the upstream releases.
+The application checks this repository's releases on start-up and can download and run the installer itself, so a
+`dev-latest` build updates in place.
 
-The app checks this repository's releases on startup and can download and run the installer itself, so a `dev-latest` build updates in place.
+macOS and iOS builds are not produced by default; they require Apple signing credentials and are gated behind a
+workflow input. Android builds carry no Google Play dependencies and run on devices without Play Services.
+
+> Because this is a fork, GitHub does not show a *Releases* widget on the repository home page and the build is
+> marked as a pre-release, so it never receives the "Latest" badge. Use the link above.
+
+---
+
+## Importing a configuration
+
+Accepted formats:
+
+| Source | Format |
+| --- | --- |
+| AmneziaWG / WireGuard | `.conf` file |
+| XRay | `vless://` URL, or native JSON |
+| MasterDnsVPN | `mdnsvpn://b64?…` blob, or `client_config.json` |
+| QQ-DNS | transport JSON |
+| Any of the above | the Amnezia `vpn://` envelope, or a QR code |
+
+Open the app, choose **Add server**, and supply the file, link, QR code or pasted text. No credentials are required
+— the client never contacts the server outside the tunnel it establishes.
+
+---
+
+## Differences from upstream
+
+**Removed.** The SSH server-deployment stack (container install, configuration and removal, the provisioning
+scripts, the credentials and installation wizard, client management and configuration sharing); the Amnezia gateway
+API, subscriptions, premium tiers and in-app advertising; and the OpenVPN, IKEv2/IPsec, Cloak, Shadowsocks,
+MTProxy, TProxy, SFTP, SOCKS5, Tor-website and AmneziaDNS protocols and services, together with their
+`vmess://`, `trojan://`, `ss://` and `ssd://` import paths.
+
+**Added.**
+
+| Area | Detail |
+| --- | --- |
+| MasterDnsVPN engine | Native C++ port of the upstream Go client (`client/masterdnsvpn/`): DNS and wire framing, per-stream ARQ with adaptive RTO and bounded NACKs, an eight-strategy resolver pool, MTU probing, ZSTD/LZ4/raw-deflate compression, a SOCKS5 server, and an Android JNI bridge. Parity-tested against upstream's own Go test vectors. |
+| QQ-DNS engine | Native UDP-over-DNS (`client/qqdns/`) carrying the AmneziaWG datapath, with its own Android `VpnService` module. |
+| xhttp transport | XRay VLESS + Reality over HTTP/2 on a secret path ([upstream PR #2339](https://github.com/amnezia-vpn/amnezia-client/pull/2339)). |
+| Play-free Android | ML Kit barcode scanning replaced with zxing-cpp (Apache-2.0). |
+| In-app updates | Update checks and installer download via this repository's GitHub releases. |
+| Reduced dependencies | qt5compat dropped tree-wide; the background service is GUI-free; Qt Xml, Multimedia, Image Formats, `Qt.labs.platform` and libssh removed. |
+
+Everything else tracks upstream `dev`, which this fork merges from regularly.
 
 ---
 
 ## Building from source
 
-Pull submodules after cloning:
-
 ```bash
+git clone https://github.com/coffeegrind123/pmnezia-client.git
+cd pmnezia-client
 git submodule update --init --recursive
 ```
 
 ### Requirements
 
-- [`CMake`](https://cmake.org/download/)
-- A toolchain for your target:
-  - **Linux** — `gcc`/`make`
-  - **Windows** — [Visual Studio 2022](https://aka.ms/vs/17/release/vs_community.exe) or VS 2022 Build Tools
-  - **Android** — Android SDK + [`Ninja`](https://ninja-build.org/)
-  - **Apple** — [Xcode](https://developer.apple.com/xcode/) / command‑line tools
-- [`Qt 6.10+`](https://www.qt.io/download-open-source) (CI builds against 6.10.1) with the **Qt Remote Objects** and **Qt Shader Tools** additional modules on top of a Core install. This fork does **not** need Qt 5 Compatibility, Multimedia or Image Formats — `Qt5Compat.GraphicalEffects` was replaced by in-tree components and shaders.
-- [`Conan 2`](https://conan.io/downloads) package manager (must be on `PATH`, except on macOS where a Homebrew/`.venv` install is fine)
-- Optional, for installers: [Qt Installer Framework](https://www.qt.io/download-open-source) (Windows/Linux) and the [WiX toolset](https://github.com/wixtoolset/wix/releases) (Windows)
+- [CMake](https://cmake.org/download/)
+- [Qt 6.10+](https://www.qt.io/download-open-source) (CI builds against 6.10.1) with the **Qt Remote Objects** and
+  **Qt Shader Tools** modules. Qt 5 Compatibility, Multimedia and Image Formats are *not* required.
+- [Conan 2](https://conan.io/downloads) on `PATH` (a Homebrew or virtualenv install is fine on macOS)
+- A platform toolchain: GCC/Make (Linux), Visual Studio 2022 or its Build Tools (Windows), Android SDK plus
+  [Ninja](https://ninja-build.org/) (Android), Xcode (Apple)
+- Optional, for installers: [Qt Installer Framework](https://www.qt.io/download-open-source) and the
+  [WiX toolset](https://github.com/wixtoolset/wix/releases)
 
-If dependencies live in non‑default paths, point the build scripts at them via `QT_INSTALL_DIR`, `QT_ROOT_PATH`, `QIF_ROOT_PATH`, `ANDROID_HOME` (see the scripts in `deploy/` for the full list).
+If dependencies are outside default locations, point the build scripts at them with `QT_INSTALL_DIR`,
+`QT_ROOT_PATH`, `QIF_ROOT_PATH` or `ANDROID_HOME`; see `deploy/` for the full list.
 
-### Build scripts
-
-Unix‑like (`deploy/build.sh`):
+### Build
 
 ```bash
-# Host-platform executables
-deploy/build.sh
-
-# Executables + installer
-deploy/build.sh --installer all
-
-# Android APK + AAB
-deploy/build.sh -t android --aab
-
-# Help
-deploy/build.sh -h
+deploy/build.sh                      # host executables
+deploy/build.sh --installer all      # executables and installer
+deploy/build.sh -t android --aab     # Android APK and AAB
+deploy/build.sh -h                   # all options
 ```
 
-Windows (`deploy/build.bat`):
+On Windows, use `deploy\build.bat` with the same `--installer all` flag. Artifacts are written to `deploy/build/`
+as `PmneziaVPN_<ver>_<platform>_x64.<ext>`.
 
-```batch
-:: Executables only
-deploy\build.bat
-
-:: Executables + IFW and WIX installers
-deploy\build.bat --installer all
-```
-
-Build artifacts (including CPack installers) land under `deploy/build/`, named `AmneziaVPN_<ver>_<platform>_x64.<ext>`.
+To reproduce a CI build exactly, apply the brand first — see below.
 
 ### IDEs
 
-Any CMake/Qt‑aware IDE works (Qt Creator, VS Code with the Qt Extension Pack, etc.). For Xcode/Android Studio, configure the project with CMake (e.g. via Qt Creator) first, then open the generated project from the build directory — note that edits there live under the build directory and must be copied back manually.
+Any CMake- and Qt-aware IDE works. For Xcode or Android Studio, configure with CMake first (via Qt Creator, for
+example) and open the generated project from the build directory; note that edits there live under the build
+directory and must be copied back by hand.
 
 ---
 
-## Producing release builds (maintainers)
+## Branding
 
-Releases are cut by the **Build and Release workflow** (`.github/workflows/deploy.yml`).
-
-It runs **automatically on every push to `dev` or `main`**, building Linux, Windows and Android in parallel and refreshing the rolling `dev-latest` pre-release. Apple jobs stay off on a push (their `if: inputs.enable_apple_builds` is falsy without dispatch inputs).
-
-To build Apple targets, or to publish under a different tag, dispatch it manually from the [Actions tab](https://github.com/coffeegrind123/amnezia-client/actions/workflows/deploy.yml) → *Run workflow*, or:
+The application ships as **PmneziaVPN**, but the source tree deliberately retains upstream's Amnezia naming so that
+merges from `amnezia-vpn/amnezia-client` continue to apply. The rename is applied per build:
 
 ```bash
-gh workflow run deploy.yml --repo coffeegrind123/amnezia-client --ref dev
+deploy/rebrand.sh            # apply, in place
+deploy/rebrand.sh --check    # verify only
 ```
 
-Dispatch inputs:
+`deploy/rebrand.sh` reads `deploy/brand.env`, which is the single source of truth — the release workflow reads the
+same file, so artifact names stay consistent with what the build produces. To change the brand, edit `brand.env`
+and nothing else.
+
+Five identifiers are deliberately preserved, and the script fails the build if any is renamed:
+
+| Preserved | Reason |
+| --- | --- |
+| `AmneziaWG` | The protocol, not the application. coffeeblack-vpn serves it under this name and the configuration format uses it. |
+| `amnezia-libxray`, `amnezia-xray-bindings`, `amnezia::` | Conan package names and the CMake imported-target namespace they export. |
+| `artifactory.amnezia.org` | The Conan remote host. |
+| `namespace amnezia` | Internal C++ namespace, spelled identically to the CMake target namespace above. |
+| `AMNEZIAVPN_VERSION` | Read from `CMakeLists.txt` by the release job. |
+
+Substitution tokens are chosen so none of the above can be matched: `AmneziaVPN` is disjoint from `AmneziaWG`, and
+bare `Amnezia` is never substituted. After rewriting, the script asserts that each preserved identifier survives,
+that no rewritten URL contains a doubled scheme, and that every file referenced by a `.qrc` manifest exists.
+
+---
+
+## Releases
+
+The **Build and Release** workflow (`.github/workflows/deploy.yml`) runs on every push to `dev` or `main`, building
+Linux, Windows and Android in parallel and refreshing the rolling `dev-latest` pre-release.
+
+To build Apple targets or publish under a different tag, dispatch it manually from the
+[Actions tab](https://github.com/coffeegrind123/pmnezia-client/actions/workflows/deploy.yml) or:
+
+```bash
+gh workflow run deploy.yml --repo coffeegrind123/pmnezia-client --ref dev
+```
 
 | Input | Default | Purpose |
 | --- | --- | --- |
 | `release_tag` | `dev-latest` | Rolling tag; an existing release on this tag is deleted and recreated. |
-| `release_name` | `Dev build (masterdnsvpn + xhttp)` | Release title (the project version and short SHA are appended). |
-| `prerelease` | `true` | Mark the release as a pre‑release. Push-triggered builds are always pre‑releases. |
-| `enable_apple_builds` | `false` | Also build iOS/macOS/macOS‑NE (requires Apple signing secrets). |
+| `release_name` | `Dev build (masterdnsvpn + xhttp)` | Release title; version and short SHA are appended. |
+| `prerelease` | `true` | Mark as pre-release. Push-triggered builds are always pre-releases. |
+| `enable_apple_builds` | `false` | Also build iOS, macOS and macOS-NE. Requires Apple signing credentials. |
 
-`Publish-Release` then collects every `AmneziaVPN_*.*` artifact and attaches it to the release. Translations (`AmneziaVPN_translations`) are intentionally excluded.
+> **Artifact naming is a contract.** CPack emits `PmneziaVPN_<ver>_<platform>_x64.<ext>` and `upload-artifact` runs
+> with `archive: false`, so each artifact is named after its file. The upload globs and the download pattern in
+> `deploy.yml` derive from `deploy/brand.env`; keep them consistent if CPack output names change.
 
-> Artifact naming is a contract: CPack emits `AmneziaVPN_<ver>_<platform>_x64.<ext>` and `upload-artifact` runs with `archive: false` (so each artifact is named after its file). The upload globs and the download pattern in `deploy.yml` must match that naming — keep them in sync if you touch CPack output names.
-
-The other two workflows in `.github/workflows/` (`tag-deploy.yml`, `tag-upload.yml`) are upstream leftovers — the old tag-driven release and the S3 upload. Both are dispatch-only, pin Qt 6.4.1, and need Amnezia's own secrets; neither is used by this fork.
+`tag-deploy.yml` and `tag-upload.yml` are upstream leftovers — the old tag-driven release and an S3 upload. Both
+are dispatch-only, pin Qt 6.4.1 and require Amnezia's credentials; neither is used here.
 
 ---
 
 ## License
 
-GNU General Public License v3.0 — see [`LICENSE`](LICENSE). Third‑party components are distributed under their own terms; see [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md).
-
-This is an unofficial fork. It is not affiliated with or endorsed by the Amnezia team. For the official project, support channels and signed builds, go to [amnezia.org](https://amnezia.org) and [`amnezia-vpn/amnezia-client`](https://github.com/amnezia-vpn/amnezia-client).
+GNU General Public License v3.0 — see [`LICENSE`](LICENSE). Third-party components are distributed under their own
+terms; see [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md).

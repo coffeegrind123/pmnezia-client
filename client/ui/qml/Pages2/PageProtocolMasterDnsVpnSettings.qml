@@ -168,7 +168,7 @@ PageType {
             // plaintext, XOR is a repeating-key xor, and this core's ChaCha20
             // is bare ChaCha20 without Poly1305 — so on 0/1/2 an active
             // on-path attacker can tamper with tunnel payloads undetected.
-            // Mirrors the advisory awg-easy-rs writes into server_config.toml.
+            // Mirrors the advisory coffeeblack-vpn writes into server_config.toml.
             WarningType {
                 objectName: "nonAeadEncryptionWarning"
 

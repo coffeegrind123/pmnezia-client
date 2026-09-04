@@ -14,7 +14,7 @@
 #
 # What is deliberately NOT renamed, and why:
 #
-#   AmneziaWG / amneziawg   The protocol, not the app. awg-easy-rs serves it
+#   AmneziaWG / amneziawg   The protocol, not the app. coffeeblack-vpn serves it
 #                           under this name, the config format uses it, and
 #                           the spec is upstream's. Renaming it would leave
 #                           this client calling the protocol something no

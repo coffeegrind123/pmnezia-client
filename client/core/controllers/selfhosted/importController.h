@@ -75,7 +75,7 @@ private:
     QJsonObject extractWireGuardConfig(const QString &data, ConfigTypes &configType) const;
     QJsonObject extractXrayConfig(const QString &data, const QString &description = "") const;
     // Build an Amnezia server config from a MasterDnsVPN client_config JSON
-    // (the upstream UPPER_SNAKE schema produced by awg-easy-rs's
+    // (the upstream UPPER_SNAKE schema produced by coffeeblack-vpn's
     // `mdnsvpn://b64?` share blob and `mdnsvpn -json_base64`). `data` is the
     // decoded JSON string. `urlResolvers` carries the resolver list from the
     // share URL's `&resolvers=` parameter: upstream tags Resolvers `toml:"-"`

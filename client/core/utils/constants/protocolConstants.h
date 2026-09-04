@@ -214,13 +214,13 @@ namespace amnezia
             // plaintext, XOR is a repeating-key xor, and the mdnsvpn core's
             // ChaCha20 is bare ChaCha20 without Poly1305 — so on 0/1/2 an
             // active on-path attacker can tamper with tunnel payloads
-            // undetected. Mirrors keys::is_aead in awg-easy-rs.
+            // undetected. Mirrors keys::is_aead in coffeeblack-vpn.
             constexpr bool isAeadEncryptionMethod(int method)
             {
                 return method >= encryptionMethodAes128Gcm && method <= encryptionMethodAes256Gcm;
             }
 
-            // Method fresh deployments get. Matches awg-easy-rs's
+            // Method fresh deployments get. Matches coffeeblack-vpn's
             // RECOMMENDED_ENCRYPTION_METHOD. Safe for any existing key: the
             // mdnsvpn core derives the AES key as sha256(rawKey) for methods 2
             // and 5, so switching an existing key from XOR needs no re-keying —

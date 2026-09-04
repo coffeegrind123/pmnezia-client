@@ -3,7 +3,7 @@
 // Engine — the public façade of the QQ-DNS native client engine.
 //
 // A faithful in-process Qt port of the QQ-Tunnel client (reference:
-// awg-easy-rs `src/qqdns/engine.rs`, itself a port of QQ-Tunnel's `main.py`).
+// coffeeblack-vpn `src/qqdns/engine.rs`, itself a port of QQ-Tunnel's `main.py`).
 // It carries a raw UDP datapath — the AmneziaWG datapath itself — inside DNS
 // query names, so the tunnel survives an egress blackout where only port 53
 // escapes.
@@ -12,7 +12,7 @@
 //        ↓  (raw WireGuard UDP)
 //   h_in socket  ──►  base32 + fragment  ──►  DNS queries
 //                                               ↓  send sockets (port spread)
-//   public resolvers → operator's NS-delegated server → awg-easy-rs qqdns
+//   public resolvers → operator's NS-delegated server → coffeeblack-vpn qqdns
 //        ▲                                               │
 //   wan listener (:53) ◄── DNS queries ◄────────────────┘  (return direction)
 //

@@ -70,7 +70,7 @@ struct MasterDnsVpnServerConfig
 //
 // Everything is structured JSON — the native engine consumes these fields
 // directly. No TOML round-trip, no subprocess hand-off. The operator-side
-// renderer (e.g. awg-easy-rs) produces this exact shape; users without an
+// renderer (e.g. coffeeblack-vpn) produces this exact shape; users without an
 // operator-side panel can synthesise it from the documented schema.
 struct MasterDnsVpnClientConfig
 {
