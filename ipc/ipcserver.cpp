@@ -20,10 +20,6 @@
 #include "master_dns_vpn_service.h"
 #include "qq_dns_service.h"
 
-#ifdef Q_OS_WIN
-    #include "tapcontroller_win.h"
-#endif
-
 
 IpcServer::IpcServer(QObject *parent) : IpcInterfaceSource(parent)
 {
@@ -109,32 +105,6 @@ void IpcServer::resetIpStack()
 #endif
 
     Router::resetIpStack();
-}
-
-bool IpcServer::checkAndInstallDriver()
-{
-#ifdef MZ_DEBUG
-    qDebug() << "IpcServer::checkAndInstallDriver";
-#endif
-
-#ifdef Q_OS_WIN
-    return TapController::checkAndSetup();
-#else
-    return true;
-#endif
-}
-
-QStringList IpcServer::getTapList()
-{
-#ifdef MZ_DEBUG
-    qDebug() << "IpcServer::getTapList";
-#endif
-
-#ifdef Q_OS_WIN
-    return TapController::getTapList();
-#else
-    return QStringList();
-#endif
 }
 
 void IpcServer::cleanUp()

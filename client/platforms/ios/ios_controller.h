@@ -78,13 +78,10 @@ protected slots:
 private:
     explicit IosController();
 
-    bool setupOpenVPN();
     bool setupWireGuard();
     bool setupAwg();
     bool setupXray();
-    bool setupSSXray();
 
-    bool startOpenVPN(const QString &config);
     bool startWireGuard(const QString &jsonConfig);
     bool startXray(const QString &jsonConfig);
 

@@ -4,7 +4,6 @@ import org.amnezia.vpn.protocol.Protocol
 import org.amnezia.vpn.protocol.awg.Awg
 import org.amnezia.vpn.protocol.masterdnsvpn.MasterDnsVpn
 import org.amnezia.vpn.protocol.qqdns.QqDns
-import org.amnezia.vpn.protocol.openvpn.OpenVpn
 import org.amnezia.vpn.protocol.wireguard.Wireguard
 import org.amnezia.vpn.protocol.xray.Xray
 
@@ -29,24 +28,8 @@ enum class VpnProto(
         override fun createProtocol(): Protocol = Awg()
     },
 
-    OPENVPN(
-        "OpenVPN",
-        "org.amnezia.vpn:amneziaOpenVpnService",
-        OpenVpnService::class.java
-    ) {
-        override fun createProtocol(): Protocol = OpenVpn()
-    },
-
     XRAY(
         "XRay",
-        "org.amnezia.vpn:amneziaXrayService",
-        XrayService::class.java
-    ) {
-        override fun createProtocol(): Protocol = Xray.instance
-    },
-
-    SSXRAY(
-        "SSXRay",
         "org.amnezia.vpn:amneziaXrayService",
         XrayService::class.java
     ) {

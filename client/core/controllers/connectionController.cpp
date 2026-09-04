@@ -92,10 +92,6 @@ ErrorCode ConnectionController::isConnectionSupported(const QString &serverId) c
         return ErrorCode::NoInstalledContainersError;
     }
 
-    if (ContainerUtils::isUnsupportedContainer(container)) {
-        return ErrorCode::LegacyContainerNotSupportedError;
-    }
-
     if (!isContainerSupported(container)) {
         return ErrorCode::NotSupportedOnThisPlatform;
     }
@@ -206,10 +202,6 @@ QJsonObject ConnectionController::createConnectionConfiguration(const QPair<QStr
                                                               DockerContainer container)
 {
     QJsonObject vpnConfiguration {};
-
-    if (ContainerUtils::containerService(container) == ServiceType::Other) {
-        return vpnConfiguration;
-    }
 
     Proto proto = ContainerUtils::defaultProtocol(container);
 

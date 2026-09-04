@@ -76,9 +76,6 @@ void CoreController::initModels()
     m_protocolsModel = new ProtocolsModel(this);
     setQmlContextProperty("ProtocolsModel", m_protocolsModel);
 
-    m_openVpnConfigModel = new OpenVpnConfigModel(this);
-    setQmlContextProperty("OpenVpnConfigModel", m_openVpnConfigModel);
-
     m_wireGuardConfigModel = new WireGuardConfigModel(this);
     setQmlContextProperty("WireGuardConfigModel", m_wireGuardConfigModel);
 
@@ -92,14 +89,6 @@ void CoreController::initModels()
     setQmlContextProperty("MasterDnsVpnConfigModel", m_masterDnsVpnConfigModel);
     m_qqDnsConfigModel = new QqDnsConfigModel(this);
     setQmlContextProperty("QqDnsConfigModel", m_qqDnsConfigModel);
-
-    m_xrayConfigSnapshotsModel = new XrayConfigSnapshotsModel(m_appSettingsRepository, m_xrayConfigModel, this);
-    setQmlContextProperty("XrayConfigSnapshotsModel", m_xrayConfigSnapshotsModel);
-
-#ifdef Q_OS_WINDOWS
-    m_ikev2ConfigModel = new Ikev2ConfigModel(this);
-    setQmlContextProperty("Ikev2ConfigModel", m_ikev2ConfigModel);
-#endif
 
 }
 
@@ -151,12 +140,8 @@ void CoreController::initControllers()
     m_serversUiController = new ServersUiController(m_serversController, m_settingsController, m_serversModel,
                                                      m_containersModel, m_defaultServerContainersModel,
                                                      m_protocolsModel, m_awgConfigModel, m_wireGuardConfigModel,
-                                                     m_openVpnConfigModel, m_xrayConfigModel,
-                                                     m_masterDnsVpnConfigModel, m_qqDnsConfigModel,
-#ifdef Q_OS_WINDOWS
-                                                     m_ikev2ConfigModel,
-#endif
-                                                     this);
+                                                     m_xrayConfigModel, m_masterDnsVpnConfigModel,
+                                                     m_qqDnsConfigModel, this);
     setQmlContextProperty("ServersUiController", m_serversUiController);
 
     m_ipSplitTunnelingUiController = new IpSplitTunnelingUiController(m_ipSplitTunnelingController, m_ipSplitTunnelingModel, this);

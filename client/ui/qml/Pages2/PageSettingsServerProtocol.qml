@@ -17,7 +17,6 @@ import "../Components"
 PageType {
     id: root
 
-    property bool isUnsupportedContainer: ContainerProps.isUnsupportedContainer(ServersUiController.processedContainerIndex)
     property bool isOutdatedAwgContainer: ServersUiController.isProcessedContainerOutdatedAwg()
 
     BackButtonType {
@@ -53,7 +52,6 @@ PageType {
                 Layout.bottomMargin: root.isOutdatedAwgContainer ? 16 : 32
 
                 headerText: ContainersModel.getProcessedContainerName() + qsTr(" settings")
-                descriptionText: root.isUnsupportedContainer ? qsTr("This protocol is no longer supported.") : ""
             }
 
             WarningType {
@@ -71,7 +69,7 @@ PageType {
             }
         }
 
-        model: root.isUnsupportedContainer ? null : ProtocolsModel
+        model: ProtocolsModel
 
         delegate: ColumnLayout {
             id: delegateContent

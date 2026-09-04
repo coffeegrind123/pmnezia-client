@@ -115,14 +115,8 @@ set(SOURCES ${SOURCES}
     ${CLIENT_ROOT_DIR}/core/protocols/vpnProtocol.cpp
     ${CLIENT_ROOT_DIR}/core/utils/networkUtilities.cpp
     ${CLIENT_ROOT_DIR}/core/utils/wireguardKeys.cpp
-    ${CLIENT_ROOT_DIR}/core/utils/serialization/outbound.cpp
     ${CLIENT_ROOT_DIR}/core/utils/serialization/inbound.cpp
-    ${CLIENT_ROOT_DIR}/core/utils/serialization/ss.cpp
-    ${CLIENT_ROOT_DIR}/core/utils/serialization/ssd.cpp
     ${CLIENT_ROOT_DIR}/core/utils/serialization/vless.cpp
-    ${CLIENT_ROOT_DIR}/core/utils/serialization/trojan.cpp
-    ${CLIENT_ROOT_DIR}/core/utils/serialization/vmess.cpp
-    ${CLIENT_ROOT_DIR}/core/utils/serialization/vmess_new.cpp
     ${CLIENT_ROOT_DIR}/../common/logger/logger.cpp
     ${CLIENT_ROOT_DIR}/../common/crypto/cryptoUtils.cpp
     ${CLIENT_ROOT_DIR}/ui/utils/qmlUtils.cpp
@@ -249,11 +243,9 @@ set(SOURCES ${SOURCES}
 
 if(WIN32)
     set(HEADERS ${HEADERS}
-        ${CLIENT_ROOT_DIR}/core/protocols/ikev2VpnProtocolWindows.h
     )
 
     set(SOURCES ${SOURCES}
-        ${CLIENT_ROOT_DIR}/core/protocols/ikev2VpnProtocolWindows.cpp
     )
 
     set(RESOURCES ${RESOURCES}
@@ -268,10 +260,8 @@ if(WIN32 OR (APPLE AND NOT IOS AND NOT MACOS_NE) OR (LINUX AND NOT ANDROID))
     set(HEADERS ${HEADERS}
         ${CLIENT_ROOT_DIR}/core/utils/ipcClient.h
         ${CLIENT_ROOT_DIR}/ui/utils/systemTrayNotificationHandler.h
-        ${CLIENT_ROOT_DIR}/core/protocols/openVpnProtocol.h
         ${CLIENT_ROOT_DIR}/core/protocols/wireGuardProtocol.h
         ${CLIENT_ROOT_DIR}/core/protocols/xrayProtocol.h
-        ${CLIENT_ROOT_DIR}/core/protocols/awgProtocol.h
         ${CLIENT_ROOT_DIR}/core/protocols/masterDnsVpnProtocol.h
         ${CLIENT_ROOT_DIR}/core/protocols/qqDnsProtocol.h
         ${CLIENT_ROOT_DIR}/mozilla/localsocketcontroller.h
@@ -281,10 +271,8 @@ if(WIN32 OR (APPLE AND NOT IOS AND NOT MACOS_NE) OR (LINUX AND NOT ANDROID))
         ${CLIENT_ROOT_DIR}/core/utils/ipcClient.cpp
         ${CLIENT_ROOT_DIR}/mozilla/localsocketcontroller.cpp
         ${CLIENT_ROOT_DIR}/ui/utils/systemTrayNotificationHandler.cpp
-        ${CLIENT_ROOT_DIR}/core/protocols/openVpnProtocol.cpp
         ${CLIENT_ROOT_DIR}/core/protocols/wireGuardProtocol.cpp
         ${CLIENT_ROOT_DIR}/core/protocols/xrayProtocol.cpp
-        ${CLIENT_ROOT_DIR}/core/protocols/awgProtocol.cpp
         ${CLIENT_ROOT_DIR}/core/protocols/masterDnsVpnProtocol.cpp
         ${CLIENT_ROOT_DIR}/core/protocols/qqDnsProtocol.cpp
     )

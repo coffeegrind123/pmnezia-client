@@ -1,6 +1,5 @@
 #include "configuratorBase.h"
 
-#include "core/configurators/openVpnConfigurator.h"
 #include "core/configurators/xrayConfigurator.h"
 
 using namespace amnezia;
@@ -13,13 +12,11 @@ ConfiguratorBase::ConfiguratorBase(QObject *parent)
 QScopedPointer<ConfiguratorBase> ConfiguratorBase::create(Proto protocol)
 {
     switch (protocol) {
-    case Proto::OpenVpn: return QScopedPointer<ConfiguratorBase>(new OpenVpnConfigurator());
-    case Proto::Xray:
-    case Proto::SSXray: return QScopedPointer<ConfiguratorBase>(new XrayConfigurator());
-    // WireGuard, AmneziaWG and IKEv2 need only the shared DNS substitution.
+    case Proto::Xray: return QScopedPointer<ConfiguratorBase>(new XrayConfigurator());
+    // WireGuard and AmneziaWG need only the shared DNS substitution.
     case Proto::WireGuard:
-    case Proto::Awg:
-    case Proto::Ikev2: return QScopedPointer<ConfiguratorBase>(new ConfiguratorBase());
+    case Proto::Awg: return QScopedPointer<ConfiguratorBase>(new ConfiguratorBase());
+    // MasterDnsVPN and QQ-DNS carry a complete config; nothing to post-process.
     default: return QScopedPointer<ConfiguratorBase>();
     }
 }

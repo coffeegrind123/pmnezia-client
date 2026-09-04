@@ -75,15 +75,7 @@ PageType {
                     isSmallLeftImage: true
                     isLeftImageHoverEnabled: false
 
-                    descriptionText: {
-                        var servicesNameString = ""
-                        var servicesName = ServersUiController.getAllInstalledServicesName(index)
-                        for (var i = 0; i < servicesName.length; i++) {
-                            servicesNameString += servicesName[i] + " · "
-                        }
-
-                        return servicesNameString + hostName
-                    }
+                    descriptionText: hostName
                     rightImageSource: "qrc:/images/controls/chevron-right.svg"
 
                     clickedFunction: function() {

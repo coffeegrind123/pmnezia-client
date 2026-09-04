@@ -17,17 +17,6 @@ public:
         ProtocolStringRole,
         RawConfigRole,
         IsClientProtocolExistsRole,
-        // Protocol type check roles
-        IsWireGuardRole,
-        IsAwgRole,
-        IsOpenVpnRole,
-        IsXrayRole,
-        IsSftpRole,
-        IsIpsecRole,
-        IsSocks5ProxyRole,
-        IsMtProxyRole,
-        IsTelemtRole,
-        IsTProxyRole,
     };
 
     explicit ProtocolsModel(QObject *parent = nullptr);

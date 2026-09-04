@@ -16,7 +16,7 @@ bool computeHasInstalledVpnContainers(const QMap<DockerContainer, ContainerConfi
 {
     for (auto it = containers.begin(); it != containers.end(); ++it) {
         const DockerContainer container = it.key();
-        if (ContainerUtils::containerService(container) == ServiceType::Vpn || container == DockerContainer::SSXray) {
+        if (ContainerUtils::containerService(container) == ServiceType::Vpn) {
             return true;
         }
     }

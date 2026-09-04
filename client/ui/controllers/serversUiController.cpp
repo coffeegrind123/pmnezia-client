@@ -39,13 +39,9 @@ ServersUiController::ServersUiController(ServersController* serversController,
                                          ProtocolsModel* protocolsModel,
                                          AwgConfigModel* awgConfigModel,
                                          WireGuardConfigModel* wireGuardConfigModel,
-                                         OpenVpnConfigModel* openVpnConfigModel,
                                          XrayConfigModel* xrayConfigModel,
                                          MasterDnsVpnConfigModel* masterDnsVpnConfigModel,
                                          QqDnsConfigModel* qqDnsConfigModel,
-#ifdef Q_OS_WINDOWS
-                                         Ikev2ConfigModel* ikev2ConfigModel,
-#endif
                                          QObject *parent)
     : QObject(parent),
       m_serversController(serversController),
@@ -56,13 +52,9 @@ ServersUiController::ServersUiController(ServersController* serversController,
       m_protocolsModel(protocolsModel),
       m_awgConfigModel(awgConfigModel),
       m_wireGuardConfigModel(wireGuardConfigModel),
-      m_openVpnConfigModel(openVpnConfigModel),
       m_xrayConfigModel(xrayConfigModel),
       m_masterDnsVpnConfigModel(masterDnsVpnConfigModel),
       m_qqDnsConfigModel(qqDnsConfigModel)
-#ifdef Q_OS_WINDOWS
-      , m_ikev2ConfigModel(ikev2ConfigModel)
-#endif
 {
 }
 
@@ -128,14 +120,9 @@ bool ServersUiController::buildContainerConfigFromModel(int containerIndex, int 
     switch (static_cast<Proto>(protocolIndex)) {
     case Proto::Awg: containerConfig.protocolConfig = m_awgConfigModel->getProtocolConfig(); break;
     case Proto::WireGuard: containerConfig.protocolConfig = m_wireGuardConfigModel->getProtocolConfig(); break;
-    case Proto::OpenVpn: containerConfig.protocolConfig = m_openVpnConfigModel->getProtocolConfig(); break;
-    case Proto::Xray:
-    case Proto::SSXray: containerConfig.protocolConfig = m_xrayConfigModel->getProtocolConfig(); break;
+    case Proto::Xray: containerConfig.protocolConfig = m_xrayConfigModel->getProtocolConfig(); break;
     case Proto::MasterDnsVpn: containerConfig.protocolConfig = m_masterDnsVpnConfigModel->getProtocolConfig(); break;
     case Proto::QqDns: containerConfig.protocolConfig = m_qqDnsConfigModel->getProtocolConfig(); break;
-#ifdef Q_OS_WINDOWS
-    case Proto::Ikev2: containerConfig.protocolConfig = m_ikev2ConfigModel->getProtocolConfig(); break;
-#endif
     default: return false;
     }
     return true;
@@ -154,16 +141,11 @@ void ServersUiController::updateProtocolConfigModel(const QString &serverId, int
     switch (static_cast<Proto>(protocolIndex)) {
     case Proto::Awg: updateIfPresent(m_awgConfigModel, containerConfig.getAwgProtocolConfig()); break;
     case Proto::WireGuard: updateIfPresent(m_wireGuardConfigModel, containerConfig.getWireGuardProtocolConfig()); break;
-    case Proto::OpenVpn: updateIfPresent(m_openVpnConfigModel, containerConfig.getOpenVpnProtocolConfig()); break;
-    case Proto::Xray:
-    case Proto::SSXray: updateIfPresent(m_xrayConfigModel, containerConfig.getXrayProtocolConfig()); break;
+    case Proto::Xray: updateIfPresent(m_xrayConfigModel, containerConfig.getXrayProtocolConfig()); break;
     case Proto::MasterDnsVpn:
         updateIfPresent(m_masterDnsVpnConfigModel, containerConfig.getMasterDnsVpnProtocolConfig());
         break;
     case Proto::QqDns: updateIfPresent(m_qqDnsConfigModel, containerConfig.getQqDnsProtocolConfig()); break;
-#ifdef Q_OS_WINDOWS
-    case Proto::Ikev2: updateIfPresent(m_ikev2ConfigModel, containerConfig.getIkev2ProtocolConfig()); break;
-#endif
     default: break;
     }
 }
@@ -332,13 +314,6 @@ bool ServersUiController::isDefaultServerDefaultContainerHasSplitTunneling() con
             }
         }
         return false;
-    } else if (defaultContainer == DockerContainer::OpenVpn) {
-        if (const auto* ovpnConfig = containerConfig.getOpenVpnProtocolConfig()) {
-            if (ovpnConfig->hasClientConfig()) {
-                return !ovpnConfig->clientConfig->nativeConfig.isEmpty() 
-                    && !ovpnConfig->clientConfig->nativeConfig.contains("redirect-gateway");
-            }
-        }
     }
     return false;
 }
@@ -499,36 +474,6 @@ void ServersUiController::updateDefaultServerContainersModel()
     const QMap<DockerContainer, ContainerConfig> containers =
             m_serversController->getServerContainersMap(defaultServerId);
     m_defaultServerContainersModel->updateModel(containers);
-}
-
-QStringList ServersUiController::getAllInstalledServicesName(int serverIndex) const
-{
-    QStringList servicesName;
-    const QString serverId = getServerId(serverIndex);
-    const QMap<DockerContainer, ContainerConfig> containers = m_serversController->getServerContainersMap(serverId);
-
-    for (auto it = containers.begin(); it != containers.end(); ++it) {
-        DockerContainer container = it.key();
-        if (ContainerUtils::containerService(container) == ServiceType::Other) {
-            if (container == DockerContainer::Dns) {
-                servicesName.append("DNS");
-            } else if (container == DockerContainer::Sftp) {
-                servicesName.append("SFTP");
-            } else if (container == DockerContainer::TorWebSite) {
-                servicesName.append("TOR");
-            } else if (container == DockerContainer::Socks5Proxy) {
-                servicesName.append("SOCKS5");
-            } else if (container == DockerContainer::MtProxy) {
-                servicesName.append("MTProxy");
-            } else if (container == DockerContainer::Telemt) {
-                servicesName.append("Telemt");
-            } else if (container == DockerContainer::TProxy) {
-                servicesName.append("TProxy");
-            }
-        }
-    }
-    servicesName.sort();
-    return servicesName;
 }
 
 int ServersUiController::serverIndexForId(const QString &serverId) const

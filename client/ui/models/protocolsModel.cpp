@@ -8,7 +8,6 @@
 #include "core/utils/containers/containerUtils.h"
 #include "core/models/protocols/awgProtocolConfig.h"
 #include "core/models/protocols/wireGuardProtocolConfig.h"
-#include "core/models/protocols/openVpnProtocolConfig.h"
 #include "core/models/protocols/xrayProtocolConfig.h"
 
 using namespace ProtocolUtils;
@@ -34,16 +33,6 @@ QHash<int, QByteArray> ProtocolsModel::roleNames() const
     roles[ProtocolStringRole] = "protocolString";
     roles[RawConfigRole] = "rawConfig";
     roles[IsClientProtocolExistsRole] = "isClientProtocolExists";
-    roles[IsWireGuardRole] = "isWireGuard";
-    roles[IsAwgRole] = "isAwg";
-    roles[IsOpenVpnRole] = "isOpenVpn";
-    roles[IsXrayRole] = "isXray";
-    roles[IsSftpRole] = "isSftp";
-    roles[IsIpsecRole] = "isIpsec";
-    roles[IsSocks5ProxyRole] = "isSocks5Proxy";
-    roles[IsMtProxyRole] = "isMtProxy";
-    roles[IsTelemtRole] = "isTelemt";
-    roles[IsTProxyRole] = "isTProxy";
 
     return roles;
 }
@@ -64,16 +53,6 @@ QVariant ProtocolsModel::data(const QModelIndex &index, int role) const
         return static_cast<int>(clientProtocolPage(proto));
     case ProtocolIndexRole: return static_cast<int>(proto);
     case ProtocolStringRole: return ProtocolUtils::protoToString(proto);
-    case IsWireGuardRole: return proto == Proto::WireGuard;
-    case IsAwgRole: return proto == Proto::Awg;
-    case IsOpenVpnRole: return proto == Proto::OpenVpn;
-    case IsXrayRole: return proto == Proto::Xray;
-    case IsSftpRole: return proto == Proto::Sftp;
-    case IsIpsecRole: return proto == Proto::Ikev2;
-    case IsSocks5ProxyRole: return proto == Proto::Socks5Proxy;
-    case IsMtProxyRole: return proto == Proto::MtProxy;
-    case IsTelemtRole: return proto == Proto::Telemt;
-    case IsTProxyRole: return proto == Proto::TProxy;
     case RawConfigRole:
         return getRawConfig();
     case IsClientProtocolExistsRole:

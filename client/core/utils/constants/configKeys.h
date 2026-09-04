@@ -125,17 +125,10 @@ namespace amnezia
                      disableCookies };
         }
 
-        constexpr QLatin1String openvpn("openvpn");
         constexpr QLatin1String wireguard("wireguard");
-        constexpr QLatin1String sftp("sftp");
         constexpr QLatin1String awg("awg");
         constexpr QLatin1String vless("vless");
         constexpr QLatin1String xray("xray");
-        constexpr QLatin1String ssxray("ssxray");
-        constexpr QLatin1String socks5proxy("socks5proxy");
-        constexpr QLatin1String mtproxy("mtproxy");
-        constexpr QLatin1String telemt("telemt");
-        constexpr QLatin1String tproxy("tproxy");
 
         constexpr QLatin1String splitTunnelSites("splitTunnelSites");
         constexpr QLatin1String splitTunnelType("splitTunnelType");
@@ -152,11 +145,9 @@ namespace amnezia
 
         constexpr QLatin1String nameOverriddenByUser("nameOverriddenByUser");
 
-        constexpr QLatin1String amneziaOpenvpn("amnezia-openvpn");
         constexpr QLatin1String amneziaWireguard("amnezia-wireguard");
         constexpr QLatin1String amneziaAwg("amnezia-awg");
         constexpr QLatin1String amneziaXray("amnezia-xray");
-        constexpr QLatin1String amneziaSsxray("amnezia-ssxray");
         constexpr QLatin1String amneziaMasterDnsVpn("amnezia-masterdnsvpn");
         constexpr QLatin1String amneziaQqDns("amnezia-qqdns");
 

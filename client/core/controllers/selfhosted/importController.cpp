@@ -34,10 +34,6 @@ namespace
 {
     ConfigTypes checkConfigFormat(const QString &config)
     {
-        const QString openVpnConfigPatternCli = "client";
-        const QString openVpnConfigPatternDriver1 = "dev tun";
-        const QString openVpnConfigPatternDriver2 = "dev tap";
-
         const QString wireguardConfigPatternSectionInterface = "[Interface]";
         const QString wireguardConfigPatternSectionPeer = "[Peer]";
 
@@ -74,9 +70,6 @@ namespace
             return ConfigTypes::QqDns;
         } else if ((config.contains(xrayConfigPatternInbound)) && (config.contains(xrayConfigPatternOutbound))) {
             return ConfigTypes::Xray;
-        } else if (config.contains(openVpnConfigPatternCli)
-                   && (config.contains(openVpnConfigPatternDriver1) || config.contains(openVpnConfigPatternDriver2))) {
-            return ConfigTypes::OpenVpn;
         }
         return ConfigTypes::Invalid;
     }
@@ -95,7 +88,6 @@ ImportController::ImportResult ImportController::extractConfigFromData(const QSt
 {
     ImportResult result;
     result.configFileName = configFileName;
-    result.maliciousWarningText.clear();
 
     QString config = data;
     QString prefix;
@@ -106,65 +98,7 @@ ImportController::ImportResult ImportController::extractConfigFromData(const QSt
         configType = ConfigTypes::Xray;
         result.config = extractXrayConfig(
                 Utils::JsonToString(serialization::vless::Deserialize(config, &prefix, &errormsg), QJsonDocument::JsonFormat::Compact),
-                configType, prefix);
-        if (!result.config.empty()) {
-            result.configType = configType;
-            return result;
-        }
-    }
-
-    if (config.startsWith("vmess://") && config.contains("@")) {
-        configType = ConfigTypes::Xray;
-        result.config = extractXrayConfig(
-                Utils::JsonToString(serialization::vmess_new::Deserialize(config, &prefix, &errormsg), QJsonDocument::JsonFormat::Compact),
-                configType, prefix);
-        if (!result.config.empty()) {
-            result.configType = configType;
-            return result;
-        }
-    }
-
-    if (config.startsWith("vmess://")) {
-        configType = ConfigTypes::Xray;
-        result.config = extractXrayConfig(
-                Utils::JsonToString(serialization::vmess::Deserialize(config, &prefix, &errormsg), QJsonDocument::JsonFormat::Compact),
-                configType, prefix);
-        if (!result.config.empty()) {
-            result.configType = configType;
-            return result;
-        }
-    }
-
-    if (config.startsWith("trojan://")) {
-        configType = ConfigTypes::Xray;
-        result.config = extractXrayConfig(
-                Utils::JsonToString(serialization::trojan::Deserialize(config, &prefix, &errormsg), QJsonDocument::JsonFormat::Compact),
-                configType, prefix);
-        if (!result.config.empty()) {
-            result.configType = configType;
-            return result;
-        }
-    }
-
-    if (config.startsWith("ss://") && !config.contains("plugin=")) {
-        configType = ConfigTypes::ShadowSocks;
-        result.config = extractXrayConfig(
-                Utils::JsonToString(serialization::ss::Deserialize(config, &prefix, &errormsg), QJsonDocument::JsonFormat::Compact),
-                configType, prefix);
-        if (!result.config.empty()) {
-            result.configType = configType;
-            return result;
-        }
-    }
-
-    if (config.startsWith("ssd://")) {
-        QStringList tmp;
-        QList<std::pair<QString, QJsonObject>> servers = serialization::ssd::Deserialize(config, &prefix, &tmp);
-        configType = ConfigTypes::ShadowSocks;
-        // Took only first config from list
-        if (!servers.isEmpty()) {
-            result.config = extractXrayConfig(servers.first().first, configType);
-        }
+                prefix);
         if (!result.config.empty()) {
             result.configType = configType;
             return result;
@@ -233,15 +167,6 @@ ImportController::ImportResult ImportController::extractConfigFromData(const QSt
     result.configType = configType;
 
     switch (configType) {
-    case ConfigTypes::OpenVpn: {
-        result.config = extractOpenVpnConfig(config);
-        if (!result.config.empty()) {
-            checkForMaliciousStrings(result.config, result.maliciousWarningText);
-            return result;
-        }
-        result.errorCode = ErrorCode::ImportInvalidConfigError;
-        return result;
-    }
     case ConfigTypes::Awg:
     case ConfigTypes::WireGuard: {
         result.config = extractWireGuardConfig(config, result.configType);
@@ -253,7 +178,7 @@ ImportController::ImportResult ImportController::extractConfigFromData(const QSt
         return result;
     }
     case ConfigTypes::Xray: {
-        result.config = extractXrayConfig(config, configType);
+        result.config = extractXrayConfig(config);
         if (!result.config.empty()) {
             return result;
         }
@@ -281,7 +206,6 @@ ImportController::ImportResult ImportController::extractConfigFromData(const QSt
 
         processAmneziaConfig(result.config);
         if (!result.config.empty()) {
-            checkForMaliciousStrings(result.config, result.maliciousWarningText);
             return result;
         }
         result.errorCode = ErrorCode::ImportInvalidConfigError;
@@ -499,48 +423,6 @@ ConfigTypes ImportController::checkConfigFormat(const QString &config) const
     return ::checkConfigFormat(config);
 }
 
-QJsonObject ImportController::extractOpenVpnConfig(const QString &data) const
-{
-    QJsonObject openVpnConfig;
-    openVpnConfig[configKey::config] = data;
-
-    QJsonObject lastConfig;
-    lastConfig[configKey::lastConfig] = QString(QJsonDocument(openVpnConfig).toJson());
-    lastConfig[configKey::isThirdPartyConfig] = true;
-
-    QJsonObject containers;
-    containers.insert(configKey::container, QJsonValue(configKey::amneziaOpenvpn));
-    containers.insert(configKey::openvpn, QJsonValue(lastConfig));
-
-    QJsonArray arr;
-    arr.push_back(containers);
-
-    QString hostName;
-    const static QRegularExpression hostNameRegExp("remote\\s+([^\\s]+)");
-    QRegularExpressionMatch hostNameMatch = hostNameRegExp.match(data);
-    if (hostNameMatch.hasMatch()) {
-        hostName = hostNameMatch.captured(1);
-    }
-
-    QJsonObject config;
-    config[configKey::containers] = arr;
-    config[configKey::defaultContainer] = configKey::amneziaOpenvpn;
-    config[configKey::description] = m_serversRepository->nextAvailableServerName();
-
-    const static QRegularExpression dnsRegExp("dhcp-option DNS (\\b\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\b)");
-    QRegularExpressionMatchIterator dnsMatch = dnsRegExp.globalMatch(data);
-    if (dnsMatch.hasNext()) {
-        config[configKey::dns1] = dnsMatch.next().captured(1);
-    }
-    if (dnsMatch.hasNext()) {
-        config[configKey::dns2] = dnsMatch.next().captured(1);
-    }
-
-    config[configKey::hostName] = hostName;
-
-    return config;
-}
-
 QJsonObject ImportController::extractWireGuardConfig(const QString &data, ConfigTypes &configType) const
 {
     QMap<QString, QString> configMap;
@@ -642,7 +524,7 @@ QJsonObject ImportController::extractWireGuardConfig(const QString &data, Config
     wireguardConfig[configKey::lastConfig] = QString(QJsonDocument(lastConfig).toJson());
     wireguardConfig[configKey::isThirdPartyConfig] = true;
     wireguardConfig[configKey::port] = port;
-    wireguardConfig[configKey::transportProto] = protocols::openvpn::defaultTransportProto;
+    wireguardConfig[configKey::transportProto] = QStringLiteral("udp");
 
     QJsonObject containers;
     QString containerName = (protocolName == configKey::awg) ? configKey::amneziaAwg : configKey::amneziaWireguard;
@@ -672,7 +554,7 @@ QJsonObject ImportController::extractWireGuardConfig(const QString &data, Config
     return config;
 }
 
-QJsonObject ImportController::extractXrayConfig(const QString &data, ConfigTypes configType, const QString &description) const
+QJsonObject ImportController::extractXrayConfig(const QString &data, const QString &description) const
 {
     QJsonParseError parserErr;
     QJsonDocument jsonConf = QJsonDocument::fromJson(data.toLocal8Bit(), &parserErr);
@@ -697,13 +579,8 @@ QJsonObject ImportController::extractXrayConfig(const QString &data, ConfigTypes
     lastConfig[configKey::isThirdPartyConfig] = true;
 
     QJsonObject containers;
-    if (configType == ConfigTypes::ShadowSocks) {
-        containers.insert(configKey::ssxray, QJsonValue(lastConfig));
-        containers.insert(configKey::container, QJsonValue(configKey::amneziaSsxray));
-    } else {
-        containers.insert(configKey::container, QJsonValue(configKey::amneziaXray));
-        containers.insert(configKey::xray, QJsonValue(lastConfig));
-    }
+    containers.insert(configKey::container, QJsonValue(configKey::amneziaXray));
+    containers.insert(configKey::xray, QJsonValue(lastConfig));
 
     QJsonArray arr;
     arr.push_back(containers);
@@ -718,9 +595,7 @@ QJsonObject ImportController::extractXrayConfig(const QString &data, ConfigTypes
 
     QJsonObject config;
     config[configKey::containers] = arr;
-    config[configKey::defaultContainer] = (configType == ConfigTypes::ShadowSocks)
-            ? configKey::amneziaSsxray
-            : configKey::amneziaXray;
+    config[configKey::defaultContainer] = configKey::amneziaXray;
     if (description.isEmpty()) {
         config[configKey::description] = m_serversRepository->nextAvailableServerName();
     } else {
@@ -865,48 +740,6 @@ QJsonObject ImportController::extractQqDnsConfig(const QString &data, const QStr
     }
 
     return config;
-}
-
-void ImportController::checkForMaliciousStrings(const QJsonObject &serverConfig, QString &warningText) const
-{
-    const QJsonArray &containers = serverConfig.value(configKey::containers).toArray();
-    for (const QJsonValue &container : containers) {
-        auto containerConfig = container.toObject();
-        auto containerName = containerConfig[configKey::container].toString();
-        if (containerName == ContainerUtils::containerToString(DockerContainer::OpenVpn)) {
-
-            QString protocolConfig =
-                    containerConfig[ProtocolUtils::protoToString(Proto::OpenVpn)].toObject()[configKey::lastConfig].toString();
-            QString protocolConfigJson = QJsonDocument::fromJson(protocolConfig.toUtf8()).object()[configKey::config].toString();
-
-            // https://github.com/OpenVPN/openvpn/blob/master/doc/man-sections/script-options.rst
-            QStringList dangerousTags {
-                "up", "tls-verify", "ipchange", "client-connect", "route-up", "route-pre-down", "client-disconnect", "down", "learn-address", "auth-user-pass-verify"
-            };
-
-            QStringList maliciousStrings;
-            QStringList lines = protocolConfigJson.split('\n', Qt::SkipEmptyParts);
-
-            for (const QString &rawLine : lines) {
-                QString line = rawLine.trimmed();
-
-                QString command = line.section(' ', 0, 0, QString::SectionSkipEmpty);
-                if (dangerousTags.contains(command, Qt::CaseInsensitive)) {
-                    maliciousStrings << rawLine;
-                }
-            }
-
-            warningText = "This configuration contains an OpenVPN setup. OpenVPN configurations can include malicious "
-                         "scripts, so only add it if you fully trust the provider of this config. ";
-
-            if (!maliciousStrings.isEmpty()) {
-                warningText += "<br>In the imported configuration, potentially dangerous lines were found:";
-                for (const auto &string : maliciousStrings) {
-                    warningText += QString("<br><i>%1</i>").arg(string);
-                }
-            }
-        }
-    }
 }
 
 void ImportController::processAmneziaConfig(QJsonObject &config) const

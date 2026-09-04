@@ -15,8 +15,6 @@ class IpcInterface
     SLOT( bool flushDns() );
     SLOT( void resetIpStack() );
 
-    SLOT( bool checkAndInstallDriver() );
-    SLOT( QStringList getTapList() );
 
     SLOT( void cleanUp() );
     SLOT( void setLogsEnabled(bool enabled) );

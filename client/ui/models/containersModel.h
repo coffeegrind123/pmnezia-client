@@ -3,8 +3,6 @@
 
 #include <QAbstractListModel>
 #include <QJsonObject>
-#include <utility>
-#include <vector>
 
 #include "core/utils/containerEnum.h"
 #include "core/utils/containers/containerUtils.h"
@@ -28,35 +26,16 @@ public:
         ContainerStringRole,
 
         IsEasySetupContainerRole,
-        EasySetupHeaderRole,
-        EasySetupDescriptionRole,
         EasySetupOrderRole,
 
-        IsInstallationAllowedRole,
         IsInstalledRole,
         IsCurrentlyProcessedRole,
-        IsDefaultRole,
         IsSupportedRole,
-        IsShareableRole,
-
-        IsUnsupportedContainerRole,
 
         InstallPageOrderRole,
-        
-        // Container type check roles
+
         IsVpnContainerRole,
-        IsServiceContainerRole,
-        IsIpsecRole,
-        IsDnsRole,
-        IsSftpRole,
-        IsTorWebsiteRole,
-        IsSocks5ProxyRole,
-        IsMtProxyRole,
-        IsTelemtRole,
-        IsTProxyRole,
     };
-    
-    Q_INVOKABLE void openContainerSettings(int containerIndex);
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
 
@@ -73,12 +52,8 @@ public slots:
     QJsonObject getContainerConfig(const int containerIndex);
 
     bool isSupportedByCurrentPlatform(const int containerIndex);
-    bool isServiceContainer(const int containerIndex);
 
-    bool hasInstalledServices();
     bool hasInstalledProtocols();
-
-    static bool isInstallationAllowed(amnezia::DockerContainer container);
 
 protected:
     QHash<int, QByteArray> roleNames() const override;

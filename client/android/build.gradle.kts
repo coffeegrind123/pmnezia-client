@@ -168,7 +168,6 @@ dependencies {
     implementation(project(":protocolApi"))
     implementation(project(":wireguard"))
     implementation(project(":awg"))
-    implementation(project(":openvpn"))
     implementation(project(":xray"))
     implementation(project(":master_dns_vpn"))
     implementation(project(":qqdns"))

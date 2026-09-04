@@ -24,8 +24,6 @@ public:
     virtual bool routeDeleteList(const QString &gw, const QStringList &ips) override;
     virtual bool flushDns() override;
     virtual void resetIpStack() override;
-    virtual bool checkAndInstallDriver() override;
-    virtual QStringList getTapList() override;
     virtual void cleanUp() override;
     virtual void clearLogs() override;
     virtual void setLogsEnabled(bool enabled) override;

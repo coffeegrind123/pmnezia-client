@@ -16,13 +16,9 @@
 #include "ui/models/protocolsModel.h"
 #include "ui/models/protocols/awgConfigModel.h"
 #include "ui/models/protocols/wireguardConfigModel.h"
-#include "ui/models/protocols/openvpnConfigModel.h"
 #include "ui/models/protocols/xrayConfigModel.h"
 #include "ui/models/protocols/masterDnsVpnConfigModel.h"
 #include "ui/models/protocols/qqDnsConfigModel.h"
-#ifdef Q_OS_WINDOWS
-#include "ui/models/protocols/ikev2ConfigModel.h"
-#endif
 
 #include <QRegularExpression>
 
@@ -51,13 +47,9 @@ public:
                                  ProtocolsModel* protocolsModel,
                                  AwgConfigModel* awgConfigModel,
                                  WireGuardConfigModel* wireGuardConfigModel,
-                                 OpenVpnConfigModel* openVpnConfigModel,
                                  XrayConfigModel* xrayConfigModel,
                                  MasterDnsVpnConfigModel* masterDnsVpnConfigModel,
                                  QqDnsConfigModel* qqDnsConfigModel,
-#ifdef Q_OS_WINDOWS
-                                 Ikev2ConfigModel* ikev2ConfigModel,
-#endif
                                  QObject *parent = nullptr);
 
 public slots:
@@ -113,7 +105,6 @@ public slots:
     QString getServerId(int index) const;
     int getServerIndexById(const QString &serverId) const;
     int getServersCount() const;
-    QStringList getAllInstalledServicesName(int serverIndex) const;
 
 signals:
     void updateContainerFinished(const QString &message, bool closePage);
@@ -148,13 +139,9 @@ private:
     ProtocolsModel* m_protocolsModel;
     AwgConfigModel* m_awgConfigModel;
     WireGuardConfigModel* m_wireGuardConfigModel;
-    OpenVpnConfigModel* m_openVpnConfigModel;
     XrayConfigModel* m_xrayConfigModel;
     MasterDnsVpnConfigModel* m_masterDnsVpnConfigModel;
     QqDnsConfigModel* m_qqDnsConfigModel;
-#ifdef Q_OS_WINDOWS
-    Ikev2ConfigModel* m_ikev2ConfigModel;
-#endif
 
     QVector<amnezia::ServerDescription> m_orderedServerDescriptions;
     

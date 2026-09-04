@@ -14,23 +14,9 @@ namespace amnezia
             Awg,
             Awg2,
             WireGuard,
-            OpenVpn,
-            Cloak,
-            ShadowSocks,
-            Ipsec,
             Xray,
-            SSXray,
             MasterDnsVpn,
             QqDns,
-
-            // non-vpn
-            TorWebSite,
-            Dns,
-            Sftp,
-            Socks5Proxy,
-            MtProxy,
-            Telemt,
-            TProxy,
         };
         Q_ENUM_NS(DockerContainer)
     } // namespace ContainerEnumNS

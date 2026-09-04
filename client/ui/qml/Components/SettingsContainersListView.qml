@@ -38,7 +38,7 @@ ListViewType {
                 ServersUiController.processedContainerIndex = containerIndex
                 ServersUiController.updateProtocols(ServersUiController.processedServerId, containerIndex)
 
-                if (isThirdPartyConfig || isIpsec) {
+                if (isThirdPartyConfig) {
                     PageController.goToPage(PageEnum.PageProtocolRaw)
                 } else {
                     PageController.goToPage(PageEnum.PageSettingsServerProtocol)

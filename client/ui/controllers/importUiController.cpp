@@ -55,7 +55,6 @@ bool ImportUiController::extractConfigFromFile(const QString &fileName)
     
     m_config = result.config;
     m_configFileName = result.configFileName;
-    m_maliciousWarningText = result.maliciousWarningText;
     m_isNativeWireGuardConfig = result.isNativeWireGuardConfig;
     
     emit importConfigChanged();
@@ -73,7 +72,6 @@ bool ImportUiController::extractConfigFromData(QString data)
     
     m_config = result.config;
     m_configFileName = result.configFileName;
-    m_maliciousWarningText = result.maliciousWarningText;
     m_isNativeWireGuardConfig = result.isNativeWireGuardConfig;
     
     emit importConfigChanged();
@@ -91,7 +89,6 @@ bool ImportUiController::extractConfigFromQr(const QByteArray &data)
     
     m_config = result.config;
     m_configFileName = result.configFileName;
-    m_maliciousWarningText = result.maliciousWarningText;
     m_isNativeWireGuardConfig = result.isNativeWireGuardConfig;
     
     emit importConfigChanged();
@@ -106,11 +103,6 @@ QString ImportUiController::getConfig()
 QString ImportUiController::getConfigFileName()
 {
     return m_configFileName;
-}
-
-QString ImportUiController::getMaliciousWarningText()
-{
-    return m_maliciousWarningText;
 }
 
 bool ImportUiController::isNativeWireGuardConfig()
@@ -130,7 +122,6 @@ void ImportUiController::importConfig()
     
     m_config = {};
     m_configFileName.clear();
-    m_maliciousWarningText.clear();
     m_isNativeWireGuardConfig = false;
     
     emit importConfigChanged();
@@ -162,7 +153,6 @@ bool ImportUiController::parseQrCodeChunk(const QString &code)
     if (parseResult.success) {
         m_config = parseResult.importResult.config;
         m_configFileName = parseResult.importResult.configFileName;
-        m_maliciousWarningText = parseResult.importResult.maliciousWarningText;
         m_isNativeWireGuardConfig = parseResult.importResult.isNativeWireGuardConfig;
         emit importConfigChanged();
         stopDecodingQr();

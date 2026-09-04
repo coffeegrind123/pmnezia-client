@@ -14,7 +14,6 @@ namespace amnezia {
 
 enum PermittedProcess {
     Invalid,
-    OpenVPN,
     Wireguard,
     Tun2Socks,
     CertUtil,
@@ -24,8 +23,6 @@ enum PermittedProcess {
 inline QString permittedProcessPath(PermittedProcess pid)
 {
     switch (pid) {
-        case PermittedProcess::OpenVPN:
-            return Utils::openVpnExecPath();
         case PermittedProcess::Wireguard:
             return Utils::wireguardExecPath();
         case PermittedProcess::CertUtil:
@@ -60,17 +57,6 @@ inline QStringList sanitizeArguments(PermittedProcess proc, const QStringList &a
     QList<Validator> positionalArgs;
 
     switch (proc) {
-    case OpenVPN: {
-        namedArgs["--config"] = [](const QString& v) { return !v.isEmpty(); };
-        namedArgs["--management"] = [](const QString& v) { return !v.isEmpty(); };
-        namedArgs["--management-client"] = nullptr;
-        positionalArgs.append([](const QString& v) {
-            bool ok;
-            int port = v.toInt(&ok);
-            return ok && port > 0 && port <= 65535;
-        });
-        break;
-    }
     case Tun2Socks:
         namedArgs["-device"] = [](const QString& v) { return v.startsWith("tun://"); };
         namedArgs["-proxy"] = [](const QString& v) { return v.startsWith("socks5://"); };

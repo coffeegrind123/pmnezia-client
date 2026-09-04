@@ -45,9 +45,6 @@ struct ContainerConfig {
     WireGuardProtocolConfig* getWireGuardProtocolConfig();
     const WireGuardProtocolConfig* getWireGuardProtocolConfig() const;
     
-    OpenVpnProtocolConfig* getOpenVpnProtocolConfig();
-    const OpenVpnProtocolConfig* getOpenVpnProtocolConfig() const;
-    
     XrayProtocolConfig* getXrayProtocolConfig();
     const XrayProtocolConfig* getXrayProtocolConfig() const;
 
@@ -55,30 +52,6 @@ struct ContainerConfig {
     const MasterDnsVpnProtocolConfig* getMasterDnsVpnProtocolConfig() const;
     QqDnsProtocolConfig* getQqDnsProtocolConfig();
     const QqDnsProtocolConfig* getQqDnsProtocolConfig() const;
-
-    SftpProtocolConfig* getSftpProtocolConfig();
-    const SftpProtocolConfig* getSftpProtocolConfig() const;
-    
-    Socks5ProxyProtocolConfig* getSocks5ProxyProtocolConfig();
-    const Socks5ProxyProtocolConfig* getSocks5ProxyProtocolConfig() const;
-    
-    MtProxyProtocolConfig* getMtProxyProtocolConfig();
-    const MtProxyProtocolConfig* getMtProxyProtocolConfig() const;
-
-    TelemtProtocolConfig* getTelemtProtocolConfig();
-    const TelemtProtocolConfig* getTelemtProtocolConfig() const;
-
-    TProxyProtocolConfig* getTProxyProtocolConfig();
-    const TProxyProtocolConfig* getTProxyProtocolConfig() const;
-
-    Ikev2ProtocolConfig* getIkev2ProtocolConfig();
-    const Ikev2ProtocolConfig* getIkev2ProtocolConfig() const;
-    
-    TorProtocolConfig* getTorProtocolConfig();
-    const TorProtocolConfig* getTorProtocolConfig() const;
-    
-    DnsProtocolConfig* getDnsProtocolConfig();
-    const DnsProtocolConfig* getDnsProtocolConfig() const;
 };
 
 } // namespace amnezia

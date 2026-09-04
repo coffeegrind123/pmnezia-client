@@ -19,30 +19,17 @@ namespace amnezia
 
         enum Proto {
             Unknown = 0,
-            OpenVpn,
             WireGuard,
             Awg,
-            Ikev2,
             Xray,
-            SSXray,
             MasterDnsVpn,
             QqDns,
-
-            // non-vpn
-            TorWebSite,
-            Dns,
-            Sftp,
-            Socks5Proxy,
-            MtProxy,
-            Telemt,
-            TProxy,
         };
         Q_ENUM_NS(Proto)
 
         enum ServiceType {
             None = 0,
-            Vpn,
-            Other
+            Vpn
         };
         Q_ENUM_NS(ServiceType)
     } // namespace ProtocolEnumNS

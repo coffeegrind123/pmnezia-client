@@ -292,9 +292,6 @@ bool IosController::connectVpn(amnezia::Proto proto, const QJsonObject& configur
             object:m_currentTunnel.connection];
 
 
-    if (proto == amnezia::Proto::OpenVpn) {
-        return setupOpenVPN();
-    }
     if (proto == amnezia::Proto::WireGuard) {
         return setupWireGuard();
     }
@@ -303,9 +300,6 @@ bool IosController::connectVpn(amnezia::Proto proto, const QJsonObject& configur
     }
     if (proto == amnezia::Proto::Xray) {
         return setupXray();
-    }
-    if (proto == amnezia::Proto::SSXray) {
-        return setupSSXray();
     }
 
     return false;
@@ -519,36 +513,6 @@ void IosController::vpnConfigurationDidChange(void *pNotification)
     qDebug() << "IosController::vpnConfigurationDidChange" << pNotification;
 }
 
-bool IosController::setupOpenVPN()
-{
-    QJsonObject ovpn = m_rawConfig[ProtocolUtils::key_proto_config_data(amnezia::Proto::OpenVpn)].toObject();
-    QString ovpnConfig = ovpn[configKey::config].toString();
-
-    QJsonObject openVPNConfig {};
-    openVPNConfig.insert(configKey::config, ovpnConfig);
-
-    if (ovpn.contains(configKey::mtu)) {
-        openVPNConfig.insert(configKey::mtu, ovpn[configKey::mtu]);
-    } else {
-        openVPNConfig.insert(configKey::mtu, protocols::openvpn::defaultMtu);
-    }
-
-    openVPNConfig.insert(configKey::splitTunnelType, m_rawConfig[configKey::splitTunnelType]);
-
-    QJsonArray splitTunnelSites = m_rawConfig[configKey::splitTunnelSites].toArray();
-
-    for(int index = 0; index < splitTunnelSites.count(); index++) {
-        splitTunnelSites[index] = splitTunnelSites[index].toString().remove(" ");
-    }
-
-    openVPNConfig.insert(configKey::splitTunnelSites, splitTunnelSites);
-
-    QJsonDocument openVPNConfigDoc(openVPNConfig);
-    QString openVPNConfigStr(openVPNConfigDoc.toJson(QJsonDocument::Compact));
-
-    return startOpenVPN(openVPNConfigStr);
-}
-
 static void insertNonEmptyAwgParams(QJsonObject &wgConfig, const QJsonObject &config)
 {
     const QStringList awgProtocolKeys = configKey::awgProtocolKeys();
@@ -635,22 +599,6 @@ bool IosController::setupXray()
     return startXray(finalConfigStr);
 }
 
-bool IosController::setupSSXray()
-{
-    QJsonObject config = m_rawConfig[ProtocolUtils::key_proto_config_data(amnezia::Proto::SSXray)].toObject();
-    QString ssXrayConfigStr = config.value(configKey::config).toString();
-
-    QJsonObject finalConfig;
-    finalConfig.insert(configKey::dns1, m_rawConfig[configKey::dns1]);
-    finalConfig.insert(configKey::dns2, m_rawConfig[configKey::dns2]);
-    finalConfig.insert(configKey::config, ssXrayConfigStr);
-
-    QJsonDocument finalConfigDoc(finalConfig);
-    QString finalConfigStr(finalConfigDoc.toJson(QJsonDocument::Compact));
-
-    return startXray(finalConfigStr);
-}
-
 bool IosController::setupAwg()
 {
     QJsonObject config = m_rawConfig[ProtocolUtils::key_proto_config_data(amnezia::Proto::Awg)].toObject();
@@ -700,68 +648,6 @@ bool IosController::setupAwg()
     return startWireGuard(wgConfigDocStr);
 }
 
-bool IosController::startOpenVPN(const QString &config)
-{
-    qDebug() << "IosController::startOpenVPN";
-
-    NETunnelProviderProtocol *tunnelProtocol = [[NETunnelProviderProtocol alloc] init];
-    tunnelProtocol.providerBundleIdentifier = [NSString stringWithUTF8String:VPN_NE_BUNDLEID];
-    QByteArray configUtf8 = config.toUtf8();
-    NSData *ovpnConfigData = [NSData dataWithBytes:configUtf8.constData() length:configUtf8.size()];
-    tunnelProtocol.providerConfiguration = @{@"ovpn": ovpnConfigData};
-    tunnelProtocol.serverAddress = m_serverAddress;
-    if (@available(iOS 14.0, macOS 11.0, *)) {
-        int splitTunnelType = 0;
-        QJsonParseError parseError;
-        QJsonDocument doc = QJsonDocument::fromJson(config.toUtf8(), &parseError);
-        if (parseError.error == QJsonParseError::NoError && doc.isObject()) {
-            QJsonObject obj = doc.object();
-            splitTunnelType = obj.value(configKey::splitTunnelType).toInt(0);
-        }
-#if defined(MACOS_NE)
-        // On macOS NE use route-based full tunnel. includeAllNetworks enables
-        // policy-based drop-all mode and causes enforceRoutes to be ignored.
-        tunnelProtocol.includeAllNetworks = NO;
-        if (splitTunnelType == 0) {
-            tunnelProtocol.enforceRoutes = YES;
-            if (@available(iOS 14.2, macOS 11.0, *)) {
-                tunnelProtocol.excludeLocalNetworks = YES;
-            }
-        }
-#else
-        tunnelProtocol.includeAllNetworks = (splitTunnelType == 0);
-        if (@available(iOS 14.2, macOS 11.0, *)) {
-            // Keep existing iOS behavior.
-            if (splitTunnelType == 0) {
-                tunnelProtocol.excludeLocalNetworks = NO;
-            }
-        }
-#endif
-    }
-
-    m_currentTunnel.protocolConfiguration = tunnelProtocol;
-
-    NETunnelProviderProtocol *appliedProtocol = (NETunnelProviderProtocol *)m_currentTunnel.protocolConfiguration;
-    NSData *ovpnPayload = appliedProtocol.providerConfiguration[@"ovpn"];
-    NSString *payloadPreview = @"";
-    if (ovpnPayload != nil) {
-        NSString *decodedPayload = [[NSString alloc] initWithData:ovpnPayload encoding:NSUTF8StringEncoding];
-        if (decodedPayload != nil) {
-            payloadPreview = [decodedPayload substringToIndex:MIN((NSUInteger)512, decodedPayload.length)];
-        }
-    }
-
-    qDebug().noquote() << "IosController::startOpenVPN protocolConfiguration"
-                       << "bundleId=" << QString::fromNSString(appliedProtocol.providerBundleIdentifier ?: @"")
-                       << "serverAddress=" << QString::fromNSString(appliedProtocol.serverAddress ?: @"")
-                       << "providerKeys=" << QString::fromNSString([[appliedProtocol.providerConfiguration.allKeys description] copy])
-                       << "ovpnBytes=" << (ovpnPayload != nil ? ovpnPayload.length : 0);
-    qDebug().noquote() << "IosController::startOpenVPN protocolConfiguration payloadPreview="
-                       << QString::fromNSString(payloadPreview);
-
-    startTunnel();
-}
-
 bool IosController::startWireGuard(const QString &config)
 {
     qDebug() << "IosController::startWireGuard";
@@ -801,8 +687,6 @@ void IosController::startTunnel()
     NETunnelProviderProtocol *tunnelProtocol = (NETunnelProviderProtocol *)m_currentTunnel.protocolConfiguration;
     if (tunnelProtocol.providerConfiguration[@"wireguard"] != nil) {
         protocolName = @"WireGuard";
-    } else if (tunnelProtocol.providerConfiguration[@"ovpn"] != nil) {
-        protocolName = @"OpenVPN";
     }
 
     m_rxBytes = 0;

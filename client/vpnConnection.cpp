@@ -11,7 +11,6 @@
 #include <QStringList>
 #include <QTimer>
 
-#include <core/configurators/openVpnConfigurator.h>
 #include <core/configurators/wireguardConfigurator.h>
 
 #ifdef AMNEZIA_DESKTOP

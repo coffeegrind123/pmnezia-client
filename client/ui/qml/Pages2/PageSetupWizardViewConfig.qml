@@ -144,22 +144,6 @@ PageType {
                 Layout.leftMargin: 16
                 Layout.rightMargin: 16
 
-                textString: ImportController.maliciousWarningText
-                textFormat: Qt.RichText
-                visible: textString !== ""
-
-                iconPath: "qrc:/images/controls/alert-circle.svg"
-
-                textColor: AmneziaStyle.color.vibrantRed
-                imageColor: AmneziaStyle.color.vibrantRed
-            }
-
-            WarningType {
-                Layout.fillWidth: true
-                Layout.topMargin: 16
-                Layout.leftMargin: 16
-                Layout.rightMargin: 16
-
                 textString: qsTr("Use connection codes only from sources you trust. Codes from public sources may have been created to intercept your data.")
 
                 iconPath: "qrc:/images/controls/alert-circle.svg"

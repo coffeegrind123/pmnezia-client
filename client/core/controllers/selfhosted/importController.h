@@ -16,11 +16,9 @@ namespace
 {
     enum class ConfigTypes {
         Amnezia,
-        OpenVpn,
         WireGuard,
         Awg,
         Xray,
-        ShadowSocks,
         MasterDnsVpn,
         QqDns,
         Backup,
@@ -40,7 +38,6 @@ public:
         ErrorCode errorCode = ErrorCode::NoError;
         QJsonObject config;
         QString configFileName;
-        QString maliciousWarningText;
         ConfigTypes configType = ConfigTypes::Invalid;
         bool isNativeWireGuardConfig = false;
     };
@@ -75,9 +72,8 @@ signals:
 
 private:
     ConfigTypes checkConfigFormat(const QString &config) const;
-    QJsonObject extractOpenVpnConfig(const QString &data) const;
     QJsonObject extractWireGuardConfig(const QString &data, ConfigTypes &configType) const;
-    QJsonObject extractXrayConfig(const QString &data, ConfigTypes configType, const QString &description = "") const;
+    QJsonObject extractXrayConfig(const QString &data, const QString &description = "") const;
     // Build an Amnezia server config from a MasterDnsVPN client_config JSON
     // (the upstream UPPER_SNAKE schema produced by awg-easy-rs's
     // `mdnsvpn://b64?` share blob and `mdnsvpn -json_base64`). `data` is the
@@ -90,7 +86,6 @@ private:
     // QQ-DNS (UDP-over-DNS) import: a JSON object with a "qqdns" transport block
     // and an embedded "awg" AmneziaWG config. Builds the canonical container.
     QJsonObject extractQqDnsConfig(const QString &data, const QString &description = "") const;
-    void checkForMaliciousStrings(const QJsonObject &serverConfig, QString &warningText) const;
     void processAmneziaConfig(QJsonObject &config) const;
 
     SecureServersRepository* m_serversRepository;

@@ -15,18 +15,9 @@
 
 #include "core/models/protocols/awgProtocolConfig.h"
 #include "core/models/protocols/wireGuardProtocolConfig.h"
-#include "core/models/protocols/openVpnProtocolConfig.h"
 #include "core/models/protocols/xrayProtocolConfig.h"
 #include "core/models/protocols/masterDnsVpnProtocolConfig.h"
 #include "core/models/protocols/qqDnsProtocolConfig.h"
-#include "core/models/protocols/sftpProtocolConfig.h"
-#include "core/models/protocols/socks5ProxyProtocolConfig.h"
-#include "core/models/protocols/ikev2ProtocolConfig.h"
-#include "core/models/protocols/torProtocolConfig.h"
-#include "core/models/protocols/dnsProtocolConfig.h"
-#include "core/models/protocols/mtProxyProtocolConfig.h"
-#include "core/models/protocols/telemtProtocolConfig.h"
-#include "core/models/protocols/tProxyProtocolConfig.h"
 
 namespace amnezia
 {
@@ -37,18 +28,9 @@ struct ProtocolConfig {
     using Variant = std::variant<
         AwgProtocolConfig,
         WireGuardProtocolConfig,
-        OpenVpnProtocolConfig,
         XrayProtocolConfig,
         MasterDnsVpnProtocolConfig,
-        QqDnsProtocolConfig,
-        SftpProtocolConfig,
-        Socks5ProxyProtocolConfig,
-        MtProxyProtocolConfig,
-        TelemtProtocolConfig,
-        TProxyProtocolConfig,
-        Ikev2ProtocolConfig,
-        TorProtocolConfig,
-        DnsProtocolConfig
+        QqDnsProtocolConfig
     >;
     
     Variant data;

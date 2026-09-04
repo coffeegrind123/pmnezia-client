@@ -4,7 +4,6 @@
 #include <QList>
 #include <QMap>
 #include <QString>
-#include <QStringList>
 #include <QJsonObject>
 
 #include "core/utils/containerEnum.h"
@@ -34,18 +33,11 @@ namespace amnezia
         Proto defaultProtocol(DockerContainer c);
 
         bool isSupportedByCurrentPlatform(DockerContainer c);
-        QStringList fixedPortsForContainer(DockerContainer c);
 
         bool isEasySetupContainer(DockerContainer container);
-        QString easySetupHeader(DockerContainer container);
-        QString easySetupDescription(DockerContainer container);
         int easySetupOrder(DockerContainer container);
 
-        bool isShareable(DockerContainer container);
-
         bool isAwgContainer(DockerContainer container);
-
-        bool isUnsupportedContainer(DockerContainer container);
 
         QJsonObject getProtocolConfigFromContainer(const Proto protocol, const QJsonObject &containerConfig);
 

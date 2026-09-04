@@ -97,7 +97,6 @@ target_sources(${CLIENT_IOS_NE_TARGET_NAME} PRIVATE
     ${CLIENT_ROOT_DIR}/platforms/ios/LogRecord.swift
     ${CLIENT_ROOT_DIR}/platforms/ios/PacketTunnelProvider.swift
     ${CLIENT_ROOT_DIR}/platforms/ios/PacketTunnelProvider+WireGuard.swift
-    ${CLIENT_ROOT_DIR}/platforms/ios/PacketTunnelProvider+OpenVPN.swift
     ${CLIENT_ROOT_DIR}/platforms/ios/PacketTunnelProvider+Xray.swift
     ${CLIENT_ROOT_DIR}/platforms/ios/WGConfig.swift
     ${CLIENT_ROOT_DIR}/platforms/ios/XrayConfig.swift
@@ -115,13 +114,7 @@ set_property(TARGET ${CLIENT_IOS_NE_TARGET_NAME} APPEND PROPERTY RESOURCE
 target_include_directories(${CLIENT_IOS_NE_TARGET_NAME} PRIVATE ${CLIENT_ROOT_DIR})
 target_include_directories(${CLIENT_IOS_NE_TARGET_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-find_package(openvpnadapter REQUIRED)
 # FIXME(ygurov): https://github.com/conan-io/conan/issues/20034
-set_property(TARGET amnezia::openvpnadapter APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
-set_property(TARGET amnezia::openvpnadapter APPEND PROPERTY IMPORTED_CONFIGURATIONS MINSIZEREL)
-set_property(TARGET amnezia::openvpnadapter APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
-set_property(TARGET amnezia::openvpnadapter APPEND PROPERTY IMPORTED_CONFIGURATIONS RELWITHDEBINFO)
-target_link_libraries(${CLIENT_IOS_NE_TARGET_NAME} PRIVATE amnezia::openvpnadapter)
 
 find_package(awg-apple REQUIRED)
 target_link_libraries(${CLIENT_IOS_NE_TARGET_NAME} PRIVATE amnezia::awg-apple)

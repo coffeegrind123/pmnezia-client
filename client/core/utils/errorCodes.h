@@ -19,22 +19,11 @@ namespace amnezia
         AmneziaServiceNotRunning = 103,
         NotSupportedOnThisPlatform = 104,
 
-        // Local errors
-        OpenVpnConfigMissing = 500,
-        OpenVpnManagementServerError = 501,
-
         // Distro errors
-        OpenVpnExecutableMissing = 600,
         AmneziaServiceConnectionFailed = 603,
         ExecutableMissing = 604,
         XrayExecutableMissing = 605,
         Tun2SockExecutableMissing = 606,
-
-        // VPN errors
-        OpenVpnAdaptersInUseError = 700,
-        OpenVpnUnknownError = 701,
-        OpenVpnTapAdapterError = 702,
-        AddressPoolError = 703,
 
         // 3rd party utils errors
         OpenSslFailed = 800,
@@ -47,7 +36,6 @@ namespace amnezia
         NoInstalledContainersError = 902,
         ImportBackupFileUseRestoreInstead = 903,
         RestoreBackupInvalidError = 904,
-        LegacyContainerNotSupportedError = 906,
 
         // Android errors
         AndroidError = 1000,

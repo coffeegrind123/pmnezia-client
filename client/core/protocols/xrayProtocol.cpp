@@ -43,10 +43,6 @@ XrayProtocol::XrayProtocol(const QJsonObject &configuration, QObject *parent) : 
 
     QJsonObject xrayConfiguration = configuration.value(ProtocolUtils::key_proto_config_data(Proto::Xray)).toObject();
     if (xrayConfiguration.isEmpty()) {
-        xrayConfiguration = configuration.value(ProtocolUtils::key_proto_config_data(Proto::SSXray)).toObject();
-    }
-
-    if (xrayConfiguration.isEmpty()) {
         qWarning() << "Xray config wrapper is empty";
         m_xrayConfig = {};
     }

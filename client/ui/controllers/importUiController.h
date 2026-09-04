@@ -11,7 +11,6 @@ class ImportUiController : public QObject
 
     Q_PROPERTY(QString config READ getConfig NOTIFY importConfigChanged)
     Q_PROPERTY(QString configFileName READ getConfigFileName NOTIFY importConfigChanged)
-    Q_PROPERTY(QString maliciousWarningText READ getMaliciousWarningText NOTIFY importConfigChanged)
     Q_PROPERTY(bool isNativeWireGuardConfig READ isNativeWireGuardConfig NOTIFY importConfigChanged)
 
 public:
@@ -25,7 +24,6 @@ public slots:
     bool extractConfigFromQr(const QByteArray &data);
     QString getConfig();
     QString getConfigFileName();
-    QString getMaliciousWarningText();
     bool isNativeWireGuardConfig();
     void processNativeWireGuardConfig();
     QString readTextFile(const QString &fileName);
@@ -58,7 +56,6 @@ private:
 
     QJsonObject m_config;
     QString m_configFileName;
-    QString m_maliciousWarningText;
     bool m_isNativeWireGuardConfig;
 
 #if defined Q_OS_ANDROID
