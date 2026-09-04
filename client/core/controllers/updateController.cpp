@@ -1,6 +1,10 @@
 #include "updateController.h"
 
 #include <QFile>
+#include <QIODevice>
+#include <QProcess>
+#include <QStandardPaths>
+#include <QTemporaryDir>
 #include <QDesktopServices>
 #include <QJsonArray>
 #include <QJsonDocument>

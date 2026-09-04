@@ -213,7 +213,7 @@ QJsonObject ConnectionController::createConnectionConfiguration(const QPair<QStr
         }
     };
 
-    auto configurator = ConfiguratorBase::create(proto, nullptr);
+    auto configurator = ConfiguratorBase::create(proto);
     // SOCKS5-proxy-mode protocols whose stored ProtocolConfig is already
     // complete (e.g. MasterDnsVpn) have no dedicated configurator — the
     // local-settings step (DNS injection into a native config string) is a

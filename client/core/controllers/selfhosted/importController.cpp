@@ -1,6 +1,7 @@
 #include "importController.h"
 
 #include <QDataStream>
+#include <QIODevice>
 #include <QDebug>
 #include <QJsonArray>
 #include <QJsonDocument>
