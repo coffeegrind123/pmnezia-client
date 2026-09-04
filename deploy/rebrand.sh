@@ -57,13 +57,15 @@ say() { printf '  %s\n' "$*"; }
 
 # ---------------------------------------------------------------- guards ----
 # Already applied? Re-running must be a no-op rather than a corruption.
+ALREADY=0
 if grep -q "$BRAND_APP_NAME" client/cmake/branding/common.cmake 2>/dev/null; then
-    echo "rebrand: already applied ($BRAND_APP_NAME present in branding/common.cmake); nothing to do"
-    exit 0
+    echo "rebrand: already applied ($BRAND_APP_NAME present in branding/common.cmake); skipping rewrite"
+    ALREADY=1
+    CHECK_ONLY=1
 fi
 
-if [[ $CHECK_ONLY -eq 1 ]]; then
-    echo "rebrand: --check, tree is on upstream naming (not yet rebranded)"
+if [[ $CHECK_ONLY -eq 1 && $ALREADY -eq 0 ]]; then
+    echo "rebrand: --check, verifying only; no files will be modified"
 fi
 
 # Files eligible for content rewriting. Excludes vendored code, git internals
@@ -88,9 +90,9 @@ eligible_files() {
 }
 
 # ------------------------------------------------------------- rewriting ----
-echo "rebrand: applying $BRAND_APP_NAME"
-
 if [[ $CHECK_ONLY -eq 0 ]]; then
+    echo "rebrand: applying $BRAND_APP_NAME"
+
     mapfile -t FILES < <(eligible_files)
 
     # Identity tokens. Order matters only in that the longest, most specific
@@ -117,8 +119,19 @@ if [[ $CHECK_ONLY -eq 0 ]]; then
             -e "s|https://amnezia\.host[^\"']*|${BRAND_HOMEPAGE}|g" \
             -e "s|https://t\.me/amnezia[a-z_]*|${BRAND_SUPPORT_URL}|g" \
             -e "s|https://telegram\.me/amnezia[a-z_]*|${BRAND_SUPPORT_URL}|g" \
-            -e "s|amnezia\.host|${BRAND_HOMEPAGE}|g" \
-            -e "s|amnezia\.org|${BRAND_HOMEPAGE}|g" \
+            "$f"
+    done
+
+    # Bare domains with no scheme are display text ("amnezia.org" shown to the
+    # user) and only ever appear in QML. Rewriting them tree-wide also hits
+    # infrastructure hostnames that merely end in the same domain - notably the
+    # conan remote at artifactory.amnezia.org, which is not ours to rename and
+    # whose mangling breaks dependency resolution outright.
+    for f in "${FILES[@]}"; do
+        [[ "$f" == *.qml ]] || continue
+        LC_ALL=C sed -i \
+            -e "s|amnezia\\.host|${BRAND_HOMEPAGE}|g" \
+            -e "s|amnezia\\.org|${BRAND_HOMEPAGE}|g" \
             "$f"
     done
     say "repointed upstream links to ${BRAND_HOMEPAGE}"
@@ -165,6 +178,19 @@ require 'amnezia::'             'service/server/CMakeLists.txt' 'conan cmake tar
 require 'AmneziaWG'             'client/core/utils/containers/containerUtils.cpp' 'protocol name'
 require 'namespace amnezia'     'client/core/utils/protocolEnum.h' 'internal C++ namespace'
 require 'AMNEZIAVPN_VERSION'    'CMakeLists.txt'                'version var read by CI'
+require 'artifactory.amnezia.org' 'cmake/recipes_bootstrap.cmake' 'conan remote host'
+
+# A substitution that ate a hostname leaves a doubled scheme behind. That is
+# exactly how artifactory.amnezia.org was first broken, so it is an assertion.
+if grep -rn 'https://[^"'"'"' ]*https://' --include='*.cmake' --include='*.cpp' \
+        --include='*.h' --include='*.qml' --include='*.yml' . 2>/dev/null \
+        | grep -v '^./.git/' | head -5 | grep -q .; then
+    echo "  FAIL: a rewritten URL contains a doubled scheme:" >&2
+    grep -rn 'https://[^"'"'"' ]*https://' --include='*.cmake' --include='*.cpp' \
+        --include='*.h' --include='*.qml' --include='*.yml' . 2>/dev/null \
+        | grep -v '^./.git/' | head -5 >&2
+    fail=1
+fi
 
 if [[ $fail -ne 0 ]]; then
     echo "rebrand: FAILED - a protected identifier was renamed; refusing to continue" >&2
