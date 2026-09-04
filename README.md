@@ -40,6 +40,28 @@ Config import still accepts: AmneziaWG and WireGuard `.conf`, `vless://`, `mdnsv
 
 Everything else tracks upstream `dev`; this fork is rebased/merged against it regularly.
 
+### Branding
+
+The app ships as **PmneziaVPN**, but the tree is deliberately kept on upstream's
+Amnezia naming so that merges from `amnezia-vpn/amnezia-client` keep applying.
+The rename is applied per build instead: `deploy/rebrand.sh` rewrites the working
+tree from values in `deploy/brand.env`, and CI runs it right after checkout. To
+change the brand, edit `deploy/brand.env` and nothing else - the workflow reads
+the same file so artifact names stay in sync with what the build emits.
+
+Four things are deliberately **not** renamed, and the script fails the build if
+any of them is:
+
+| Kept | Why |
+| --- | --- |
+| `AmneziaWG` | The protocol, not the app. awg-easy-rs serves it under this name and the config format uses it; renaming would leave this client calling the protocol something the server that issued the config does not. |
+| `amnezia-libxray`, `amnezia-xray-bindings`, `amnezia::` | Conan package names and the CMake imported-target namespace they export. Renaming makes conan look for packages that do not exist. |
+| `namespace amnezia` | Internal C++ namespace - invisible to users, and spelled identically to the CMake target namespace above. |
+| `AMNEZIAVPN_VERSION` | Read out of `CMakeLists.txt` by the release job to derive the version. |
+
+The replacement tokens are chosen so none of the above can be hit: `AmneziaVPN`
+is disjoint from `AmneziaWG`, and bare `Amnezia` is never substituted.
+
 ---
 
 ## Downloads
