@@ -9,7 +9,6 @@
 #include <guiddef.h>
 #include <initguid.h>
 #include <netfw.h>
-#include <qaccessible.h>
 #include <qassert.h>
 #include <stdio.h>
 #include <windows.h>
