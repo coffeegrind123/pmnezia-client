@@ -1,6 +1,5 @@
 #include <QDebug>
 #include <QTimer>
-#include <libssh/libssh.h>
 #include <openssl/ssl.h>
 
 #include "amneziaApplication.h"
@@ -55,11 +54,6 @@ int main(int argc, char *argv[])
     OsSignalHandler::setup();
 
     anchorOpenSSL();
-
-    ssh_init();
-    QObject::connect(&app, &QCoreApplication::aboutToQuit, []() {
-        ssh_finalize();
-    });
 
 #if !defined(Q_OS_ANDROID) && !defined(Q_OS_IOS) && !defined(MACOS_NE)
     if (isAnotherInstanceRunning()) {
