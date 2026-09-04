@@ -23,8 +23,6 @@ public:
                                QObject* parent = nullptr);
     ~SettingsController() = default;
 
-    void toggleAmneziaDns(bool enable);
-    bool isAmneziaDnsEnabled() const;
 
     QString getPrimaryDns() const;
     void setPrimaryDns(const QString &dns);

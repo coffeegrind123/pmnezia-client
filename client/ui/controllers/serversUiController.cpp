@@ -206,12 +206,6 @@ void ServersUiController::setDefaultContainer(const QString &serverId, int conta
     updateModel();
 }
 
-void ServersUiController::toggleAmneziaDns(bool enabled)
-{
-    m_settingsController->toggleAmneziaDns(enabled);
-    updateModel();
-}
-
 void ServersUiController::onDefaultServerChanged(const QString &defaultServerId)
 {
     m_serversModel->setDefaultServerId(defaultServerId);
@@ -377,49 +371,6 @@ void ServersUiController::setProcessedServerId(const QString &serverId)
 bool ServersUiController::isDefaultServerCurrentlyProcessed() const
 {
     return m_serversController->getDefaultServerId() == m_processedServerId;
-}
-
-bool ServersUiController::serverHasOutdatedAwgContainer(const QString &serverId) const
-{
-    const QMap<DockerContainer, ContainerConfig> containers = m_serversController->getServerContainersMap(serverId);
-    for (DockerContainer container : { DockerContainer::Awg, DockerContainer::Awg2 }) {
-        if (!containers.contains(container)) {
-            continue;
-        }
-        if (const auto* awgConfig = containers.value(container).getAwgProtocolConfig()) {
-            if (awgConfig->serverConfig.protocolVersion != protocols::awg::awgV3) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-bool ServersUiController::defaultServerHasOutdatedAwgContainer() const
-{
-    return serverHasOutdatedAwgContainer(getDefaultServerId());
-}
-
-bool ServersUiController::isContainerOutdatedAwg(int containerIndex) const
-{
-    DockerContainer container = static_cast<DockerContainer>(containerIndex);
-    if (!ContainerUtils::isAwgContainer(container)) {
-        return false;
-    }
-
-    const QMap<DockerContainer, ContainerConfig> containers = m_serversController->getServerContainersMap(m_processedServerId);
-    if (!containers.contains(container)) {
-        return false;
-    }
-    if (const auto* awgConfig = containers.value(container).getAwgProtocolConfig()) {
-        return awgConfig->serverConfig.protocolVersion != protocols::awg::awgV3;
-    }
-    return false;
-}
-
-bool ServersUiController::isProcessedContainerOutdatedAwg() const
-{
-    return isContainerOutdatedAwg(m_processedContainerIndex);
 }
 
 const ServerDescription &ServersUiController::processedServerDescription() const

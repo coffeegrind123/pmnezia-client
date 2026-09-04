@@ -19,14 +19,12 @@ ListViewType {
     delegate: ColumnLayout {
         width: root.width
 
-        property bool isOutdatedAwgContainer: Boolean(isInstalled && ServersUiController.isContainerOutdatedAwg(root.model.mapToSource(index)))
 
         LabelWithButtonType {
             Layout.fillWidth: true
 
             text: name
             descriptionText: description
-            rightWarningImageSource: isOutdatedAwgContainer ? "qrc:/images/controls/alert-circle.svg" : ""
             rightImageSource: isInstalled ? "qrc:/images/controls/chevron-right.svg" : ""
 
             clickedFunction: function() {

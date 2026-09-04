@@ -54,7 +54,7 @@ PageType {
                 Layout.leftMargin: 16
                 Layout.rightMargin: 16
                 
-                text: qsTr("If AmneziaDNS is not used or installed")
+                text: qsTr("Used while the VPN is connected, unless the imported config specifies its own")
             }
         }
 

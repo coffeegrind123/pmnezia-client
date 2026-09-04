@@ -29,14 +29,8 @@ ServerDescription buildBaseDescription(const T &server)
     ServerDescription row;
     row.hostName = server.hostName;
     row.defaultContainer = server.defaultContainer;
-    row.primaryDnsIsAmnezia = (server.dns1 == protocols::dns::amneziaDnsIp);
     row.hasInstalledVpnContainers = computeHasInstalledVpnContainers(server.containers);
     return row;
-}
-
-QString getBaseDescription(bool primaryDnsIsAmnezia)
-{
-    return primaryDnsIsAmnezia ? QStringLiteral("Amnezia DNS | ") : QString();
 }
 
 QString getProtocolName(DockerContainer defaultContainer, const QMap<DockerContainer, ContainerConfig> &containers)
@@ -68,7 +62,7 @@ ServerDescription buildDescription(const T &server)
 {
     ServerDescription row = buildBaseDescription(server);
     row.serverName = server.displayName;
-    row.baseDescription = getBaseDescription(row.primaryDnsIsAmnezia);
+    row.baseDescription = QString();
 
     const QString protocolName = getProtocolName(server.defaultContainer, server.containers);
     row.expandedServerDescription = row.baseDescription + row.hostName;

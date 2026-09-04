@@ -32,8 +32,6 @@ public:
     Q_PROPERTY(bool startMinimized READ isStartMinimizedEnabled NOTIFY startMinimizedChanged)
 
 public slots:
-    void toggleAmneziaDns(bool enable);
-    bool isAmneziaDnsEnabled();
 
     QString getPrimaryDns();
     void setPrimaryDns(const QString &dns);
@@ -114,7 +112,6 @@ signals:
 
     void importBackupFromOutside(QString filePath);
 
-    void amneziaDnsToggled(bool enable);
 
     void loggingDisableByWatcher();
 

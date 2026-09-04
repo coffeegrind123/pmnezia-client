@@ -18,7 +18,6 @@ struct ServerDescription
     QString baseDescription;
     QString hostName;
 
-    bool primaryDnsIsAmnezia = false;
     DockerContainer defaultContainer = DockerContainer::None;
     bool hasInstalledVpnContainers = false;
 

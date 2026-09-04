@@ -70,10 +70,6 @@ PageType {
 
                     text: name
 
-                    leftImageSource: ServersUiController.serverHasOutdatedAwgContainer(serverId) ? "qrc:/images/controls/alert-circle.svg" : ""
-                    leftImageColor: AmneziaStyle.color.goldenApricot
-                    isSmallLeftImage: true
-                    isLeftImageHoverEnabled: false
 
                     descriptionText: hostName
                     rightImageSource: "qrc:/images/controls/chevron-right.svg"

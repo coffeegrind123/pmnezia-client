@@ -39,17 +39,6 @@ SettingsUiController::SettingsUiController(SettingsController* settingsControlle
     }
 }
 
-void SettingsUiController::toggleAmneziaDns(bool enable)
-{
-    m_settingsController->toggleAmneziaDns(enable);
-    emit amneziaDnsToggled(enable);
-}
-
-bool SettingsUiController::isAmneziaDnsEnabled()
-{
-    return m_settingsController->isAmneziaDnsEnabled();
-}
-
 QString SettingsUiController::getPrimaryDns()
 {
     return m_settingsController->getPrimaryDns();
@@ -157,8 +146,6 @@ void SettingsUiController::restoreAppConfigFromData(const QByteArray &data)
     if (errorCode == ErrorCode::NoError) {
         emit appLanguageChanged();
 
-        bool amneziaDnsEnabled = m_settingsController->isAmneziaDnsEnabled();
-        emit amneziaDnsToggled(amneziaDnsEnabled);
 
         emit restoreBackupFinished();
         emit autoStartChanged();

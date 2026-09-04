@@ -20,7 +20,6 @@ private:
     void initTranslationsUpdatedHandler();
     void initLanguageHandler();
     void initAutoConnectHandler();
-    void initAmneziaDnsToggledHandler();
     void initServersModelUpdateHandler();
     void initSitesModelUpdateHandler();
     void initAllowedDnsModelUpdateHandler();

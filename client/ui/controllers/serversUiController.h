@@ -33,7 +33,6 @@ class ServersUiController : public QObject
     Q_PROPERTY(QString defaultServerDescriptionCollapsed READ getDefaultServerDescriptionCollapsed NOTIFY defaultServerIdChanged)
     Q_PROPERTY(QString defaultServerDescriptionExpanded READ getDefaultServerDescriptionExpanded NOTIFY defaultServerIdChanged)
     Q_PROPERTY(bool isDefaultServerDefaultContainerHasSplitTunneling READ isDefaultServerDefaultContainerHasSplitTunneling NOTIFY defaultServerIdChanged)
-    Q_PROPERTY(bool defaultServerHasOutdatedAwgContainer READ defaultServerHasOutdatedAwgContainer NOTIFY defaultServerIdChanged)
     
     Q_PROPERTY(QString processedServerId READ getProcessedServerId WRITE setProcessedServerId NOTIFY processedServerIdChanged)
     Q_PROPERTY(int processedContainerIndex READ getProcessedContainerIndex WRITE setProcessedContainerIndex NOTIFY processedContainerIndexChanged)
@@ -73,7 +72,6 @@ public slots:
     void setDefaultContainer(const QString &serverId, int containerIndex);
     void setDefaultContainerAtIndex(int index, int containerIndex);
 
-    void toggleAmneziaDns(bool enabled);
     void onDefaultServerChanged(const QString &defaultServerId);
     
     // Getters for properties
@@ -84,10 +82,6 @@ public slots:
     QString getDefaultServerDescriptionExpanded() const;
     bool isDefaultServerDefaultContainerHasSplitTunneling() const;
 
-    bool serverHasOutdatedAwgContainer(const QString &serverId) const;
-    bool defaultServerHasOutdatedAwgContainer() const;
-    bool isContainerOutdatedAwg(int containerIndex) const;
-    bool isProcessedContainerOutdatedAwg() const;
 
     QString serverName(const QString &serverId) const;
     QString serverHostName(const QString &serverId) const;

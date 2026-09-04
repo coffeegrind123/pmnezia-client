@@ -20,8 +20,6 @@ PageType {
 
     property var containersDropDownRef: null
 
-    readonly property bool isOutdatedAwgWarningVisible: drawer.isCollapsedStateActive()
-                                                        && ServersUiController.defaultServerHasOutdatedAwgContainer
 
     Connections {
         target: Qt.application
@@ -304,9 +302,7 @@ PageType {
                     objectName: "rowLayoutLabel"
                     Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                     Layout.topMargin: 8
-                    Layout.bottomMargin: root.isOutdatedAwgWarningVisible
-                                         ? 8
-                                         : (drawer.isCollapsedStateActive ? 44 : 16)
+                    Layout.bottomMargin: drawer.isCollapsedStateActive ? 44 : 16
                     spacing: 0
 
                     BasicButtonType {
@@ -342,22 +338,6 @@ PageType {
                     }
                 }
 
-                WarningType {
-                    objectName: "outdatedContainerWarning"
-
-                    Layout.fillWidth: true
-                    Layout.leftMargin: 16
-                    Layout.rightMargin: 16
-                    Layout.bottomMargin: 24
-
-                    visible: root.isOutdatedAwgWarningVisible
-
-                    backGroundColor: AmneziaStyle.color.transparent
-                    iconPath: "qrc:/images/controls/alert-circle.svg"
-                    imageColor: AmneziaStyle.color.goldenApricot
-                    textColor: AmneziaStyle.color.goldenApricot
-                    textString: qsTr("AmneziaWG 2.0 is outdated and no longer supported. Continued use requires a fresh installation of the AmneziaWG 3.1 container.")
-                }
             }
 
             ColumnLayout {

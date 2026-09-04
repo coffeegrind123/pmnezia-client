@@ -48,17 +48,6 @@ void SecureAppSettingsRepository::setAppLanguage(QLocale locale)
     emit appLanguageChanged(locale);
 }
 
-bool SecureAppSettingsRepository::useAmneziaDns() const
-{
-    return value("Conf/useAmneziaDns", true).toBool();
-}
-
-void SecureAppSettingsRepository::setUseAmneziaDns(bool enabled)
-{
-    setValue("Conf/useAmneziaDns", enabled);
-    emit useAmneziaDnsChanged(enabled);
-}
-
 QStringList SecureAppSettingsRepository::getAllowedDnsServers() const
 {
     return value("Conf/allowedDnsServers").toStringList();

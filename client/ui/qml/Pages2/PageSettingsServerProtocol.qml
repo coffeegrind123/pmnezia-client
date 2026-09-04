@@ -17,7 +17,6 @@ import "../Components"
 PageType {
     id: root
 
-    property bool isOutdatedAwgContainer: ServersUiController.isProcessedContainerOutdatedAwg()
 
     BackButtonType {
         id: backButton
@@ -49,24 +48,11 @@ PageType {
                 Layout.fillWidth: true
                 Layout.leftMargin: 16
                 Layout.rightMargin: 16
-                Layout.bottomMargin: root.isOutdatedAwgContainer ? 16 : 32
+                Layout.bottomMargin: 32
 
                 headerText: ContainersModel.getProcessedContainerName() + qsTr(" settings")
             }
 
-            WarningType {
-                Layout.fillWidth: true
-                Layout.leftMargin: 16
-                Layout.rightMargin: 16
-                Layout.bottomMargin: 16
-
-                visible: root.isOutdatedAwgContainer
-
-                iconPath: "qrc:/images/controls/alert-circle.svg"
-                imageColor: AmneziaStyle.color.goldenApricot
-                textColor: AmneziaStyle.color.goldenApricot
-                textString: qsTr("AmneziaWG 2.0 is outdated and does not include the latest security improvements, but it will continue to work. Moving to AmneziaWG 3.1 by deploying a new container on the server is recommended for stronger protocol security")
-            }
         }
 
         model: ProtocolsModel

@@ -57,7 +57,6 @@ void CoreSignalHandlers::initAllHandlers()
     initTranslationsUpdatedHandler();
     initLanguageHandler();
     initAutoConnectHandler();
-    initAmneziaDnsToggledHandler();
     initServersModelUpdateHandler();
     initSitesModelUpdateHandler();
     initAllowedDnsModelUpdateHandler();
@@ -139,11 +138,6 @@ void CoreSignalHandlers::initAutoConnectHandler()
         && !m_coreController->m_serversController->getDefaultServerId().isEmpty()) {
         QTimer::singleShot(1000, this, [this]() { m_coreController->m_connectionUiController->openConnection(); });
     }
-}
-
-void CoreSignalHandlers::initAmneziaDnsToggledHandler()
-{
-    connect(m_coreController->m_appSettingsRepository, &SecureAppSettingsRepository::useAmneziaDnsChanged, m_coreController->m_serversUiController, &ServersUiController::updateModel);
 }
 
 void CoreSignalHandlers::initServersModelUpdateHandler()
