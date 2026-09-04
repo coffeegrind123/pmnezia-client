@@ -16,7 +16,6 @@
 #include <Ws2tcpip.h>
 #include "winsock.h"
 
-#include <QApplication>
 #include <QFileInfo>
 #include <QHostAddress>
 #include <QNetworkInterface>

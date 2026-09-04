@@ -4,7 +4,7 @@
 
 #include "windowsservicemanager.h"
 
-#include <QApplication>
+#include <QCoreApplication>
 #include <QTimer>
 
 #include "Windows.h"

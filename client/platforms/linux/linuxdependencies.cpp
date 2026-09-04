@@ -9,7 +9,6 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
-#include <QMessageBox>
 #include <QDBusInterface>
 #include <QCoreApplication>
 #include <QProcess>
@@ -22,11 +21,10 @@ namespace {
 Logger logger("LinuxDependencies");
 
 void showAlert(const QString& message) {
+  // This file is only ever compiled into AmneziaVPN-service, which is a
+  // headless daemon: it links no QtWidgets and has no screen to put a modal
+  // on. Log instead of raising a QMessageBox.
   logger.debug() << "Show alert:" << message;
-
-  QMessageBox alert;
-  alert.setText(message);
-  alert.exec();
 }
 
 bool checkDaemonVersion() {

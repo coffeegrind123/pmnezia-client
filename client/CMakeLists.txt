@@ -61,6 +61,10 @@ target_include_directories(${PROJECT} PUBLIC
 )
 target_compile_definitions(${PROJECT} PRIVATE
     CLIENT_KEYCHAIN_NAME_STR=\"${CLIENT_KEYCHAIN_NAME}\"
+    # Marks a target that links Qt6::Gui. Shared sources under common/ use this
+    # to compile out QtGui-only paths for AmneziaVPN-service, which links
+    # neither Gui nor Widgets.
+    AMNEZIA_HAS_QTGUI
 )
 
 if(WIN32 OR (APPLE AND NOT IOS AND NOT MACOS_NE) OR (LINUX AND NOT ANDROID))

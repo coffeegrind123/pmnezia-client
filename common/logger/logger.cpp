@@ -2,7 +2,13 @@
 
 #include <QDateTime>
 #include <QDebug>
-#include <QDesktopServices>
+// QDesktopServices is QtGui. logger.cpp is compiled into both the client
+// (which links Qt6::Gui) and AmneziaVPN-service (a headless daemon that
+// deliberately links neither Gui nor Widgets), so the one function that needs
+// it is guarded on AMNEZIA_HAS_QTGUI, defined only for the client target.
+#ifdef AMNEZIA_HAS_QTGUI
+    #include <QDesktopServices>
+#endif
 #include <QDir>
 #include <QJsonDocument>
 #include <QMetaEnum>
@@ -171,15 +177,24 @@ QString Logger::getServiceLogFile()
 
 bool Logger::openLogsFolder(bool isServiceLogger)
 {
+#ifdef AMNEZIA_HAS_QTGUI
     QString path = isServiceLogger ? systemLogDir() : userLogsDir();
-#ifdef Q_OS_WIN
+    #ifdef Q_OS_WIN
     path = "file:///" + path;
-#endif
+    #endif
     if (!QDesktopServices::openUrl(QUrl::fromLocalFile(path))) {
         qWarning() << "Can't open url:" << path;
         return false;
     }
     return true;
+#else
+    // Reached only in the headless service build. Opening a file manager is a
+    // client-only action (SettingsUiController::openLogsFolder is its sole
+    // caller), so there is nothing sensible to do here.
+    Q_UNUSED(isServiceLogger)
+    qWarning() << "openLogsFolder is not available in the service build";
+    return false;
+#endif
 }
 
 void Logger::clearLogs(bool isServiceLogger)
