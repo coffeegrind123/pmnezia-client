@@ -137,7 +137,6 @@ signals:
     void cancelInstallation();
 
     void cachedProfileCleared(const QString &message);
-    void apiConfigRemoved(const QString &message);
 
     void configValidated(bool isValid);
 

@@ -56,8 +56,6 @@ public:
     bool isScreenshotsEnabled() const;
     void toggleScreenshotsEnabled(bool enable);
 
-    bool isNewsNotificationsEnabled() const;
-    void toggleNewsNotificationsEnabled(bool enable);
 
     bool isAutoUpdateCheckEnabled() const;
     void toggleAutoUpdateCheckEnabled(bool enable);
@@ -81,8 +79,6 @@ public:
     bool isDevGatewayEnv() const;
     void toggleDevGatewayEnv(bool enabled);
 
-    bool isHomeAdLabelVisible() const;
-    void disableHomeAdLabel();
 
     void checkIfNeedDisableLogs();
 

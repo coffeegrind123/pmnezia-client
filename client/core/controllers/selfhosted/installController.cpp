@@ -28,7 +28,6 @@
 #include "core/installers/wireguardInstaller.h"
 #include "core/installers/xrayInstaller.h"
 #include "core/utils/networkUtilities.h"
-#include "core/utils/api/apiUtils.h"
 #include "core/repositories/secureServersRepository.h"
 #include "core/repositories/secureAppSettingsRepository.h"
 #include "core/utils/selfhosted/scriptsRegistry.h"

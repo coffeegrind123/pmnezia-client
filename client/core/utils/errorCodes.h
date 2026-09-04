@@ -80,35 +80,10 @@ namespace amnezia
         NoInstalledContainersError = 902,
         ImportBackupFileUseRestoreInstead = 903,
         RestoreBackupInvalidError = 904,
-        LegacyApiV1NotSupportedError = 905,
         LegacyContainerNotSupportedError = 906,
 
         // Android errors
         AndroidError = 1000,
-
-        // Api errors
-        ApiConfigDownloadError = 1100,
-        ApiConfigAlreadyAdded = 1101,
-        ApiConfigEmptyError = 1102,
-        ApiConfigTimeoutError = 1103,
-        ApiConfigSslError = 1104,
-        ApiMissingAgwPublicKey = 1105,
-        ApiConfigDecryptionError = 1106,
-        ApiServicesMissingError = 1107,
-        ApiConfigLimitError = 1108,
-        ApiNotFoundError = 1109,
-        ApiUpdateRequestError = 1111,
-        ApiSubscriptionExpiredError = 1112,
-        ApiPurchaseError = 1113,
-        ApiSubscriptionNotActiveError = 1114,
-        ApiNoPurchasedSubscriptionsError = 1115,
-        ApiTrialAlreadyUsedError = 1116,
-        ApiCaptchaRequiredError = 1117,
-        ApiCaptchaInvalidError = 1118,
-        ApiCaptchaRefreshError = 1119,
-        ApiRateLimitError = 1120,
-        ApiNoPurchasesToRestore = 1121,
-        ApiPurchasePendingError = 1122,
 
         // QFile errors
         OpenError = 1200,

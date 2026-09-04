@@ -9,8 +9,6 @@
 #include "core/utils/routeModes.h"
 #include "core/utils/commonStructs.h"
 #include "core/utils/serverConfigUtils.h"
-#include "core/utils/constants/apiKeys.h"
-#include "core/utils/constants/apiConstants.h"
 #include "core/utils/constants/configKeys.h"
 #include "core/utils/networkUtilities.h"
 
@@ -374,16 +372,6 @@ void SecureAppSettingsRepository::setScreenshotsEnabled(bool enabled)
     emit screenshotsEnabledChanged(enabled);
 }
 
-bool SecureAppSettingsRepository::isNewsNotifications() const
-{
-    return value("Conf/newsNotifications", true).toBool();
-}
-
-void SecureAppSettingsRepository::setNewsNotifications(bool enabled)
-{
-    setValue("Conf/newsNotifications", enabled);
-}
-
 bool SecureAppSettingsRepository::isAutoUpdateCheckEnabled() const
 {
     return value("Conf/autoUpdateCheck", true).toBool();
@@ -429,26 +417,6 @@ QString SecureAppSettingsRepository::getInstallationUuid(bool createIfNotExists)
         const_cast<SecureAppSettingsRepository*>(this)->setValue("Conf/installationUuid", uuid);
     }
     return uuid;
-}
-
-QStringList SecureAppSettingsRepository::getReadNewsIds() const
-{
-    return value("News/readIds").toStringList();
-}
-
-void SecureAppSettingsRepository::setReadNewsIds(const QStringList &ids)
-{
-    setValue("News/readIds", ids);
-}
-
-bool SecureAppSettingsRepository::isHomeAdLabelVisible() const
-{
-    return value("Conf/homeAdLabelVisible", true).toBool();
-}
-
-void SecureAppSettingsRepository::disableHomeAdLabel()
-{
-    setValue("Conf/homeAdLabelVisible", false);
 }
 
 QByteArray SecureAppSettingsRepository::backupAppConfig() const

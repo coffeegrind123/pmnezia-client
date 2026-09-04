@@ -52,10 +52,8 @@ public:
     void setConnectionState(Vpn::ConnectionState state);
 
     QJsonObject createConnectionConfiguration(const QPair<QString, QString> &dns,
-                                             bool isApiConfig,
                                              const QString &hostName,
                                              const QString &description,
-                                             int configVersion,
                                              const ContainerConfig &containerConfig,
                                              DockerContainer container);
 

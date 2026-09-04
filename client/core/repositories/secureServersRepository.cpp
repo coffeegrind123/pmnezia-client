@@ -7,7 +7,6 @@
 #include <QUuid>
 
 #include "core/utils/serverConfigUtils.h"
-#include "core/utils/constants/apiKeys.h"
 #include "core/utils/constants/configKeys.h"
 
 using namespace amnezia;
@@ -49,19 +48,6 @@ QString storedServerDisplayName(const SecureServersRepository *repository, const
         break;
     case Kind::Native:
         if (const auto cfg = repository->nativeConfig(serverId)) {
-            return cfg->displayName;
-        }
-        break;
-    case Kind::AmneziaPremiumV2:
-    case Kind::AmneziaFreeV3:
-    case Kind::ExternalPremium:
-        if (const auto cfg = repository->apiV2Config(serverId)) {
-            return cfg->displayName;
-        }
-        break;
-    case Kind::AmneziaPremiumV1:
-    case Kind::AmneziaFreeV2:
-        if (const auto cfg = repository->legacyApiConfig(serverId)) {
             return cfg->displayName;
         }
         break;
@@ -346,32 +332,6 @@ std::optional<NativeServerConfig> SecureServersRepository::nativeConfig(const QS
         return std::nullopt;
     }
     return NativeServerConfig::fromJson(strippedJson);
-}
-
-std::optional<ApiV2ServerConfig> SecureServersRepository::apiV2Config(const QString &serverId) const
-{
-    const auto it = m_serverJsonById.constFind(serverId);
-    if (it == m_serverJsonById.constEnd()) {
-        return std::nullopt;
-    }
-    const QJsonObject strippedJson = withoutStorageServerId(it.value());
-    if (!serverConfigUtils::isApiV2Subscription(serverConfigUtils::configTypeFromJson(strippedJson))) {
-        return std::nullopt;
-    }
-    return ApiV2ServerConfig::fromJson(strippedJson);
-}
-
-std::optional<LegacyApiServerConfig> SecureServersRepository::legacyApiConfig(const QString &serverId) const
-{
-    const auto it = m_serverJsonById.constFind(serverId);
-    if (it == m_serverJsonById.constEnd()) {
-        return std::nullopt;
-    }
-    const QJsonObject strippedJson = withoutStorageServerId(it.value());
-    if (!serverConfigUtils::isLegacyApiSubscription(serverConfigUtils::configTypeFromJson(strippedJson))) {
-        return std::nullopt;
-    }
-    return LegacyApiServerConfig::fromJson(strippedJson);
 }
 
 int SecureServersRepository::serversCount() const

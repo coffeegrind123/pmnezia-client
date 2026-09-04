@@ -165,33 +165,6 @@ PageType {
                 }
             }
 
-            DividerType {
-                visible: !GC.isMobile() && ServersUiController.hasServersFromGatewayApi
-            }
-
-            SwitcherType {
-                id: switcherNewsNotificationEnabled
-
-                visible: ServersUiController.hasServersFromGatewayApi
-
-                Layout.fillWidth: true
-                Layout.margins: 16
-
-                text: qsTr("News Notification")
-                descriptionText: qsTr("Show a notification icon for unread news")
-
-                checked: SettingsController.isNewsNotificationsEnabled()
-                onToggled: function() {
-                    if (checked !== SettingsController.isNewsNotificationsEnabled()) {
-                        SettingsController.toggleNewsNotificationsEnabled(checked)
-                    }
-                }
-            }
-
-            DividerType {
-                visible: ServersUiController.hasServersFromGatewayApi
-            }
-
             SwitcherType {
                 id: switcherAutoUpdateCheck
 

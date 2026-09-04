@@ -230,16 +230,6 @@ void SettingsUiController::toggleScreenshotsEnabled(bool enable)
     m_settingsController->toggleScreenshotsEnabled(enable);
 }
 
-bool SettingsUiController::isNewsNotificationsEnabled()
-{
-    return m_settingsController->isNewsNotificationsEnabled();
-}
-
-void SettingsUiController::toggleNewsNotificationsEnabled(bool enable)
-{
-    m_settingsController->toggleNewsNotificationsEnabled(enable);
-}
-
 bool SettingsUiController::isAutoUpdateCheckEnabled()
 {
     return m_settingsController->isAutoUpdateCheckEnabled();
@@ -356,15 +346,4 @@ bool SettingsUiController::isOnTv()
 #else
     return false;
 #endif
-}
-
-bool SettingsUiController::isHomeAdLabelVisible()
-{
-    return m_settingsController->isHomeAdLabelVisible();
-}
-
-void SettingsUiController::disableHomeAdLabel()
-{
-    m_settingsController->disableHomeAdLabel();
-    emit isHomeAdLabelVisibleChanged(false);
 }

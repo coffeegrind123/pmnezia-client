@@ -174,15 +174,6 @@ PageType {
                 }
             }
 
-            AdLabel {
-                id: adLabel
-
-                Layout.fillWidth: true
-                Layout.preferredHeight: adLabel.contentHeight
-                Layout.leftMargin: 16
-                Layout.rightMargin: 16
-                Layout.topMargin: 22
-            }
         }
     }
 
@@ -315,11 +306,11 @@ PageType {
                     Layout.topMargin: 8
                     Layout.bottomMargin: root.isOutdatedAwgWarningVisible
                                          ? 8
-                                         : (drawer.isCollapsedStateActive ? 44 : ServersUiController.isDefaultServerFromApi ? 61 : 16)
+                                         : (drawer.isCollapsedStateActive ? 44 : 16)
                     spacing: 0
 
                     BasicButtonType {
-                        enabled: (ServersUiController.defaultServerImagePathCollapsed !== "") && drawer.isCollapsedStateActive
+                        enabled: false
                         hoverEnabled: enabled
 
                         implicitHeight: 36
@@ -338,10 +329,6 @@ PageType {
                         buttonTextLabel.font.weight: 400
 
                         text: drawer.isCollapsedStateActive ? ServersUiController.defaultServerDescriptionCollapsed : ServersUiController.defaultServerDescriptionExpanded
-                        leftImageSource: ServersUiController.defaultServerImagePathCollapsed
-                        leftImageColor: ""
-                        changeLeftImageSize: false
-
                         rightImageSource: hoverEnabled ? "qrc:/images/controls/chevron-down.svg" : ""
 
                         Keys.onEnterPressed: this.clicked()
@@ -384,8 +371,6 @@ PageType {
                 RowLayout {
                     Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                     spacing: 8
-
-                    visible: !ServersUiController.isDefaultServerFromApi
 
                     DropDownType {
                         id: containersDropDown

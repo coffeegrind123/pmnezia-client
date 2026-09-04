@@ -2,11 +2,7 @@
 
 #include <QMap>
 
-#include "core/utils/serverConfigUtils.h"
-#include "core/utils/constants/apiKeys.h"
-#include "core/utils/constants/apiConstants.h"
 #include "core/utils/constants/protocolConstants.h"
-#include "core/utils/api/apiUtils.h"
 #include "core/utils/containers/containerUtils.h"
 #include "core/protocols/protocolUtils.h"
 #include "core/models/protocols/awgProtocolConfig.h"
@@ -131,61 +127,6 @@ ServerDescription buildServerDescription(const NativeServerConfig &server, bool 
     const QString protocolName = getProtocolName(server.defaultContainer, server.containers);
     row.expandedServerDescription = row.baseDescription + row.hostName;
     row.collapsedServerDescription = row.baseDescription + protocolName + row.hostName;
-    return row;
-}
-
-ServerDescription buildServerDescription(const LegacyApiServerConfig &server, bool /*isAmneziaDnsEnabled*/)
-{
-    ServerDescription row = buildBaseDescription(server);
-    row.configVersion = serverConfigUtils::ConfigSource::Telegram;
-    row.isApiV1 = true;
-    row.isServerFromGatewayApi = false;
-    row.hasWriteAccess = false;
-
-    row.serverName = server.displayName;
-    row.baseDescription = server.description;
-
-    const QString fullDescriptionForCollapsed = row.baseDescription;
-    row.collapsedServerDescription = fullDescriptionForCollapsed;
-    row.expandedServerDescription = fullDescriptionForCollapsed;
-    return row;
-}
-
-ServerDescription buildServerDescription(const ApiV2ServerConfig &server, bool /*isAmneziaDnsEnabled*/)
-{
-    ServerDescription row = buildBaseDescription(server);
-    row.configVersion = serverConfigUtils::ConfigSource::AmneziaGateway;
-    row.isApiV2 = true;
-    row.isServerFromGatewayApi = true;
-    row.isPremium = server.isPremium() || server.isExternalPremium();
-    row.hasWriteAccess = false;
-
-    row.serverName = server.displayName;
-    row.baseDescription = server.apiConfig.serverCountryCode.isEmpty() ? server.description : server.apiConfig.serverCountryName;
-
-    row.isCountrySelectionAvailable = !server.apiConfig.availableCountries.isEmpty();
-    row.apiAvailableCountries = server.apiConfig.availableCountries;
-    row.apiServerCountryCode = server.apiConfig.serverCountryCode;
-    row.apiServerCountryCodeL10n = server.apiConfig.serverCountryCodeL10n;
-
-    row.isAdVisible = server.apiConfig.serviceInfo.isAdVisible;
-    row.adHeader = server.apiConfig.serviceInfo.adHeader;
-    row.adDescription = server.apiConfig.serviceInfo.adDescription;
-    row.adEndpoint = server.apiConfig.serviceInfo.adEndpoint;
-    row.isRenewalAvailable = server.apiConfig.serviceInfo.isRenewalAvailable;
-
-    if (!server.apiConfig.isInAppPurchase) {
-        if (server.apiConfig.subscriptionExpiredByServer) {
-            row.isSubscriptionExpired = true;
-        } else if (!server.apiConfig.subscription.endDate.isEmpty()) {
-            row.isSubscriptionExpired = apiUtils::isSubscriptionExpired(server.apiConfig.subscription.endDate);
-            row.isSubscriptionExpiringSoon = apiUtils::isSubscriptionExpiringSoon(server.apiConfig.subscription.endDate);
-        }
-    }
-
-    const QString fullDescriptionForCollapsed = row.baseDescription;
-    row.collapsedServerDescription = fullDescriptionForCollapsed;
-    row.expandedServerDescription = fullDescriptionForCollapsed;
     return row;
 }
 

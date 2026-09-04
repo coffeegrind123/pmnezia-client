@@ -7,8 +7,6 @@
 #include <QJsonDocument>
 
 #include "core/utils/serverConfigUtils.h"
-#include "core/utils/constants/apiKeys.h"
-#include "core/utils/constants/apiConstants.h"
 #include "core/utils/selfhosted/sshSession.h"
 #include "core/utils/networkUtilities.h"
 
@@ -16,7 +14,6 @@
     #include "core/utils/swiftBridge.h"
 #endif
 
-#include "core/utils/api/apiUtils.h"
 
 using namespace amnezia;
 
@@ -54,13 +51,12 @@ QVariant ServersModel::data(const QModelIndex &index, int role) const
     }
 
     const ServerDescription &row = m_descriptions.at(index.row());
-    const int configVersion = row.configVersion;
 
     switch (role) {
     case NameRole:
         return row.serverName;
     case ServerDescriptionRole:
-        return configVersion ? row.baseDescription : (row.baseDescription + row.hostName);
+        return row.baseDescription + row.hostName;
     case HostNameRole:
         return row.hostName;
     case ServerIdRole:
@@ -75,12 +71,6 @@ QVariant ServersModel::data(const QModelIndex &index, int role) const
         return QVariant::fromValue(row.defaultContainer);
     case HasInstalledContainers:
         return row.hasInstalledVpnContainers;
-    case IsServerFromGatewayApiRole:
-        return row.isServerFromGatewayApi;
-    case IsSubscriptionExpiredRole:
-        return row.isSubscriptionExpired;
-    case IsSubscriptionExpiringSoonRole:
-        return row.isSubscriptionExpiringSoon;
     }
 
     return QVariant();
@@ -138,9 +128,6 @@ QHash<int, QByteArray> ServersModel::roleNames() const
     roles[DefaultContainerRole] = "defaultContainer";
     roles[HasInstalledContainers] = "hasInstalledContainers";
 
-    roles[IsServerFromGatewayApiRole] = "isServerFromGatewayApi";
-    roles[IsSubscriptionExpiredRole] = "isSubscriptionExpired";
-    roles[IsSubscriptionExpiringSoonRole] = "isSubscriptionExpiringSoon";
 
     return roles;
 }

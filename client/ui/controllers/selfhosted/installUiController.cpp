@@ -11,7 +11,6 @@
 #include <QtConcurrent>
 #include <utility>
 
-#include "core/utils/api/apiUtils.h"
 #include "core/controllers/selfhosted/installController.h"
 #include "core/controllers/connectionController.h"
 #include "core/utils/networkUtilities.h"

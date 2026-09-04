@@ -19,9 +19,6 @@
 #include "core/models/protocols/masterDnsVpnProtocolConfig.h"
 #include "core/models/protocols/qqDnsProtocolConfig.h"
 #include "core/utils/serverConfigUtils.h"
-#include "core/utils/constants/apiKeys.h"
-#include "core/utils/constants/apiConstants.h"
-#include "core/utils/api/apiUtils.h"
 #include "core/utils/serialization/serialization.h"
 #include "core/utils/utilities.h"
 #include "core/utils/protocolEnum.h"
@@ -51,8 +48,6 @@ namespace
         const QString amneziaConfigPatternHostName = "hostName";
         const QString amneziaConfigPatternUserName = "userName";
         const QString amneziaConfigPatternPassword = "password";
-        const QString amneziaFreeConfigPattern = "api_key";
-        const QString amneziaPremiumConfigPattern = "auth_data";
         const QString backupPattern = "Servers/serversList";
 
         // MasterDnsVPN client_config JSON (upstream UPPER_SNAKE schema). Two
@@ -63,8 +58,7 @@ namespace
 
         if (config.contains(backupPattern)) {
             return ConfigTypes::Backup;
-        } else if (config.contains(amneziaConfigPattern) || config.contains(amneziaFreeConfigPattern)
-                   || config.contains(amneziaPremiumConfigPattern)
+        } else if (config.contains(amneziaConfigPattern)
                    || (config.contains(amneziaConfigPatternHostName) && config.contains(amneziaConfigPatternUserName)
                        && config.contains(amneziaConfigPatternPassword))) {
             return ConfigTypes::Amnezia;
@@ -285,18 +279,6 @@ ImportController::ImportResult ImportController::extractConfigFromData(const QSt
     case ConfigTypes::Amnezia: {
         result.config = QJsonDocument::fromJson(config.toUtf8()).object();
 
-        if (serverConfigUtils::isServerFromApi(result.config)) {
-            auto apiConfig = result.config.value(apiDefs::key::apiConfig).toObject();
-            apiConfig[apiDefs::key::vpnKey] = data;
-            result.config[apiDefs::key::apiConfig] = apiConfig;
-        }
-
-        if (serverConfigUtils::isLegacyApiSubscription(serverConfigUtils::configTypeFromJson(result.config))) {
-            result.errorCode = ErrorCode::LegacyApiV1NotSupportedError;
-            result.config = {};
-            return result;
-        }
-
         processAmneziaConfig(result.config);
         if (!result.config.empty()) {
             checkForMaliciousStrings(result.config, result.maliciousWarningText);
@@ -472,29 +454,6 @@ void ImportController::importConfig(const QJsonObject &config)
     if (credentials.isValid() || config.contains(configKey::containers)) {
         m_serversRepository->addServer(QString(), config, serverConfigUtils::configTypeFromJson(config));
         emit importFinished();
-    } else if (config.contains(configKey::configVersion)) {
-        quint16 crc = qChecksum(QJsonDocument(config).toJson());
-        bool hasServerWithCrc = false;
-        const QVector<QString> ids = m_serversRepository->orderedServerIds();
-        for (const QString &id : ids) {
-            const auto apiV2 = m_serversRepository->apiV2Config(id);
-            if (!apiV2.has_value()) {
-                continue;
-            }
-            if (static_cast<quint16>(apiV2->crc) == crc) {
-                hasServerWithCrc = true;
-                break;
-            }
-        }
-
-        if (hasServerWithCrc) {
-            emit importErrorOccurred(ErrorCode::ApiConfigAlreadyAdded, true);
-        } else {
-            QJsonObject configWithCrc = config;
-            configWithCrc.insert(configKey::crc, crc);
-            m_serversRepository->addServer(QString(), configWithCrc, serverConfigUtils::configTypeFromJson(configWithCrc));
-            emit importFinished();
-        }
     } else {
         qDebug() << "Failed to import profile";
         qDebug().noquote() << QJsonDocument(config).toJson();

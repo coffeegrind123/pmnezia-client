@@ -77,8 +77,6 @@ public:
     void setStartMinimized(bool enabled);
     bool isScreenshotsEnabled() const;
     void setScreenshotsEnabled(bool enabled);
-    bool isNewsNotifications() const;
-    void setNewsNotifications(bool enabled);
 
     bool isAutoUpdateCheckEnabled() const;
     void setAutoUpdateCheckEnabled(bool enabled);
@@ -88,11 +86,7 @@ public:
     void setLogEnableDate(const QDateTime &date);
     
     QString getInstallationUuid(bool createIfNotExists) const;
-    QStringList getReadNewsIds() const;
-    void setReadNewsIds(const QStringList &ids);
 
-    bool isHomeAdLabelVisible() const;
-    void disableHomeAdLabel();
     QByteArray backupAppConfig() const;
     bool restoreAppConfig(const QByteArray &cfg);
     void clearSettings();

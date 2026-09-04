@@ -13,8 +13,6 @@ set(HEADERS ${HEADERS}
     ${CLIENT_ROOT_DIR}/core/protocols/protocolUtils.h
     ${CLIENT_ROOT_DIR}/core/utils/constants/configKeys.h
     ${CLIENT_ROOT_DIR}/core/utils/constants/protocolConstants.h
-    ${CLIENT_ROOT_DIR}/core/utils/constants/apiKeys.h
-    ${CLIENT_ROOT_DIR}/core/utils/constants/apiConstants.h
     ${CLIENT_ROOT_DIR}/core/utils/errorStrings.h
     ${CLIENT_ROOT_DIR}/core/utils/selfhosted/scriptsRegistry.h
     ${CLIENT_ROOT_DIR}/core/utils/qrCodeUtils.h
@@ -55,13 +53,11 @@ set(HEADERS ${HEADERS}
     ${CMAKE_CURRENT_BINARY_DIR}/version.h
     ${CLIENT_ROOT_DIR}/core/utils/selfhosted/sshClient.h
     ${CLIENT_ROOT_DIR}/core/utils/networkUtilities.h
-    ${CLIENT_ROOT_DIR}/core/utils/payloadSender.h
     ${CLIENT_ROOT_DIR}/core/utils/serialization/serialization.h
     ${CLIENT_ROOT_DIR}/core/utils/serialization/transfer.h
     ${CLIENT_ROOT_DIR}/../common/logger/logger.h
     ${CLIENT_ROOT_DIR}/../common/crypto/cryptoUtils.h
     ${CLIENT_ROOT_DIR}/ui/utils/qmlUtils.h
-    ${CLIENT_ROOT_DIR}/core/utils/api/apiUtils.h
     ${CLIENT_ROOT_DIR}/core/utils/osSignalHandler.h
     ${CLIENT_ROOT_DIR}/core/utils/swiftBridge.h
     ${CLIENT_ROOT_DIR}/core/utils/utilities.h
@@ -153,7 +149,6 @@ set(SOURCES ${SOURCES}
     ${CLIENT_ROOT_DIR}/core/protocols/vpnProtocol.cpp
     ${CLIENT_ROOT_DIR}/core/utils/selfhosted/sshClient.cpp
     ${CLIENT_ROOT_DIR}/core/utils/networkUtilities.cpp
-    ${CLIENT_ROOT_DIR}/core/utils/payloadSender.cpp
     ${CLIENT_ROOT_DIR}/core/utils/serialization/outbound.cpp
     ${CLIENT_ROOT_DIR}/core/utils/serialization/inbound.cpp
     ${CLIENT_ROOT_DIR}/core/utils/serialization/ss.cpp
@@ -165,7 +160,6 @@ set(SOURCES ${SOURCES}
     ${CLIENT_ROOT_DIR}/../common/logger/logger.cpp
     ${CLIENT_ROOT_DIR}/../common/crypto/cryptoUtils.cpp
     ${CLIENT_ROOT_DIR}/ui/utils/qmlUtils.cpp
-    ${CLIENT_ROOT_DIR}/core/utils/api/apiUtils.cpp
     ${CLIENT_ROOT_DIR}/core/utils/serverConfigUtils.cpp
     ${CLIENT_ROOT_DIR}/core/utils/osSignalHandler.cpp
     ${CLIENT_ROOT_DIR}/core/utils/utilities.cpp
@@ -251,25 +245,21 @@ file(GLOB UI_MODELS_H CONFIGURE_DEPENDS
     ${CLIENT_ROOT_DIR}/ui/models/protocols/*.h
     ${CLIENT_ROOT_DIR}/ui/models/services/*.h
     ${CLIENT_ROOT_DIR}/ui/models/utils/*.h
-    ${CLIENT_ROOT_DIR}/ui/models/api/*.h
 )
 file(GLOB UI_MODELS_CPP CONFIGURE_DEPENDS
     ${CLIENT_ROOT_DIR}/ui/models/*.cpp
     ${CLIENT_ROOT_DIR}/ui/models/protocols/*.cpp
     ${CLIENT_ROOT_DIR}/ui/models/services/*.cpp
     ${CLIENT_ROOT_DIR}/ui/models/utils/*.cpp
-    ${CLIENT_ROOT_DIR}/ui/models/api/*.cpp
 )
 
 file(GLOB UI_CONTROLLERS_H CONFIGURE_DEPENDS
     ${CLIENT_ROOT_DIR}/ui/controllers/*.h
-    ${CLIENT_ROOT_DIR}/ui/controllers/api/*.h
     ${CLIENT_ROOT_DIR}/ui/controllers/qml/*.h
     ${CLIENT_ROOT_DIR}/ui/controllers/selfhosted/*.h
 )
 file(GLOB UI_CONTROLLERS_CPP CONFIGURE_DEPENDS
     ${CLIENT_ROOT_DIR}/ui/controllers/*.cpp
-    ${CLIENT_ROOT_DIR}/ui/controllers/api/*.cpp
     ${CLIENT_ROOT_DIR}/ui/controllers/qml/*.cpp
     ${CLIENT_ROOT_DIR}/ui/controllers/selfhosted/*.cpp
 )

@@ -37,16 +37,6 @@ PageType {
         anchors.right: parent.right
         anchors.left: parent.left
 
-        property var isServerFromApi: ServersUiController.isDefaultServerFromApi
-
-        enabled: !isServerFromApi
-
-        Component.onCompleted: {
-            if (isServerFromApi) {
-                PageController.showNotificationMessage(qsTr("Default server does not support custom DNS"))
-            }
-        }
-
         header: ColumnLayout {
             width: listView.width
             spacing: 16

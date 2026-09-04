@@ -4,7 +4,6 @@
 #include <QJsonValue>
 
 #include "core/models/selfhosted/selfHostedAdminServerConfig.h"
-#include "core/utils/constants/apiKeys.h"
 #include "core/utils/constants/configKeys.h"
 
 namespace
@@ -34,55 +33,8 @@ bool hasThirdPartyConfig(const QJsonObject &json)
 namespace serverConfigUtils
 {
 
-bool isServerFromApi(const QJsonObject &serverConfigObject)
-{
-    const int configVersion = serverConfigObject.value(amnezia::configKey::configVersion).toInt();
-    switch (configVersion) {
-    case ConfigSource::Telegram:
-    case ConfigSource::AmneziaGateway:
-        return true;
-    default:
-        return false;
-    }
-}
-
-ConfigSource getConfigSource(const QJsonObject &serverConfigObject)
-{
-    return static_cast<ConfigSource>(serverConfigObject.value(amnezia::configKey::configVersion).toInt());
-}
-
 ConfigType configTypeFromJson(const QJsonObject &serverConfigObject)
 {
-    const int configVersion = serverConfigObject.value(amnezia::configKey::configVersion).toInt();
-
-    switch (configVersion) {
-    case ConfigSource::Telegram:
-        // Amnezia premium/free gateway endpoints removed in this fork; such
-        // configs fall through to self-hosted classification below.
-        [[fallthrough]];
-    case ConfigSource::AmneziaGateway: {
-        constexpr QLatin1String servicePremium("amnezia-premium");
-        constexpr QLatin1String serviceFree("amnezia-free");
-        constexpr QLatin1String serviceExternalPremium("external-premium");
-
-        const QJsonObject apiConfigObject = serverConfigObject.value(apiDefs::key::apiConfig).toObject();
-        const QString serviceTypeStr = apiConfigObject.value(apiDefs::key::serviceType).toString();
-
-        if (serviceTypeStr == servicePremium) {
-            return ConfigType::AmneziaPremiumV2;
-        }
-        if (serviceTypeStr == serviceFree) {
-            return ConfigType::AmneziaFreeV3;
-        }
-        if (serviceTypeStr == serviceExternalPremium) {
-            return ConfigType::ExternalPremium;
-        }
-        break;
-    }
-    default:
-        break;
-    }
-
     if (hasThirdPartyConfig(serverConfigObject)) {
         return ConfigType::Native;
     }
@@ -90,23 +42,6 @@ ConfigType configTypeFromJson(const QJsonObject &serverConfigObject)
     const amnezia::SelfHostedAdminServerConfig adminProbe =
             amnezia::SelfHostedAdminServerConfig::fromJson(serverConfigObject);
     return adminProbe.hasCredentials() ? ConfigType::SelfHostedAdmin : ConfigType::SelfHostedUser;
-}
-
-bool isLegacyApiSubscription(ConfigType configType)
-{
-    return configType == ConfigType::AmneziaPremiumV1 || configType == ConfigType::AmneziaFreeV2;
-}
-
-bool isApiV2Subscription(ConfigType configType)
-{
-    switch (configType) {
-    case ConfigType::AmneziaPremiumV2:
-    case ConfigType::AmneziaFreeV3:
-    case ConfigType::ExternalPremium:
-        return true;
-    default:
-        return false;
-    }
 }
 
 } // namespace serverConfigUtils

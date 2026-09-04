@@ -50,7 +50,6 @@ signals:
     void connectButtonClicked();
     void preparingConfig();
     void prepareConfig();
-    void unsupportedConnectDrawerRequested();
     void noInstalledContainers();
 
 private:

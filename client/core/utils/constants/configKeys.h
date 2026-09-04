@@ -24,14 +24,7 @@ namespace amnezia
         constexpr QLatin1String cert("cert");
         constexpr QLatin1String accessToken("api_key");
         constexpr QLatin1String config("config");
-        constexpr QLatin1String configVersion("config_version");
 
-        constexpr QLatin1String sendPayload("send_payload");
-        constexpr QLatin1String sendPayloadEndpoint("endpoint");
-        constexpr QLatin1String sendPayloadTimeoutMs("timeout_ms");
-        constexpr QLatin1String sendPayloadProtocol("protocol");
-        constexpr QLatin1String sendPayloadData("payload");
-        constexpr QLatin1String sendPayloadExpectedResponse("expected_response");
 
         constexpr QLatin1String containers("containers");
         constexpr QLatin1String container("container");
@@ -154,7 +147,6 @@ namespace amnezia
 
         constexpr QLatin1String killSwitchOption("killSwitchOption");
 
-        constexpr QLatin1String crc("crc");
 
         constexpr QLatin1String clientId("clientId");
 

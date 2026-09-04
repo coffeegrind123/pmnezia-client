@@ -150,11 +150,6 @@ void ConnectionUiController::toggleConnection()
 
 void ConnectionUiController::notifyConnectionBlocked(ErrorCode errorCode)
 {
-    if (errorCode == ErrorCode::LegacyApiV1NotSupportedError) {
-        emit unsupportedConnectDrawerRequested();
-        return;
-    }
-
     if (errorCode == ErrorCode::NoInstalledContainersError) {
         emit noInstalledContainers();
         return;

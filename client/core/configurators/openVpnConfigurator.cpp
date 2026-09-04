@@ -155,7 +155,7 @@ ProtocolConfig OpenVpnConfigurator::processConfigWithLocalSettings(const Connect
 
     QString config = protocolConfig.nativeConfig();
 
-    if (!settings.isApiConfig) {
+    {
         QRegularExpression regex("redirect-gateway.*");
         config.replace(regex, "");
 

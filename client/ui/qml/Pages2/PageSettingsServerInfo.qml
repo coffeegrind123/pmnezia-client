@@ -93,9 +93,7 @@ PageType {
                 if (root.processedServer == null) {
                     return ""
                 }
-                if (ServersUiController.isServerFromApi(ServersUiController.processedServerId)) {
-                    return root.processedServer.serverDescription
-                } else if (ServersUiController.isProcessedServerHasWriteAccess()) {
+                if (ServersUiController.isProcessedServerHasWriteAccess()) {
                     return root.processedServer.credentialsLogin + " · " + root.processedServer.hostName
                 } else {
                     return root.processedServer.hostName
@@ -123,9 +121,7 @@ PageType {
 
             Layout.fillWidth: true
 
-            currentIndex: (ServersUiController.isServerFromApi(ServersUiController.processedServerId)
-                           && !ServersUiController.serverHasInstalledContainers(ServersUiController.processedServerId)) ?
-                              root.pageSettingsServerData : root.pageSettingsServerProtocols
+            currentIndex: root.pageSettingsServerProtocols
 
             background: Rectangle {
                 color: AmneziaStyle.color.transparent

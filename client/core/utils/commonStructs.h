@@ -48,7 +48,6 @@ namespace amnezia
     struct ConnectionSettings
     {
         DnsSettings dns;
-        bool isApiConfig;
         SplitTunnelingSettings splitTunneling;
     };
 

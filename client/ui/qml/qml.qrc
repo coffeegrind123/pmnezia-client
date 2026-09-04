@@ -1,7 +1,6 @@
 <RCC>
     <qresource prefix="/ui/qml">
         <file>Components/UpdateSupportDrawer.qml</file>
-        <file>Components/AdLabel.qml</file>
         <file>Components/ConnectButton.qml</file>
         <file>Components/GamepadLoader.qml</file>
         <file>Components/HomeContainersListView.qml</file>

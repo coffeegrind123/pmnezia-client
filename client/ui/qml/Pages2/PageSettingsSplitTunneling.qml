@@ -20,8 +20,6 @@ import "../Components"
 PageType {
     id: root
 
-    property var isServerFromTelegramApi: ServersUiController.isServerFromApi(ServersUiController.defaultServerId)
-    
     property bool pageEnabled
 
     Component.onCompleted: {

@@ -28,7 +28,6 @@ public:
     Q_PROPERTY(QString gatewayEndpoint READ getGatewayEndpoint WRITE setGatewayEndpoint NOTIFY gatewayEndpointChanged)
     Q_PROPERTY(bool isDevGatewayEnv READ isDevGatewayEnv WRITE toggleDevGatewayEnv NOTIFY devGatewayEnvChanged)
 
-    Q_PROPERTY(bool isHomeAdLabelVisible READ isHomeAdLabelVisible NOTIFY isHomeAdLabelVisibleChanged)
     Q_PROPERTY(bool autoStartEnabled READ isAutoStartEnabled NOTIFY autoStartChanged)
     Q_PROPERTY(bool startMinimized READ isStartMinimizedEnabled NOTIFY startMinimizedChanged)
 
@@ -68,8 +67,6 @@ public slots:
     bool isStartMinimizedEnabled();
     void toggleStartMinimized(bool enable);
 
-    bool isNewsNotificationsEnabled();
-    void toggleNewsNotificationsEnabled(bool enable);
 
     bool isAutoUpdateCheckEnabled();
     void toggleAutoUpdateCheckEnabled(bool enable);
@@ -101,8 +98,6 @@ public slots:
 
     bool isOnTv();
 
-    bool isHomeAdLabelVisible();
-    void disableHomeAdLabel();
 
 signals:
     void primaryDnsChanged();
@@ -135,7 +130,6 @@ signals:
     void activityPaused();
     void activityResumed();
 
-    void isHomeAdLabelVisibleChanged(bool visible);
     void autoStartChanged();
     void startMinimizedChanged();
 

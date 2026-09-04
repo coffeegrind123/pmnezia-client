@@ -240,16 +240,6 @@ void SettingsController::toggleScreenshotsEnabled(bool enable)
     m_appSettingsRepository->setScreenshotsEnabled(enable);
 }
 
-bool SettingsController::isNewsNotificationsEnabled() const
-{
-    return m_appSettingsRepository->isNewsNotifications();
-}
-
-void SettingsController::toggleNewsNotificationsEnabled(bool enable)
-{
-    m_appSettingsRepository->setNewsNotifications(enable);
-}
-
 bool SettingsController::isAutoUpdateCheckEnabled() const
 {
     return m_appSettingsRepository->isAutoUpdateCheckEnabled();
@@ -323,16 +313,6 @@ void SettingsController::toggleDevGatewayEnv(bool enabled)
     } else {
         m_appSettingsRepository->resetGatewayEndpoint();
     }
-}
-
-bool SettingsController::isHomeAdLabelVisible() const
-{
-    return m_appSettingsRepository->isHomeAdLabelVisible();
-}
-
-void SettingsController::disableHomeAdLabel()
-{
-    m_appSettingsRepository->disableHomeAdLabel();
 }
 
 void SettingsController::checkIfNeedDisableLogs()
