@@ -10,7 +10,6 @@
         <file>Components/SelectLanguageDrawer.qml</file>
         <file>Components/ServersListView.qml</file>
         <file>Components/SettingsContainersListView.qml</file>
-        <file>Components/TransportProtoSelector.qml</file>
         <file>Components/AddSitePanel.qml</file>
         <file>Config/GlobalConfig.qml</file>
         <file>Config/qmldir</file>
@@ -18,7 +17,6 @@
         <file>Controls2/BasicButtonType.qml</file>
         <file>Controls2/BusyIndicatorType.qml</file>
         <file>Controls2/ColorOverlayEffect.qml</file>
-        <file>Controls2/CardType.qml</file>
         <file>Controls2/ChangelogSectionType.qml</file>
         <file>Controls2/BackdropBlurType.qml</file>
         <file>Controls2/TagBadgeType.qml</file>
@@ -33,10 +31,8 @@
         <file>Controls2/BaseHeaderType.qml</file>
         <file>Controls2/HeaderTypeWithButton.qml</file>
         <file>Controls2/HeaderTypeWithSwitcher.qml</file>
-        <file>Controls2/HorizontalRadioButton.qml</file>
         <file>Controls2/ImageButtonType.qml</file>
         <file>Controls2/LabelWithButtonType.qml</file>
-        <file>Controls2/ListViewWithLabelsType.qml</file>
         <file>Controls2/ListViewWithRadioButtonType.qml</file>
         <file>Controls2/OpacityMaskEffect.qml</file>
         <file>Controls2/PageType.qml</file>
@@ -47,8 +43,6 @@
         <file>Controls2/SwitcherType.qml</file>
         <file>Controls2/TabButtonType.qml</file>
         <file>Controls2/TabImageButtonType.qml</file>
-        <file>Controls2/TextAreaType.qml</file>
-        <file>Controls2/TextAreaWithFooterType.qml</file>
         <file>Controls2/TextFieldWithHeaderType.qml</file>
         <file>Controls2/TextTypes/AppCaptionTextType.qml</file>
         <file>Controls2/TextTypes/AppDisplayTextType.qml</file>
@@ -66,7 +60,6 @@
         <file>Controls2/TextTypes/ParagraphTextType.qml</file>
         <file>Controls2/TextTypes/BadgeTextType.qml</file>
         <file>Controls2/TextTypes/SmallTextType.qml</file>
-        <file>Controls2/TopCloseButtonType.qml</file>
         <file>Controls2/VerticalRadioButton.qml</file>
         <file>Controls2/WarningType.qml</file>
         <file>Filters/ContainersModelFilters.qml</file>
@@ -79,7 +72,6 @@
         <file>Pages2/PageProtocolQqDnsSettings.qml</file>
         <file>Pages2/PageProtocolRaw.qml</file>
 
-        <file>Controls2/MinMaxRowType.qml</file>
 
         <file>Pages2/PageSettings.qml</file>
         <file>Pages2/PageSettingsAbout.qml</file>

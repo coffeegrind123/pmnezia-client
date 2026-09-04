@@ -2,23 +2,30 @@
 
 [![Build Status](https://github.com/coffeegrind123/amnezia-client/actions/workflows/deploy.yml/badge.svg?branch=dev)](https://github.com/coffeegrind123/amnezia-client/actions/workflows/deploy.yml?query=branch:dev)
 
-A fork of [`amnezia-vpn/amnezia-client`](https://github.com/amnezia-vpn/amnezia-client) that adds two extra masking transports — **MasterDnsVPN** (DNS‑tunnel mode) and **xhttp** (VLESS + Reality over HTTP/2) — and ships its own rolling pre‑release builds for Windows, Linux and Android.
+A fork of [`amnezia-vpn/amnezia-client`](https://github.com/amnezia-vpn/amnezia-client), cut down to a dedicated client for [`coffeegrind123/awg-easy-rs`](https://github.com/coffeegrind123/awg-easy-rs). It ships its own rolling pre-release builds for Windows, Linux and Android.
 
-Everything from upstream still applies: AmneziaVPN is an open‑source client that deploys and manages a self‑hosted VPN server over SSH (OpenVPN, WireGuard, AmneziaWG, IKEv2, XRay, Shadowsocks, Cloak). For the full product description, end‑user documentation and official signed builds, see upstream:
-
-- Project: <https://github.com/amnezia-vpn/amnezia-client>
-- Documentation: <https://docs.amnezia.org>
+- Upstream project: <https://github.com/amnezia-vpn/amnezia-client>
+- Upstream documentation: <https://docs.amnezia.org>
 
 ---
 
-## What this fork adds
+## What this fork is
 
-| Feature | Description | Source |
-| --- | --- | --- |
-| **MasterDnsVPN** | A third proxy transport that tunnels traffic over DNS (`Proto::MasterDnsVpn`), implemented as a native C++ `VpnProtocol`. Useful where only DNS egress is available. | `client/core/protocols/masterDnsVpnProtocol.cpp`, `client/core/models/protocols/masterDnsVpnProtocolConfig.cpp` |
-| **xhttp transport** | An additional XRay stream mode carrying VLESS + Reality over HTTP/2, alongside the existing TCP/Reality path. | `client/core/configurators/xrayConfigurator.cpp` (`normalizeXhttpMode`, Reality key handling) |
+awg-easy-rs deploys itself and hands out client configs through its own web UI, so this client **only imports configs and connects**. Everything upstream carries for provisioning a server over SSH is gone, as is every protocol awg-easy-rs does not serve.
 
-Both transports are wired through the standard container/protocol model (`client/core/models/containerConfig.cpp`, `protocolConfig.cpp`) so they appear and configure like any other Amnezia protocol.
+**Transports kept** — exactly the set awg-easy-rs issues configs for:
+
+| Transport | Notes |
+| --- | --- |
+| **AmneziaWG** | `amnezia-awg` and `amnezia-awg2`. The low-latency datapath. |
+| **WireGuard** | An awg-easy-rs config with the AWG3 obfuscation knobs left off carries no `Jc`/`S1-S4`/`H1-H4` lines, so it imports as plain WireGuard. Same protocol implementation as AmneziaWG. |
+| **XRay** | VLESS + Reality + Vision over TCP, and the `xhttp` stream mode (HTTP/2 over a secret path) that awg-easy-rs also serves. |
+| **MasterDnsVPN** | DNS-tunnel transport (`Proto::MasterDnsVpn`), a native C++ `VpnProtocol`. Carries TCP/SOCKS5 inside DNS queries. |
+| **QQ-DNS** | UDP-over-DNS (`Proto::QqDns`) — carries the AmneziaWG datapath itself when only port 53 escapes. |
+
+**Removed:** the SSH server-deployment stack (container install/configure/remove, `server_scripts/`, the setup wizard's credential and install pages, client management and config sharing); the Amnezia gateway API, subscriptions, premium and in-app ads; and the OpenVPN, IKEv2/IPsec, Cloak, Shadowsocks, MTProxy, TProxy, SFTP, SOCKS5, Tor-website and AmneziaDNS protocols and services, along with their `vmess://` / `trojan://` / `ss://` / `ssd://` import paths.
+
+Config import still accepts: AmneziaWG and WireGuard `.conf`, `vless://`, `mdnsvpn://b64?`, QQ-DNS JSON, the native Amnezia `vpn://` envelope, and QR codes of any of them.
 
 Everything else tracks upstream `dev`; this fork is rebased/merged against it regularly.
 
