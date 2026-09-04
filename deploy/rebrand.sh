@@ -26,6 +26,12 @@
 #   amnezia::               CMake imported-target namespace exported by those
 #                           same conan packages.
 #   amnezia-vpn/            The upstream GitHub org, in submodule URLs.
+#   org.amnezia.vpn.        The Java package inside libxray.aar, a prebuilt
+#     protocol.xray.libXray artifact copied in by find_package(amnezia-libxray).
+#                           Its package is compiled into the AAR, so renaming
+#                           our imports of it just points them at nothing.
+#   org.amnezia.awg         The AmneziaWG Android library's package. Not matched
+#                           by the org.amnezia.vpn token, but asserted anyway.
 #   namespace amnezia       Internal C++ namespace. Invisible to users, and
 #                           spelled identically to the CMake target namespace
 #                           above, so renaming it cannot be done by string
@@ -102,6 +108,7 @@ if [[ $CHECK_ONLY -eq 0 ]]; then
             -e "s/AmneziaVPN/${BRAND_APP_NAME}/g" \
             -e "s/amneziavpn/${BRAND_LOWER}/g" \
             -e "s/org\.amnezia\.vpn/${BRAND_ANDROID_PACKAGE}/g" \
+            -e "s/${BRAND_ANDROID_PACKAGE}\.protocol\.xray\.libXray/org.amnezia.vpn.protocol.xray.libXray/g" \
             -e "s/org\.amnezia\.${BRAND_APP_NAME}/${BRAND_APPLE_ID_PREFIX}.${BRAND_APP_NAME}/g" \
             -e "s/org\.amnezia\.amneziaVPN/${BRAND_APPLE_ID_PREFIX}.${BRAND_LOWER}/g" \
             "$f"
@@ -187,6 +194,8 @@ require 'AmneziaWG'             'client/core/utils/containers/containerUtils.cpp
 require 'namespace amnezia'     'client/core/utils/protocolEnum.h' 'internal C++ namespace'
 require 'AMNEZIAVPN_VERSION'    'CMakeLists.txt'                'version var read by CI'
 require 'artifactory.amnezia.org' 'cmake/recipes_bootstrap.cmake' 'conan remote host'
+require 'org.amnezia.vpn.protocol.xray.libXray' 'client/android' 'prebuilt libxray.aar package'
+require 'org.amnezia.awg' 'client/android' 'AmneziaWG android library package'
 
 # Every resource a .qrc names must exist on disk. A rewritten reference whose
 # file was not renamed to match shows up here rather than as an opaque "missing
