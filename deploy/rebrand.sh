@@ -143,19 +143,27 @@ if [[ $CHECK_ONLY -eq 0 ]]; then
         say "moved $d -> $(dirname "$d")/${BRAND_ANDROID_DIR}"
     done < <(find client/android -type d -name amnezia)
 
-    # -- translation catalogues ----------------------------------------------
-    for ts in client/translations/amneziavpn_*.ts; do
-        [[ -e "$ts" ]] || continue
-        mv "$ts" "client/translations/${BRAND_LOWER}_${ts##*amneziavpn_}"
-    done
-    say "renamed translation catalogues to ${BRAND_LOWER}_*.ts"
-
-    # -- packaging assets whose FILENAME carries the brand --------------------
-    while IFS= read -r p; do
-        [[ -e "$p" ]] || continue
-        mv "$p" "$(dirname "$p")/$(basename "$p" | sed "s/AmneziaVPN/${BRAND_APP_NAME}/")"
-    done < <(find deploy -name 'AmneziaVPN*' -not -path './deploy/build/*')
-    say "renamed packaging assets under deploy/data"
+    # -- files whose FILENAME carries the brand ------------------------------
+    # The content pass above has already rewritten every textual reference to
+    # these names - images.qrc, the CMake resource inputs, the branding *_FILE
+    # variables, the CLIENT_TS_PREFIX catalogues - so the files themselves must
+    # move to match. Miss one and the build goes looking for something that
+    # does not exist, which is how client/images/AmneziaVPN.png first broke it.
+    renamed=0
+    while IFS= read -r path; do
+        [[ -e "$path" ]] || continue
+        dir=$(dirname "$path"); base=$(basename "$path")
+        newbase=${base//AmneziaVPN/${BRAND_APP_NAME}}
+        newbase=${newbase//amneziavpn/${BRAND_LOWER}}
+        [[ "$newbase" == "$base" ]] && continue
+        mv "$path" "$dir/$newbase"
+        renamed=$((renamed + 1))
+    done < <(find . \
+                -path ./.git -prune -o \
+                -path ./client/3rd -prune -o \
+                -path ./deploy/build -prune -o \
+                -type f \( -name '*AmneziaVPN*' -o -name '*amneziavpn*' \) -print)
+    say "renamed $renamed brand-carrying filenames"
 fi
 
 # ------------------------------------------------------------ validation ----
@@ -180,6 +188,17 @@ require 'namespace amnezia'     'client/core/utils/protocolEnum.h' 'internal C++
 require 'AMNEZIAVPN_VERSION'    'CMakeLists.txt'                'version var read by CI'
 require 'artifactory.amnezia.org' 'cmake/recipes_bootstrap.cmake' 'conan remote host'
 
+# Every resource a .qrc names must exist on disk. A rewritten reference whose
+# file was not renamed to match shows up here rather than as an opaque "missing
+# and no known rule to make it" a few minutes into the build.
+while IFS= read -r qrc; do
+    qrcdir=$(dirname "$qrc")
+    while IFS= read -r ref; do
+        [[ -e "$qrcdir/$ref" ]] || { echo "  FAIL: $qrc references missing $ref" >&2; fail=1; }
+    done < <(grep -oP '(?<=<file>)[^<]+' "$qrc" 2>/dev/null)
+done < <(find . -path ./.git -prune -o -path ./client/3rd -prune -o -type f -name '*.qrc' -print)
+[[ $fail -eq 0 ]] && say "ok: every .qrc file reference resolves"
+
 # A substitution that ate a hostname leaves a doubled scheme behind. That is
 # exactly how artifactory.amnezia.org was first broken, so it is an assertion.
 if grep -rn 'https://[^"'"'"' ]*https://' --include='*.cmake' --include='*.cpp' \
@@ -193,7 +212,7 @@ if grep -rn 'https://[^"'"'"' ]*https://' --include='*.cmake' --include='*.cpp' 
 fi
 
 if [[ $fail -ne 0 ]]; then
-    echo "rebrand: FAILED - a protected identifier was renamed; refusing to continue" >&2
+    echo "rebrand: FAILED - verification did not pass; refusing to continue" >&2
     exit 1
 fi
 
