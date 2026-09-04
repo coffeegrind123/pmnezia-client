@@ -11,7 +11,6 @@
 #include <QStringList>
 #include <QTimer>
 
-#include <core/configurators/wireguardConfigurator.h>
 
 #ifdef AMNEZIA_DESKTOP
     #include "core/utils/ipcClient.h"
