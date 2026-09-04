@@ -27,6 +27,17 @@ awg-easy-rs deploys itself and hands out client configs through its own web UI, 
 
 Config import still accepts: AmneziaWG and WireGuard `.conf`, `vless://`, `mdnsvpn://b64?`, QQ-DNS JSON, the native Amnezia `vpn://` envelope, and QR codes of any of them.
 
+### Added on top of upstream
+
+| Area | What |
+| --- | --- |
+| **MasterDnsVPN engine** | A full native C++ port of the upstream Go client, in-tree at `client/masterdnsvpn/` — DNS/wire framing, per-stream ARQ with adaptive RTO and bounded NACKs, an 8-strategy resolver pool, MTU probing, ZSTD/LZ4/raw-deflate compression, a SOCKS5 server, and an Android JNI bridge. Parity-tested against upstream's own Go test vectors. |
+| **QQ-DNS engine** | Native UDP-over-DNS at `client/qqdns/`, carrying the AmneziaWG datapath itself, plus its own Android `VpnService` module for the QQ-DNS-under-AmneziaWG handoff. |
+| **xhttp transport** | XRay VLESS + Reality over HTTP/2 on a secret path, alongside the TCP/Vision path ([upstream PR #2339](https://github.com/amnezia-vpn/amnezia-client/pull/2339)). |
+| **No Google Play** | ML Kit barcode scanning replaced with zxing-cpp (Apache-2.0), so the app builds and runs on devices without Play Services. |
+| **In-app updates** | The app checks this fork's GitHub Releases and can download and run the installer itself — the Play-store update path it replaces is gone. |
+| **Leaner deps** | qt5compat dropped tree-wide (`Qt5Compat.GraphicalEffects` replaced by in-tree shaders), the service is Gui-free, and Qt Xml / Multimedia / ImageFormats, `Qt.labs.platform` and libssh are gone. |
+
 Everything else tracks upstream `dev`; this fork is rebased/merged against it regularly.
 
 ---
@@ -50,6 +61,8 @@ Each `dev-latest` build contains:
 
 macOS / iOS builds are **not** produced by default — they require Apple signing secrets and are gated behind a workflow input (see below). For signed Apple builds, use the upstream releases.
 
+The app checks this repository's releases on startup and can download and run the installer itself, so a `dev-latest` build updates in place.
+
 ---
 
 ## Building from source
@@ -68,7 +81,7 @@ git submodule update --init --recursive
   - **Windows** — [Visual Studio 2022](https://aka.ms/vs/17/release/vs_community.exe) or VS 2022 Build Tools
   - **Android** — Android SDK + [`Ninja`](https://ninja-build.org/)
   - **Apple** — [Xcode](https://developer.apple.com/xcode/) / command‑line tools
-- [`Qt 6.10+`](https://www.qt.io/download-open-source) with: Core (for your target), Qt 5 Compatibility, Qt Remote Objects, Qt Shader Tools
+- [`Qt 6.10+`](https://www.qt.io/download-open-source) (CI builds against 6.10.1) with the **Qt Remote Objects** and **Qt Shader Tools** additional modules on top of a Core install. This fork does **not** need Qt 5 Compatibility, Multimedia or Image Formats — `Qt5Compat.GraphicalEffects` was replaced by in-tree components and shaders.
 - [`Conan 2`](https://conan.io/downloads) package manager (must be on `PATH`, except on macOS where a Homebrew/`.venv` install is fine)
 - Optional, for installers: [Qt Installer Framework](https://www.qt.io/download-open-source) (Windows/Linux) and the [WiX toolset](https://github.com/wixtoolset/wix/releases) (Windows)
 
@@ -112,24 +125,30 @@ Any CMake/Qt‑aware IDE works (Qt Creator, VS Code with the Qt Extension Pack, 
 
 ## Producing release builds (maintainers)
 
-Releases are cut by the **Deploy workflow** (`.github/workflows/deploy.yml`), which is **dispatch‑only** (no automatic push trigger). Run it from the [Actions tab](https://github.com/coffeegrind123/amnezia-client/actions/workflows/deploy.yml) → *Run workflow*, or:
+Releases are cut by the **Build and Release workflow** (`.github/workflows/deploy.yml`).
+
+It runs **automatically on every push to `dev` or `main`**, building Linux, Windows and Android in parallel and refreshing the rolling `dev-latest` pre-release. Apple jobs stay off on a push (their `if: inputs.enable_apple_builds` is falsy without dispatch inputs).
+
+To build Apple targets, or to publish under a different tag, dispatch it manually from the [Actions tab](https://github.com/coffeegrind123/amnezia-client/actions/workflows/deploy.yml) → *Run workflow*, or:
 
 ```bash
 gh workflow run deploy.yml --repo coffeegrind123/amnezia-client --ref dev
 ```
 
-Inputs:
+Dispatch inputs:
 
 | Input | Default | Purpose |
 | --- | --- | --- |
 | `release_tag` | `dev-latest` | Rolling tag; an existing release on this tag is deleted and recreated. |
-| `release_name` | `Dev build (masterdnsvpn + xhttp)` | Release title. |
-| `prerelease` | `true` | Mark the release as a pre‑release. |
+| `release_name` | `Dev build (masterdnsvpn + xhttp)` | Release title (the project version and short SHA are appended). |
+| `prerelease` | `true` | Mark the release as a pre‑release. Push-triggered builds are always pre‑releases. |
 | `enable_apple_builds` | `false` | Also build iOS/macOS/macOS‑NE (requires Apple signing secrets). |
 
-The workflow builds Linux, Windows and Android in parallel, then `Publish-Release` collects every `AmneziaVPN_*.*` artifact and attaches it to the release. Translations (`AmneziaVPN_translations`) are intentionally excluded from the release.
+`Publish-Release` then collects every `AmneziaVPN_*.*` artifact and attaches it to the release. Translations (`AmneziaVPN_translations`) are intentionally excluded.
 
 > Artifact naming is a contract: CPack emits `AmneziaVPN_<ver>_<platform>_x64.<ext>` and `upload-artifact` runs with `archive: false` (so each artifact is named after its file). The upload globs and the download pattern in `deploy.yml` must match that naming — keep them in sync if you touch CPack output names.
+
+The other two workflows in `.github/workflows/` (`tag-deploy.yml`, `tag-upload.yml`) are upstream leftovers — the old tag-driven release and the S3 upload. Both are dispatch-only, pin Qt 6.4.1, and need Amnezia's own secrets; neither is used by this fork.
 
 ---
 
