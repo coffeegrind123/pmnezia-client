@@ -4,7 +4,6 @@
 #include <QJsonObject>
 #include <QMap>
 #include <QPair>
-#include <optional>
 
 #include "core/utils/containerEnum.h"
 #include "core/utils/containers/containerUtils.h"
@@ -26,9 +25,6 @@ struct SelfHostedUserServerConfig {
     QString dns1;
     QString dns2;
 
-    bool hasCredentials() const;
-    bool isReadOnly() const;
-    std::optional<ServerCredentials> credentials() const;
     bool hasContainers() const;
     ContainerConfig containerConfig(DockerContainer container) const;
 

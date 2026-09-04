@@ -18,18 +18,9 @@ PageType {
     id: root
 
     readonly property int pageSettingsServerProtocols: 0
-    readonly property int pageSettingsServerServices: 1
-    readonly property int pageSettingsServerData: 2
+    readonly property int pageSettingsServerData: 1
 
     property var processedServer
-
-    Connections {
-        target: PageController
-
-        function onGoToPageSettingsServerServices() {
-            tabBar.setCurrentIndex(root.pageSettingsServerServices)
-        }
-    }
 
     Connections {
         target: ServersUiController
@@ -93,11 +84,7 @@ PageType {
                 if (root.processedServer == null) {
                     return ""
                 }
-                if (ServersUiController.isProcessedServerHasWriteAccess()) {
-                    return root.processedServer.credentialsLogin + " · " + root.processedServer.hostName
-                } else {
-                    return root.processedServer.hostName
-                }
+                return root.processedServer.hostName
             }
 
             actionButtonFunction: function() {
@@ -140,17 +127,6 @@ PageType {
             }
 
             TabButtonType {
-                id: servicesTab
-                visible: servicesPage.installedServicesCount
-                width: servicesPage.installedServicesCount ? undefined : 0
-                isSelected: TabBar.tabBar.currentIndex === root.pageSettingsServerServices
-                text: qsTr("Services")
-
-                Keys.onReturnPressed: TabBar.tabBar.setCurrentIndex(root.pageSettingsServerServices)
-                Keys.onEnterPressed: TabBar.tabBar.setCurrentIndex(root.pageSettingsServerServices)
-            }
-
-            TabButtonType {
                 id: dataTab
                 isSelected: tabBar.currentIndex === root.pageSettingsServerData
                 text: qsTr("Management")
@@ -169,11 +145,6 @@ PageType {
 
             PageSettingsServerProtocols {
                 id: protocolsPage
-                stackView: root.stackView
-            }
-
-            PageSettingsServerServices {
-                id: servicesPage
                 stackView: root.stackView
             }
 

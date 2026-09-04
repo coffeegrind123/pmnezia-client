@@ -10,16 +10,12 @@ namespace PageLoader
     enum class PageEnum {
         PageStart = 0,
         PageHome,
-        PageShare,
-        PageDeinstalling,
-        PageAbout,
 
         PageSettingsServersList,
         PageSettings,
         PageSettingsServerData,
         PageSettingsServerInfo,
         PageSettingsServerProtocols,
-        PageSettingsServerServices,
         PageSettingsServerProtocol,
         PageSettingsConnection,
         PageSettingsDns,
@@ -32,49 +28,23 @@ namespace PageLoader
         PageSettingsKillSwitch,
         PageSettingsKillSwitchExceptions,
 
-        PageServiceSftpSettings,
-        PageServiceTorWebsiteSettings,
-        PageServiceDnsSettings,
-        PageServiceSocksProxySettings,
-        PageServiceMtProxySettings,
-        PageServiceTelemtSettings,
-        PageServiceTProxySettings,
 
         PageSetupWizardStart,
-        PageSetupWizardCredentials,
-        PageSetupWizardProtocols,
-        PageSetupWizardEasy,
-        PageSetupWizardProtocolSettings,
-        PageSetupWizardInstalling,
         PageSetupWizardConfigSource,
         PageSetupWizardTextKey,
         PageSetupWizardViewConfig,
         PageSetupWizardQrReader,
 
-        PageProtocolOpenVpnSettings,
-        PageProtocolXraySettings,
         PageProtocolMasterDnsVpnSettings,
         PageProtocolQqDnsSettings,
-        PageProtocolWireGuardSettings,
-        PageProtocolAwgSettings,
-        PageProtocolIKev2Settings,
         PageProtocolRaw,
 
         PageProtocolWireGuardClientSettings,
         PageProtocolAwgClientSettings,
 
-        PageShareFullAccess,
-        PageShareConnection,
 
         PageDevMenu,
 
-        PageProtocolXraySnapshots,
-        PageProtocolXrayTransportSettings,
-        PageProtocolXrayXmuxSettings,
-        PageProtocolXrayXPaddingSettings,
-        PageProtocolXrayFlowSettings,
-        PageProtocolXraySecuritySettings,
-        PageProtocolXrayXPaddingBytesSettings,
 
         PageSettingsLanguage,
 

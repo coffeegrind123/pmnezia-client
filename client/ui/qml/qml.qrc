@@ -73,33 +73,14 @@
         <file>main2.qml</file>
         <file>Modules/Style/AmneziaStyle.qml</file>
         <file>Modules/Style/qmldir</file>
-        <file>Pages2/PageDeinstalling.qml</file>
         <file>Pages2/PageDevMenu.qml</file>
         <file>Pages2/PageHome.qml</file>
-        <file>Pages2/PageProtocolAwgSettings.qml</file>
-        <file>Pages2/PageProtocolOpenVpnSettings.qml</file>
         <file>Pages2/PageProtocolMasterDnsVpnSettings.qml</file>
         <file>Pages2/PageProtocolQqDnsSettings.qml</file>
         <file>Pages2/PageProtocolRaw.qml</file>
-        <file>Pages2/PageProtocolWireGuardSettings.qml</file>
-        <file>Pages2/PageProtocolXraySettings.qml</file>
 
-        <file>Pages2/PageProtocolXraySnapshots.qml</file>
-        <file>Pages2/PageProtocolXrayFlowSettings.qml</file>
-        <file>Pages2/PageProtocolXraySecuritySettings.qml</file>
-        <file>Pages2/PageProtocolXrayTransportSettings.qml</file>
-        <file>Pages2/PageProtocolXrayXmuxSettings.qml</file>
-        <file>Pages2/PageProtocolXrayXPaddingSettings.qml</file>
-        <file>Pages2/PageProtocolXrayXPaddingBytesSettings.qml</file>
         <file>Controls2/MinMaxRowType.qml</file>
 
-        <file>Pages2/PageServiceDnsSettings.qml</file>
-        <file>Pages2/PageServiceMtProxySettings.qml</file>
-        <file>Pages2/PageServiceTelemtSettings.qml</file>
-        <file>Pages2/PageServiceTProxySettings.qml</file>
-        <file>Pages2/PageServiceSftpSettings.qml</file>
-        <file>Pages2/PageServiceSocksProxySettings.qml</file>
-        <file>Pages2/PageServiceTorWebsiteSettings.qml</file>
         <file>Pages2/PageSettings.qml</file>
         <file>Pages2/PageSettingsAbout.qml</file>
         <file>Pages2/PageSettingsApplication.qml</file>
@@ -114,25 +95,16 @@
         <file>Pages2/PageSettingsServerInfo.qml</file>
         <file>Pages2/PageSettingsServerProtocol.qml</file>
         <file>Pages2/PageSettingsServerProtocols.qml</file>
-        <file>Pages2/PageSettingsServerServices.qml</file>
         <file>Pages2/PageSettingsServersList.qml</file>
         <file>Pages2/PageSettingsSplitTunneling.qml</file>
         <file>Pages2/PageUpdate.qml</file>
         <file>Pages2/PageProtocolAwgClientSettings.qml</file>
         <file>Pages2/PageProtocolWireGuardClientSettings.qml</file>
         <file>Pages2/PageSetupWizardConfigSource.qml</file>
-        <file>Pages2/PageSetupWizardCredentials.qml</file>
-        <file>Pages2/PageSetupWizardEasy.qml</file>
-        <file>Pages2/PageSetupWizardInstalling.qml</file>
-        <file>Pages2/PageSetupWizardProtocols.qml</file>
-        <file>Pages2/PageSetupWizardProtocolSettings.qml</file>
         <file>Pages2/PageSetupWizardQrReader.qml</file>
         <file>Pages2/PageSetupWizardStart.qml</file>
         <file>Pages2/PageSetupWizardTextKey.qml</file>
         <file>Pages2/PageSetupWizardViewConfig.qml</file>
-        <file>Pages2/PageShare.qml</file>
-        <file>Pages2/PageShareFullAccess.qml</file>
-        <file>Pages2/PageShareConnection.qml</file>
         <file>Pages2/PageStart.qml</file>
         <file>Components/RenameServerDrawer.qml</file>
         <file>Controls2/ListViewType.qml</file>

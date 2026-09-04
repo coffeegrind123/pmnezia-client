@@ -15,21 +15,6 @@ namespace amnezia
 
 using namespace ContainerEnumNS;
 
-bool SelfHostedUserServerConfig::hasCredentials() const
-{
-    return false;
-}
-
-bool SelfHostedUserServerConfig::isReadOnly() const
-{
-    return true;
-}
-
-std::optional<ServerCredentials> SelfHostedUserServerConfig::credentials() const
-{
-    return std::nullopt;
-}
-
 bool SelfHostedUserServerConfig::hasContainers() const
 {
     return !containers.isEmpty();

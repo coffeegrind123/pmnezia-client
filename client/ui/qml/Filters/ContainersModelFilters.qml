@@ -12,45 +12,14 @@ Item {
     }
 
     ValueFilter {
-        id: serviceTypeFilter
-        roleName: "isServiceContainer"
-        value: true
-    }
-
-    ValueFilter {
-        id: supportedFilter
-        roleName: "isSupported"
-        value: true
-    }
-
-    ValueFilter {
         id: installedFilter
         roleName: "isInstalled"
         value: true
     }
 
-    ValueFilter {
-        id: installationAllowedFilter
-        roleName: "isInstallationAllowed"
-        value: true
-    }
-
-    AnyOf {
-        id: showProtocolFilter
-        filters: [ installedFilter, installationAllowedFilter ]
-    }
-
-    function getWriteAccessProtocolsListFilters() {
-        return [ vpnTypeFilter, showProtocolFilter ]
-    }
-    function getReadAccessProtocolsListFilters() {
+    // Configs are imported, never installed from here, so only the installed
+    // set is ever shown.
+    function getInstalledProtocolsListFilters() {
         return [vpnTypeFilter, installedFilter]
-    }
-
-    function getWriteAccessServicesListFilters() {
-        return [serviceTypeFilter]
-    }
-    function getReadAccessServicesListFilters() {
-        return [serviceTypeFilter, installedFilter]
     }
 }

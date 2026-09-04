@@ -40,14 +40,6 @@ bool ServersController::renameServer(const QString &serverId, const QString &nam
 {
     const serverConfigUtils::ConfigType kind = m_serversRepository->serverKind(serverId);
     switch (kind) {
-    case serverConfigUtils::ConfigType::SelfHostedAdmin: {
-        auto cfg = m_serversRepository->selfHostedAdminConfig(serverId);
-        if (!cfg.has_value()) return false;
-        cfg->description = name;
-        cfg->displayName = name;
-        m_serversRepository->editServer(serverId, cfg->toJson(), kind);
-        return true;
-    }
     case serverConfigUtils::ConfigType::SelfHostedUser: {
         auto cfg = m_serversRepository->selfHostedUserConfig(serverId);
         if (!cfg.has_value()) return false;
@@ -84,13 +76,6 @@ void ServersController::setDefaultContainer(const QString &serverId, DockerConta
 {
     const serverConfigUtils::ConfigType kind = m_serversRepository->serverKind(serverId);
     switch (kind) {
-    case serverConfigUtils::ConfigType::SelfHostedAdmin: {
-        auto cfg = m_serversRepository->selfHostedAdminConfig(serverId);
-        if (!cfg.has_value()) return;
-        cfg->defaultContainer = container;
-        m_serversRepository->editServer(serverId, cfg->toJson(), kind);
-        return;
-    }
     case serverConfigUtils::ConfigType::SelfHostedUser: {
         auto cfg = m_serversRepository->selfHostedUserConfig(serverId);
         if (!cfg.has_value()) return;
@@ -111,7 +96,7 @@ void ServersController::setDefaultContainer(const QString &serverId, DockerConta
     }
 }
 
-QVector<ServerDescription> ServersController::buildServerDescriptions(bool isAmneziaDnsEnabled) const
+QVector<ServerDescription> ServersController::buildServerDescriptions() const
 {
     QVector<ServerDescription> out;
     const QVector<QString> ids = m_serversRepository->orderedServerIds();
@@ -122,20 +107,12 @@ QVector<ServerDescription> ServersController::buildServerDescriptions(bool isAmn
         using Kind = serverConfigUtils::ConfigType;
         const Kind kind = m_serversRepository->serverKind(id);
         switch (kind) {
-        case Kind::SelfHostedAdmin: {
-            const auto cfg = m_serversRepository->selfHostedAdminConfig(id);
-            if (!cfg) {
-                continue;
-            }
-            d = buildServerDescription(*cfg, isAmneziaDnsEnabled);
-            break;
-        }
         case Kind::SelfHostedUser: {
             const auto cfg = m_serversRepository->selfHostedUserConfig(id);
             if (!cfg) {
                 continue;
             }
-            d = buildServerDescription(*cfg, isAmneziaDnsEnabled);
+            d = buildServerDescription(*cfg);
             break;
         }
         case Kind::Native: {
@@ -143,7 +120,7 @@ QVector<ServerDescription> ServersController::buildServerDescriptions(bool isAmn
             if (!cfg) {
                 continue;
             }
-            d = buildServerDescription(*cfg, isAmneziaDnsEnabled);
+            d = buildServerDescription(*cfg);
             break;
         }
         case Kind::Invalid:
@@ -160,10 +137,6 @@ QVector<ServerDescription> ServersController::buildServerDescriptions(bool isAmn
 QMap<DockerContainer, ContainerConfig> ServersController::getServerContainersMap(const QString &serverId) const
 {
     switch (m_serversRepository->serverKind(serverId)) {
-    case serverConfigUtils::ConfigType::SelfHostedAdmin: {
-        const auto cfg = m_serversRepository->selfHostedAdminConfig(serverId);
-        return cfg.has_value() ? cfg->containers : QMap<DockerContainer, ContainerConfig>{};
-    }
     case serverConfigUtils::ConfigType::SelfHostedUser: {
         const auto cfg = m_serversRepository->selfHostedUserConfig(serverId);
         return cfg.has_value() ? cfg->containers : QMap<DockerContainer, ContainerConfig>{};
@@ -181,10 +154,6 @@ QMap<DockerContainer, ContainerConfig> ServersController::getServerContainersMap
 DockerContainer ServersController::getDefaultContainer(const QString &serverId) const
 {
     switch (m_serversRepository->serverKind(serverId)) {
-    case serverConfigUtils::ConfigType::SelfHostedAdmin: {
-        const auto cfg = m_serversRepository->selfHostedAdminConfig(serverId);
-        return cfg.has_value() ? cfg->defaultContainer : DockerContainer::None;
-    }
     case serverConfigUtils::ConfigType::SelfHostedUser: {
         const auto cfg = m_serversRepository->selfHostedUserConfig(serverId);
         return cfg.has_value() ? cfg->defaultContainer : DockerContainer::None;
@@ -202,6 +171,34 @@ DockerContainer ServersController::getDefaultContainer(const QString &serverId) 
 ContainerConfig ServersController::getContainerConfig(const QString &serverId, DockerContainer container) const
 {
     return getServerContainersMap(serverId).value(container);
+}
+
+ErrorCode ServersController::updateClientConfig(const QString &serverId, DockerContainer container,
+                                                const ContainerConfig &newConfig)
+{
+    const serverConfigUtils::ConfigType kind = m_serversRepository->serverKind(serverId);
+    switch (kind) {
+    case serverConfigUtils::ConfigType::SelfHostedUser: {
+        auto config = m_serversRepository->selfHostedUserConfig(serverId);
+        if (!config.has_value()) {
+            return ErrorCode::InternalError;
+        }
+        config->updateContainerConfig(container, newConfig);
+        m_serversRepository->editServer(serverId, config->toJson(), kind);
+        return ErrorCode::NoError;
+    }
+    case serverConfigUtils::ConfigType::Native: {
+        auto config = m_serversRepository->nativeConfig(serverId);
+        if (!config.has_value()) {
+            return ErrorCode::InternalError;
+        }
+        config->updateContainerConfig(container, newConfig);
+        m_serversRepository->editServer(serverId, config->toJson(), kind);
+        return ErrorCode::NoError;
+    }
+    default:
+        return ErrorCode::InternalError;
+    }
 }
 
 int ServersController::getDefaultServerIndex() const
@@ -237,14 +234,6 @@ QString ServersController::notificationDisplayName(const QString &serverId) cons
 
     using Kind = serverConfigUtils::ConfigType;
     switch (m_serversRepository->serverKind(serverId)) {
-    case Kind::SelfHostedAdmin: {
-        if (const auto cfg = m_serversRepository->selfHostedAdminConfig(serverId)) {
-            if (!cfg->displayName.isEmpty()) {
-                return cfg->displayName;
-            }
-        }
-        break;
-    }
     case Kind::SelfHostedUser: {
         if (const auto cfg = m_serversRepository->selfHostedUserConfig(serverId)) {
             if (!cfg->displayName.isEmpty()) {
@@ -270,23 +259,6 @@ QString ServersController::notificationDisplayName(const QString &serverId) cons
         return QString::number(idx + 1);
     }
     return serverId;
-}
-
-std::optional<SelfHostedAdminServerConfig> ServersController::selfHostedAdminConfig(const QString &serverId) const
-{
-    return m_serversRepository->selfHostedAdminConfig(serverId);
-}
-
-ServerCredentials ServersController::getServerCredentials(const QString &serverId) const
-{
-    const auto cfg = m_serversRepository->selfHostedAdminConfig(serverId);
-    if (cfg.has_value()) {
-        const ServerCredentials creds = cfg->credentials();
-        if (creds.isValid()) {
-            return creds;
-        }
-    }
-    return ServerCredentials {};
 }
 
 bool ServersController::hasInstalledContainers(const QString &serverId) const

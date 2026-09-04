@@ -29,7 +29,6 @@ QHash<int, QByteArray> ProtocolsModel::roleNames() const
     QHash<int, QByteArray> roles;
 
     roles[ProtocolNameRole] = "protocolName";
-    roles[ServerProtocolPageRole] = "serverProtocolPage";
     roles[ClientProtocolPageRole] = "clientProtocolPage";
     roles[ProtocolIndexRole] = "protocolIndex";
     roles[ProtocolStringRole] = "protocolString";
@@ -61,8 +60,6 @@ QVariant ProtocolsModel::data(const QModelIndex &index, int role) const
     case ProtocolNameRole: {
         return ProtocolUtils::protocolHumanNames().value(proto);
     }
-    case ServerProtocolPageRole:
-        return static_cast<int>(serverProtocolPage(proto));
     case ClientProtocolPageRole:
         return static_cast<int>(clientProtocolPage(proto));
     case ProtocolIndexRole: return static_cast<int>(proto);
@@ -116,34 +113,14 @@ bool ProtocolsModel::isClientProtocolExists() const
            !m_containerConfig.protocolConfig.nativeConfig().isEmpty();
 }
 
-PageLoader::PageEnum ProtocolsModel::serverProtocolPage(Proto protocol) const
-{
-    switch (protocol) {
-    case Proto::OpenVpn: return PageLoader::PageEnum::PageProtocolOpenVpnSettings;
-    case Proto::WireGuard: return PageLoader::PageEnum::PageProtocolWireGuardSettings;
-    case Proto::Awg: return PageLoader::PageEnum::PageProtocolAwgSettings;
-    case Proto::Ikev2: return PageLoader::PageEnum::PageProtocolIKev2Settings;
-    case Proto::Xray: return PageLoader::PageEnum::PageProtocolXraySettings;
-    case Proto::MasterDnsVpn: return PageLoader::PageEnum::PageProtocolMasterDnsVpnSettings;
-    case Proto::QqDns: return PageLoader::PageEnum::PageProtocolQqDnsSettings;
-
-    // non-vpn
-    case Proto::TorWebSite: return PageLoader::PageEnum::PageServiceTorWebsiteSettings;
-    case Proto::Dns: return PageLoader::PageEnum::PageServiceDnsSettings;
-    case Proto::Sftp: return PageLoader::PageEnum::PageServiceSftpSettings;
-    case Proto::Socks5Proxy: return PageLoader::PageEnum::PageServiceSocksProxySettings;
-    case Proto::MtProxy: return PageLoader::PageEnum::PageServiceMtProxySettings;
-    case Proto::Telemt: return PageLoader::PageEnum::PageServiceTelemtSettings;
-    case Proto::TProxy: return PageLoader::PageEnum::PageServiceTProxySettings;
-    default: return PageLoader::PageEnum::PageProtocolOpenVpnSettings;
-    }
-}
-
 PageLoader::PageEnum ProtocolsModel::clientProtocolPage(Proto protocol) const
 {
     switch (protocol) {
     case Proto::WireGuard: return PageLoader::PageEnum::PageProtocolWireGuardClientSettings;
     case Proto::Awg: return PageLoader::PageEnum::PageProtocolAwgClientSettings;
-    default: return PageLoader::PageEnum::PageProtocolOpenVpnSettings;
+    case Proto::MasterDnsVpn: return PageLoader::PageEnum::PageProtocolMasterDnsVpnSettings;
+    case Proto::QqDns: return PageLoader::PageEnum::PageProtocolQqDnsSettings;
+    // Everything else is viewed and edited as raw config.
+    default: return PageLoader::PageEnum::PageProtocolRaw;
     }
 }

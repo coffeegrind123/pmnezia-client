@@ -54,5 +54,3 @@ include_directories(
 find_package(OpenSSL REQUIRED)
 list(APPEND LIBS OpenSSL::SSL OpenSSL::Crypto)
 
-find_package(libssh REQUIRED)
-list(APPEND LIBS ssh::ssh)

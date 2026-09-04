@@ -83,13 +83,6 @@ void VpnConnection::onConnectionStateChanged(Vpn::ConnectionState state)
     const QString defaultServerId = m_serversRepository->defaultServerId();
     DockerContainer container = DockerContainer::None;
     switch (m_serversRepository->serverKind(defaultServerId)) {
-    case serverConfigUtils::ConfigType::SelfHostedAdmin: {
-        const auto cfg = m_serversRepository->selfHostedAdminConfig(defaultServerId);
-        if (cfg.has_value()) {
-            container = cfg->defaultContainer;
-        }
-        break;
-    }
     case serverConfigUtils::ConfigType::SelfHostedUser: {
         const auto cfg = m_serversRepository->selfHostedUserConfig(defaultServerId);
         if (cfg.has_value()) {

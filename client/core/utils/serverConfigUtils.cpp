@@ -3,7 +3,6 @@
 #include <QJsonArray>
 #include <QJsonValue>
 
-#include "core/models/selfhosted/selfHostedAdminServerConfig.h"
 #include "core/utils/constants/configKeys.h"
 
 namespace
@@ -35,13 +34,7 @@ namespace serverConfigUtils
 
 ConfigType configTypeFromJson(const QJsonObject &serverConfigObject)
 {
-    if (hasThirdPartyConfig(serverConfigObject)) {
-        return ConfigType::Native;
-    }
-
-    const amnezia::SelfHostedAdminServerConfig adminProbe =
-            amnezia::SelfHostedAdminServerConfig::fromJson(serverConfigObject);
-    return adminProbe.hasCredentials() ? ConfigType::SelfHostedAdmin : ConfigType::SelfHostedUser;
+    return hasThirdPartyConfig(serverConfigObject) ? ConfigType::Native : ConfigType::SelfHostedUser;
 }
 
 } // namespace serverConfigUtils

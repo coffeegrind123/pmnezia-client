@@ -50,14 +50,6 @@ ErrorCode ConnectionController::defaultContainerForServer(const QString &serverI
 {
     const auto kind = m_serversRepository->serverKind(serverId);
     switch (kind) {
-    case serverConfigUtils::ConfigType::SelfHostedAdmin: {
-        const auto cfg = m_serversRepository->selfHostedAdminConfig(serverId);
-        if (!cfg.has_value()) {
-            return ErrorCode::InternalError;
-        }
-        container = cfg->defaultContainer;
-        return ErrorCode::NoError;
-    }
     case serverConfigUtils::ConfigType::SelfHostedUser: {
         const auto cfg = m_serversRepository->selfHostedUserConfig(serverId);
         if (!cfg.has_value()) {
@@ -124,16 +116,6 @@ ErrorCode ConnectionController::prepareConnection(const QString &serverId,
     const QString primaryDns = m_appSettingsRepository->primaryDns();
     const QString secondaryDns = m_appSettingsRepository->secondaryDns();
     switch (kind) {
-    case serverConfigUtils::ConfigType::SelfHostedAdmin: {
-        const auto cfg = m_serversRepository->selfHostedAdminConfig(serverId);
-        if (!cfg.has_value()) return ErrorCode::InternalError;
-        container = cfg->defaultContainer;
-        containerConfigModel = cfg->containerConfig(container);
-        dns = cfg->getDnsPair(m_appSettingsRepository->useAmneziaDns(), primaryDns, secondaryDns);
-        hostName = cfg->hostName;
-        description = cfg->description;
-        break;
-    }
     case serverConfigUtils::ConfigType::SelfHostedUser: {
         const auto cfg = m_serversRepository->selfHostedUserConfig(serverId);
         if (!cfg.has_value()) return ErrorCode::InternalError;
@@ -157,6 +139,17 @@ ErrorCode ConnectionController::prepareConnection(const QString &serverId,
     case serverConfigUtils::ConfigType::Invalid:
     default:
         return ErrorCode::InternalError;
+    }
+
+    if (container == DockerContainer::None) {
+        return ErrorCode::NoInstalledContainersError;
+    }
+
+    // Imported configs carry their client half already; there is no server to
+    // ask for a fresh one, so an empty client config is terminal here.
+    if (ContainerUtils::containerService(container) == ServiceType::Vpn
+        && !containerConfigModel.protocolConfig.hasClientConfig()) {
+        return ErrorCode::ImportInvalidConfigError;
     }
 
     vpnConfiguration = createConnectionConfiguration(dns, hostName, description, containerConfigModel, container);

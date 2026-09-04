@@ -34,21 +34,9 @@ ServerDescription buildBaseDescription(const T &server)
     return row;
 }
 
-QString getBaseDescription(const QMap<DockerContainer, ContainerConfig> &containers,
-                         bool isAmneziaDnsEnabled,
-                         bool hasWriteAccess,
-                         bool primaryDnsIsAmnezia)
+QString getBaseDescription(bool primaryDnsIsAmnezia)
 {
-    QString description;
-    if (hasWriteAccess) {
-        const bool isDnsInstalled = containers.contains(DockerContainer::Dns);
-        if (isAmneziaDnsEnabled && isDnsInstalled) {
-            description += QStringLiteral("Amnezia DNS | ");
-        }
-    } else if (primaryDnsIsAmnezia) {
-        description += QStringLiteral("Amnezia DNS | ");
-    }
-    return description;
+    return primaryDnsIsAmnezia ? QStringLiteral("Amnezia DNS | ") : QString();
 }
 
 QString getProtocolName(DockerContainer defaultContainer, const QMap<DockerContainer, ContainerConfig> &containers)
@@ -75,59 +63,32 @@ QString getProtocolName(DockerContainer defaultContainer, const QMap<DockerConta
     return containerName + protocolVersion + QStringLiteral(" | ");
 }
 
+template <typename T>
+ServerDescription buildDescription(const T &server)
+{
+    ServerDescription row = buildBaseDescription(server);
+    row.serverName = server.displayName;
+    row.baseDescription = getBaseDescription(row.primaryDnsIsAmnezia);
+
+    const QString protocolName = getProtocolName(server.defaultContainer, server.containers);
+    row.expandedServerDescription = row.baseDescription + row.hostName;
+    row.collapsedServerDescription = row.baseDescription + protocolName + row.hostName;
+    return row;
+}
+
 } // namespace
 
 namespace amnezia
 {
 
-ServerDescription buildServerDescription(const SelfHostedAdminServerConfig &server, bool isAmneziaDnsEnabled)
+ServerDescription buildServerDescription(const SelfHostedUserServerConfig &server)
 {
-    ServerDescription row = buildBaseDescription(server);
-    row.selfHostedSshCredentials.hostName = server.hostName;
-    row.selfHostedSshCredentials.userName = server.userName;
-    row.selfHostedSshCredentials.secretData = server.password;
-    row.selfHostedSshCredentials.port = server.port > 0 ? server.port : 22;
-
-    row.hasWriteAccess = !row.selfHostedSshCredentials.userName.isEmpty()
-                         && !row.selfHostedSshCredentials.secretData.isEmpty();
-
-    row.serverName = server.displayName;
-    row.baseDescription = getBaseDescription(server.containers, isAmneziaDnsEnabled, row.hasWriteAccess, row.primaryDnsIsAmnezia);
-
-    const QString protocolName = getProtocolName(server.defaultContainer, server.containers);
-    row.expandedServerDescription = row.baseDescription + row.hostName;
-    row.collapsedServerDescription = row.baseDescription + protocolName + row.hostName;
-    return row;
+    return buildDescription(server);
 }
 
-ServerDescription buildServerDescription(const SelfHostedUserServerConfig &server, bool isAmneziaDnsEnabled)
+ServerDescription buildServerDescription(const NativeServerConfig &server)
 {
-    ServerDescription row = buildBaseDescription(server);
-    row.selfHostedSshCredentials.hostName = server.hostName;
-    row.selfHostedSshCredentials.port = 22;
-    row.hasWriteAccess = false;
-
-    row.serverName = server.displayName;
-    row.baseDescription = getBaseDescription(server.containers, isAmneziaDnsEnabled, row.hasWriteAccess, row.primaryDnsIsAmnezia);
-
-    const QString protocolName = getProtocolName(server.defaultContainer, server.containers);
-    row.expandedServerDescription = row.baseDescription + row.hostName;
-    row.collapsedServerDescription = row.baseDescription + protocolName + row.hostName;
-    return row;
-}
-
-ServerDescription buildServerDescription(const NativeServerConfig &server, bool isAmneziaDnsEnabled)
-{
-    ServerDescription row = buildBaseDescription(server);
-    row.hasWriteAccess = false;
-
-    row.serverName = server.displayName;
-    row.baseDescription = getBaseDescription(server.containers, isAmneziaDnsEnabled, row.hasWriteAccess, row.primaryDnsIsAmnezia);
-
-    const QString protocolName = getProtocolName(server.defaultContainer, server.containers);
-    row.expandedServerDescription = row.baseDescription + row.hostName;
-    row.collapsedServerDescription = row.baseDescription + protocolName + row.hostName;
-    return row;
+    return buildDescription(server);
 }
 
 } // namespace amnezia

@@ -1,5 +1,6 @@
 #include "updateController.h"
 
+#include <QFile>
 #include <QDesktopServices>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -14,7 +15,6 @@
 #include "amneziaApplication.h"
 #include "logger.h"
 #include "core/utils/appUiConfig.h"
-#include "core/utils/selfhosted/scriptsRegistry.h"
 #include "version.h"
 
 namespace
@@ -580,8 +580,18 @@ int UpdateController::runMacInstaller(const QString &installerPath)
         return -1;
     }
 
-    // Get script content from registry
-    QString scriptContent = amnezia::scriptData(amnezia::ClientScriptType::mac_installer);
+    // Get script content from the bundled client_scripts resource
+    QString scriptContent;
+    {
+        QFile bundledScript(QStringLiteral(":/client_scripts/mac_installer.sh"));
+        if (bundledScript.open(QIODevice::ReadOnly)) {
+            QByteArray data = bundledScript.readAll();
+            data.replace("\r", "");
+            scriptContent = QString::fromUtf8(data);
+        } else {
+            logger.error() << "Failed to open bundled macOS installer script";
+        }
+    }
     if (scriptContent.isEmpty()) {
         logger.error() << "macOS installer script content is empty";
         scriptFile.close();

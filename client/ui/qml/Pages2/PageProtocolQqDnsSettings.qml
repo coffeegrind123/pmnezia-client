@@ -40,7 +40,6 @@ PageType {
         anchors.left: parent.left
         anchors.right: parent.right
 
-        enabled: ServersUiController.isProcessedServerHasWriteAccess()
         model: QqDnsConfigModel
 
         delegate: ColumnLayout {
@@ -207,7 +206,7 @@ PageType {
                     forceActiveFocus()
 
                     var headerText = qsTr("Save settings?")
-                    var descriptionText = qsTr("All users with whom you shared a connection with will no longer be able to connect to it.")
+                    var descriptionText = qsTr("Only the settings for this device will be changed")
                     var yesButtonText = qsTr("Continue")
                     var noButtonText = qsTr("Cancel")
 
@@ -217,10 +216,9 @@ PageType {
                             return
                         }
 
-                        PageController.goToPage(PageEnum.PageSetupWizardInstalling)
-                        InstallController.updateContainer(ServersUiController.processedIndex,
-                                                          ServersUiController.processedContainerIndex,
-                                                          ProtocolEnum.QqDns)
+                        ServersUiController.updateClientConfig(ServersUiController.processedServerId,
+                                                              ServersUiController.processedContainerIndex,
+                                                              ProtocolEnum.QqDns)
                     }
                     var noButtonFunction = function() {
                         if (!GC.isMobile()) {

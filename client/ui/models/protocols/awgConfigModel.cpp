@@ -2,7 +2,7 @@
 
 #include <QJsonDocument>
 
-#include "core/configurators/wireguardConfigurator.h"
+#include "core/utils/wireguardKeys.h"
 
 #include "core/utils/protocolEnum.h"
 #include "core/protocols/protocolUtils.h"
@@ -91,7 +91,7 @@ bool AwgConfigModel::setData(const QModelIndex &index, const QVariant &value, in
             if (m_protocolConfig.serverConfig.headerProtectionKey.isEmpty()) {
                 const QString originalKey = m_originalProtocolConfig.serverConfig.headerProtectionKey;
                 m_protocolConfig.serverConfig.headerProtectionKey =
-                        originalKey.isEmpty() ? WireguardConfigurator::genClientKeys().clientPrivKey : originalKey;
+                        originalKey.isEmpty() ? amnezia::generateWireguardKeyPair().privateKey : originalKey;
             }
         } else {
             m_protocolConfig.serverConfig.headerProtectionKey.clear();

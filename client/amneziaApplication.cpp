@@ -213,7 +213,6 @@ void AmneziaApplication::init()
 
 void AmneziaApplication::registerTypes()
 {
-    qRegisterMetaType<ServerCredentials>("ServerCredentials");
 
     qRegisterMetaType<DockerContainer>("DockerContainer");
     using namespace amnezia::ProtocolEnumNS;

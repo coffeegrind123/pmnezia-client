@@ -14,45 +14,6 @@ QString errorString(ErrorCode code) {
     case(ErrorCode::AmneziaServiceNotRunning): errorMessage = QObject::tr("Background service is not running"); break;
     case(ErrorCode::NotSupportedOnThisPlatform): errorMessage = QObject::tr("The selected protocol is not supported on the current platform"); break;
 
-    // Server errors
-    case(ErrorCode::ServerCheckFailed): errorMessage = QObject::tr("Server check failed"); break;
-    case(ErrorCode::ServerPortAlreadyAllocatedError): errorMessage = QObject::tr("Server port already used. Check for another software"); break;
-    case(ErrorCode::ServerContainerMissingError): errorMessage = QObject::tr("Server error: Docker container missing"); break;
-    case(ErrorCode::ServerDockerFailedError): errorMessage = QObject::tr("Server error: Docker failed"); break;
-    case(ErrorCode::ServerCancelInstallation): errorMessage = QObject::tr("Installation canceled by user"); break;
-    case(ErrorCode::ServerUserNotInSudo): errorMessage = QObject::tr("The user is not a member of the sudo group"); break;
-    case(ErrorCode::ServerPacketManagerError): errorMessage = QObject::tr("Server error: Package manager error"); break;
-    case(ErrorCode::ServerSudoPackageIsNotPreinstalled): errorMessage = QObject::tr("The sudo package is not pre-installed on the server"); break;
-    case(ErrorCode::ServerUserDirectoryNotAccessible): errorMessage = QObject::tr("The server user's home directory is not accessible"); break;
-    case(ErrorCode::ServerUserNotAllowedInSudoers): errorMessage = QObject::tr("Action not allowed in sudoers"); break;
-    case(ErrorCode::ServerUserPasswordRequired): errorMessage = QObject::tr("The user's password is required"); break;
-    case(ErrorCode::ServerDockerOnCgroupsV2): errorMessage = QObject::tr("Docker error: runc doesn't work on cgroups v2"); break;
-    case(ErrorCode::ServerCgroupMountpoint): errorMessage = QObject::tr("Server error: cgroup mountpoint does not exist"); break;
-    case(ErrorCode::DockerPullRateLimit): errorMessage = QObject::tr("Docker error: The pull rate limit has been reached"); break;
-    case(ErrorCode::ServerLinuxKernelTooOld): errorMessage = QObject::tr("Server error: Linux kernel is too old"); break;
-    case(ErrorCode::XrayServerConfigInvalid):
-        errorMessage = QObject::tr("Server error: invalid or unreadable XRay server configuration");
-        break;
-    case(ErrorCode::XrayServerNoVlessClients):
-        errorMessage = QObject::tr("Server error: XRay server has no VLESS clients");
-        break;
-    case(ErrorCode::XrayRealityKeysReadFailed):
-        errorMessage = QObject::tr("Server error: failed to read XRay Reality keys from the server");
-        break;
-    case(ErrorCode::ServerContainerRuntimeNotSupported): errorMessage = QObject::tr("Server error: The default container runtime available for installation on this server is not supported.\n Install Docker Engine on the server manually and try again."); break;
-    case(ErrorCode::ContainerRuntimeServiceNotRunning): errorMessage = QObject::tr("Container runtime error: The container runtime service is not running.\n Check the container runtime service on the server, or wait about a minute and try again."); break;
-
-    // Libssh errors
-    case(ErrorCode::SshRequestDeniedError): errorMessage = QObject::tr("SSH request was denied"); break;
-    case(ErrorCode::SshInterruptedError): errorMessage = QObject::tr("SSH request was interrupted"); break;
-    case(ErrorCode::SshInternalError): errorMessage = QObject::tr("SSH internal error"); break;
-    case(ErrorCode::SshPrivateKeyError): errorMessage = QObject::tr("Invalid private key or invalid passphrase entered"); break;
-    case(ErrorCode::SshPrivateKeyFormatError): errorMessage = QObject::tr("The selected private key format is not supported, use openssh ED25519 key types or PEM key types"); break;
-    case(ErrorCode::SshTimeoutError): errorMessage = QObject::tr("Timeout connecting to server"); break;
-
-    // Ssh scp errors
-    case(ErrorCode::SshScpFailureError): errorMessage = QObject::tr("SCP error: Generic failure"); break;
-
     // Local errors
     case (ErrorCode::OpenVpnConfigMissing): errorMessage = QObject::tr("OpenVPN config missing"); break;
     case (ErrorCode::OpenVpnManagementServerError): errorMessage = QObject::tr("OpenVPN management server error"); break;

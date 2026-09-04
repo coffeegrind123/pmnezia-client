@@ -41,8 +41,6 @@ class AmneziaVPN(ConanFile):
             self.requires("awg-android/3.1.20260814")
             self.requires("openvpn-pt-android/1.0.0")
 
-        # expicitly use libssh@amnezia to prevent it from being downloaded from conan-center
-        self.requires("libssh/0.11.3@amnezia")
         self.requires("openssl/3.6.2")
         self.requires("zlib/1.3.2")
 

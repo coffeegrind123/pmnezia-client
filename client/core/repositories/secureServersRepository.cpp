@@ -36,11 +36,6 @@ QString storedServerDisplayName(const SecureServersRepository *repository, const
 {
     using Kind = serverConfigUtils::ConfigType;
     switch (repository->serverKind(serverId)) {
-    case Kind::SelfHostedAdmin:
-        if (const auto cfg = repository->selfHostedAdminConfig(serverId)) {
-            return cfg->displayName;
-        }
-        break;
     case Kind::SelfHostedUser:
         if (const auto cfg = repository->selfHostedUserConfig(serverId)) {
             return cfg->displayName;
@@ -293,19 +288,6 @@ serverConfigUtils::ConfigType SecureServersRepository::serverKind(const QString 
         return serverConfigUtils::ConfigType::Invalid;
     }
     return serverConfigUtils::configTypeFromJson(withoutStorageServerId(it.value()));
-}
-
-std::optional<SelfHostedAdminServerConfig> SecureServersRepository::selfHostedAdminConfig(const QString &serverId) const
-{
-    const auto it = m_serverJsonById.constFind(serverId);
-    if (it == m_serverJsonById.constEnd()) {
-        return std::nullopt;
-    }
-    const QJsonObject strippedJson = withoutStorageServerId(it.value());
-    if (serverConfigUtils::configTypeFromJson(strippedJson) != serverConfigUtils::ConfigType::SelfHostedAdmin) {
-        return std::nullopt;
-    }
-    return SelfHostedAdminServerConfig::fromJson(strippedJson);
 }
 
 std::optional<SelfHostedUserServerConfig> SecureServersRepository::selfHostedUserConfig(const QString &serverId) const

@@ -19,39 +19,6 @@ namespace amnezia
         AmneziaServiceNotRunning = 103,
         NotSupportedOnThisPlatform = 104,
 
-        // Server errors
-        ServerCheckFailed = 200,
-        ServerPortAlreadyAllocatedError = 201,
-        ServerContainerMissingError = 202,
-        ServerDockerFailedError = 203,
-        ServerCancelInstallation = 204,
-        ServerUserNotInSudo = 205,
-        ServerPacketManagerError = 206,
-        ServerSudoPackageIsNotPreinstalled = 207,
-        ServerUserDirectoryNotAccessible = 208,
-        ServerUserNotAllowedInSudoers = 209,
-        ServerUserPasswordRequired = 210,
-        ServerDockerOnCgroupsV2 = 211,
-        ServerCgroupMountpoint = 212,
-        DockerPullRateLimit = 213,
-        ServerLinuxKernelTooOld = 214,
-        XrayServerConfigInvalid = 215,
-        XrayServerNoVlessClients = 216,
-        XrayRealityKeysReadFailed = 217,
-        ServerContainerRuntimeNotSupported = 218,
-        ContainerRuntimeServiceNotRunning = 219,
-
-        // Ssh connection errors
-        SshRequestDeniedError = 300,
-        SshInterruptedError = 301,
-        SshInternalError = 302,
-        SshPrivateKeyError = 303,
-        SshPrivateKeyFormatError = 304,
-        SshTimeoutError = 305,
-
-        // Ssh scp errors
-        SshScpFailureError = 400,
-
         // Local errors
         OpenVpnConfigMissing = 500,
         OpenVpnManagementServerError = 501,

@@ -7,8 +7,7 @@ namespace serverConfigUtils
 {
 
 enum ConfigType {
-    SelfHostedAdmin = 8,
-    SelfHostedUser,
+    SelfHostedUser = 9,
     Native,
     Invalid
 };

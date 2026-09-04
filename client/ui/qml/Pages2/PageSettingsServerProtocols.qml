@@ -38,11 +38,7 @@ PageType {
         }
 
         function updateContainersModelFilters() {
-            if (ServersUiController.isProcessedServerHasWriteAccess()) {
-                proxyContainersModel.filters = ContainersModelFilters.getWriteAccessProtocolsListFilters()
-            } else {
-                proxyContainersModel.filters = ContainersModelFilters.getReadAccessProtocolsListFilters()
-            }
+            proxyContainersModel.filters = ContainersModelFilters.getInstalledProtocolsListFilters()
             root.installedProtocolsCount = proxyContainersModel.count
         }
 

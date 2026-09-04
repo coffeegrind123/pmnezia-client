@@ -27,45 +27,21 @@ ListViewType {
             text: name
             descriptionText: description
             rightWarningImageSource: isOutdatedAwgContainer ? "qrc:/images/controls/alert-circle.svg" : ""
-            rightImageSource: isInstalled ? "qrc:/images/controls/chevron-right.svg" : "qrc:/images/controls/download.svg"
+            rightImageSource: isInstalled ? "qrc:/images/controls/chevron-right.svg" : ""
 
             clickedFunction: function() {
-                if (isInstalled) {
-                    var containerIndex = root.model.mapToSource(index)
-                    ServersUiController.processedContainerIndex = containerIndex
+                if (!isInstalled) {
+                    return
+                }
 
-                    if (isVpnContainer) {
-                        // var isThirdPartyConfig = root.model.data(index, ContainersModel.IsThirdPartyConfigRole)
-                        if (isThirdPartyConfig) {
-                            InstallController.updateProtocols(ServersUiController.processedServerId, containerIndex)
-                            PageController.goToPage(PageEnum.PageProtocolRaw)
-                            return
-                        }
-                    }
+                var containerIndex = root.model.mapToSource(index)
+                ServersUiController.processedContainerIndex = containerIndex
+                ServersUiController.updateProtocols(ServersUiController.processedServerId, containerIndex)
 
-                    if (isIpsec) {
-                        InstallController.updateProtocols(ServersUiController.processedServerId, containerIndex)
-                        PageController.goToPage(PageEnum.PageProtocolRaw)
-                    } else if (isDns) {
-                        PageController.goToPage(PageEnum.PageServiceDnsSettings)
-                    } else if (isMtProxy) {
-                        MtProxyConfigModel.updateModel(config)
-                        PageController.goToPage(PageEnum.PageServiceMtProxySettings, false)
-                    } else if (isTelemt) {
-                        TelemtConfigModel.updateModel(config)
-                        PageController.goToPage(PageEnum.PageServiceTelemtSettings, false)
-                    } else if (isTProxy) {
-                        TProxyConfigModel.updateModel(config)
-                        PageController.goToPage(PageEnum.PageServiceTProxySettings, false)
-                    } else {
-                        InstallController.updateProtocols(ServersUiController.processedServerId, containerIndex)
-                        PageController.goToPage(PageEnum.PageSettingsServerProtocol)
-                    }
-
+                if (isThirdPartyConfig || isIpsec) {
+                    PageController.goToPage(PageEnum.PageProtocolRaw)
                 } else {
-                    var containerIndex = root.model.mapToSource(index)
-                    ServersUiController.processedContainerIndex = containerIndex
-                    PageController.goToPage(PageEnum.PageSetupWizardProtocolSettings)
+                    PageController.goToPage(PageEnum.PageSettingsServerProtocol)
                 }
             }
 

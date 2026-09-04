@@ -4,8 +4,6 @@
 #include <QTranslator>
 #include <QTimer>
 
-#include "core/utils/selfhosted/sshSession.h"
-#include "core/controllers/selfhosted/installController.h"
 #include "core/controllers/selfhosted/importController.h"
 #include "core/controllers/coreSignalHandlers.h"
 #include "logger.h"
@@ -98,31 +96,11 @@ void CoreController::initModels()
     m_xrayConfigSnapshotsModel = new XrayConfigSnapshotsModel(m_appSettingsRepository, m_xrayConfigModel, this);
     setQmlContextProperty("XrayConfigSnapshotsModel", m_xrayConfigSnapshotsModel);
 
-    m_torConfigModel = new TorConfigModel(this);
-    setQmlContextProperty("TorConfigModel", m_torConfigModel);
-
 #ifdef Q_OS_WINDOWS
     m_ikev2ConfigModel = new Ikev2ConfigModel(this);
     setQmlContextProperty("Ikev2ConfigModel", m_ikev2ConfigModel);
 #endif
 
-    m_sftpConfigModel = new SftpConfigModel(this);
-    setQmlContextProperty("SftpConfigModel", m_sftpConfigModel);
-
-    m_socks5ConfigModel = new Socks5ProxyConfigModel(this);
-    setQmlContextProperty("Socks5ProxyConfigModel", m_socks5ConfigModel);
-
-    m_mtProxyConfigModel = new MtProxyConfigModel(this);
-    setQmlContextProperty("MtProxyConfigModel", m_mtProxyConfigModel);
-
-    m_telemtConfigModel = new TelemtConfigModel(this);
-    setQmlContextProperty("TelemtConfigModel", m_telemtConfigModel);
-
-    m_tProxyConfigModel = new TProxyConfigModel(this);
-    setQmlContextProperty("TProxyConfigModel", m_tProxyConfigModel);
-
-    m_clientManagementModel = new ClientManagementModel(this);
-    setQmlContextProperty("ClientManagementModel", m_clientManagementModel);
 }
 
 void CoreController::initRepositories()
@@ -139,13 +117,10 @@ void CoreController::initCoreControllers()
 {
     m_serversController = new ServersController(m_serversRepository, m_appSettingsRepository, this);
     m_appSplitTunnelingController = new AppSplitTunnelingController(m_appSettingsRepository);
-    m_usersController = new UsersController(m_serversRepository, this);
     m_ipSplitTunnelingController = new IpSplitTunnelingController(m_appSettingsRepository, this);
     m_allowedDnsController = new AllowedDnsController(m_appSettingsRepository);
     m_updateController = new UpdateController(m_appSettingsRepository, this);
     
-    m_installController = new InstallController(m_serversRepository, m_appSettingsRepository, this);
-    m_exportController = new ExportController(m_serversRepository, m_appSettingsRepository, this);
     m_importCoreController = new ImportController(m_serversRepository, m_appSettingsRepository, this);
     m_connectionController = new ConnectionController(m_serversRepository, m_appSettingsRepository, m_vpnConnection.get(), this);
     m_settingsController = new SettingsController(m_serversRepository, m_appSettingsRepository, this);
@@ -161,22 +136,8 @@ void CoreController::initControllers()
         setQmlContextProperty("FocusController", m_focusController);
     }
 
-    m_installUiController = new InstallUiController(m_installController, m_serversController, m_settingsController, m_protocolsModel, m_usersController,
-                                                     m_awgConfigModel, m_wireGuardConfigModel, m_openVpnConfigModel, m_xrayConfigModel,
-                                                     m_masterDnsVpnConfigModel, m_qqDnsConfigModel, m_torConfigModel,
-#ifdef Q_OS_WINDOWS
-                                                     m_ikev2ConfigModel,
-#endif
-                                                     m_sftpConfigModel, m_socks5ConfigModel, m_mtProxyConfigModel, m_telemtConfigModel,
-                                                     m_tProxyConfigModel,
-                                                     m_connectionController, this);
-    setQmlContextProperty("InstallController", m_installUiController);
-
     m_importController = new ImportUiController(m_importCoreController, this);
     setQmlContextProperty("ImportController", m_importController);
-
-    m_exportUiController = new ExportUiController(m_exportController, this);
-    setQmlContextProperty("ExportController", m_exportUiController);
 
     m_languageUiController = new LanguageUiController(m_settingsController, m_languageModel, this);
     setQmlContextProperty("LanguageUiController", m_languageUiController);
@@ -187,7 +148,15 @@ void CoreController::initControllers()
     m_pageController = new PageController(m_serversController, m_settingsController, this);
     setQmlContextProperty("PageController", m_pageController);
 
-    m_serversUiController = new ServersUiController(m_serversController, m_settingsController, m_serversModel, m_containersModel, m_defaultServerContainersModel, this);
+    m_serversUiController = new ServersUiController(m_serversController, m_settingsController, m_serversModel,
+                                                     m_containersModel, m_defaultServerContainersModel,
+                                                     m_protocolsModel, m_awgConfigModel, m_wireGuardConfigModel,
+                                                     m_openVpnConfigModel, m_xrayConfigModel,
+                                                     m_masterDnsVpnConfigModel, m_qqDnsConfigModel,
+#ifdef Q_OS_WINDOWS
+                                                     m_ikev2ConfigModel,
+#endif
+                                                     this);
     setQmlContextProperty("ServersUiController", m_serversUiController);
 
     m_ipSplitTunnelingUiController = new IpSplitTunnelingUiController(m_ipSplitTunnelingController, m_ipSplitTunnelingModel, this);

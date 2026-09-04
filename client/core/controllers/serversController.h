@@ -20,8 +20,6 @@
 #include "core/models/containerConfig.h"
 #include "core/models/serverDescription.h"
 
-class SshSession;
-class InstallController;
 
 using namespace amnezia;
 
@@ -44,18 +42,20 @@ public:
     void setDefaultContainer(const QString &serverId, DockerContainer container);
 
     // Getters
-    QVector<ServerDescription> buildServerDescriptions(bool isAmneziaDnsEnabled) const;
+    QVector<ServerDescription> buildServerDescriptions() const;
     int getDefaultServerIndex() const;
     QString getDefaultServerId() const;
     int getServersCount() const;
     QString getServerId(int serverIndex) const;
     int indexOfServerId(const QString &serverId) const;
     QString notificationDisplayName(const QString &serverId) const;
-    std::optional<SelfHostedAdminServerConfig> selfHostedAdminConfig(const QString &serverId) const;
-    ServerCredentials getServerCredentials(const QString &serverId) const;
     QMap<DockerContainer, ContainerConfig> getServerContainersMap(const QString &serverId) const;
     DockerContainer getDefaultContainer(const QString &serverId) const;
     ContainerConfig getContainerConfig(const QString &serverId, DockerContainer container) const;
+
+    // Rewrites the stored container config for a server. Client-local only:
+    // nothing is pushed anywhere, the server is not contacted.
+    ErrorCode updateClientConfig(const QString &serverId, DockerContainer container, const ContainerConfig &newConfig);
 
     // Validation
     bool hasInstalledContainers(const QString &serverId) const;

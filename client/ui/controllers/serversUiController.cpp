@@ -7,6 +7,7 @@
 #include "core/models/containerConfig.h"
 #include "core/models/protocols/awgProtocolConfig.h"
 #include "core/utils/constants/protocolConstants.h"
+#include "core/utils/networkUtilities.h"
 
 using namespace amnezia;
 
@@ -35,13 +36,33 @@ ServersUiController::ServersUiController(ServersController* serversController,
                                          ServersModel* serversModel,
                                          ContainersModel* containersModel,
                                          ContainersModel* defaultServerContainersModel,
+                                         ProtocolsModel* protocolsModel,
+                                         AwgConfigModel* awgConfigModel,
+                                         WireGuardConfigModel* wireGuardConfigModel,
+                                         OpenVpnConfigModel* openVpnConfigModel,
+                                         XrayConfigModel* xrayConfigModel,
+                                         MasterDnsVpnConfigModel* masterDnsVpnConfigModel,
+                                         QqDnsConfigModel* qqDnsConfigModel,
+#ifdef Q_OS_WINDOWS
+                                         Ikev2ConfigModel* ikev2ConfigModel,
+#endif
                                          QObject *parent)
     : QObject(parent),
       m_serversController(serversController),
       m_settingsController(settingsController),
       m_serversModel(serversModel),
       m_containersModel(containersModel),
-      m_defaultServerContainersModel(defaultServerContainersModel)
+      m_defaultServerContainersModel(defaultServerContainersModel),
+      m_protocolsModel(protocolsModel),
+      m_awgConfigModel(awgConfigModel),
+      m_wireGuardConfigModel(wireGuardConfigModel),
+      m_openVpnConfigModel(openVpnConfigModel),
+      m_xrayConfigModel(xrayConfigModel),
+      m_masterDnsVpnConfigModel(masterDnsVpnConfigModel),
+      m_qqDnsConfigModel(qqDnsConfigModel)
+#ifdef Q_OS_WINDOWS
+      , m_ikev2ConfigModel(ikev2ConfigModel)
+#endif
 {
 }
 
@@ -50,8 +71,101 @@ void ServersUiController::removeServer(const QString &serverId)
     if (serverId.isEmpty()) {
         return;
     }
+    const QString name = serverName(serverId);
     m_serversController->removeServer(serverId);
     updateModel();
+    emit removeServerFinished(tr("Server '%1' was removed").arg(name));
+}
+
+void ServersUiController::updateProtocols(const QString &serverId, int containerIndex)
+{
+    const DockerContainer container = static_cast<DockerContainer>(containerIndex);
+    ContainerConfig containerConfig = m_serversController->getContainerConfig(serverId, container);
+    containerConfig.container = container;
+    m_protocolsModel->updateModel(containerConfig);
+}
+
+void ServersUiController::openClientSettings(const QString &serverId, int containerIndex, int protocolIndex)
+{
+    updateProtocolConfigModel(serverId, containerIndex, protocolIndex);
+}
+
+void ServersUiController::updateClientConfig(const QString &serverId, int containerIndex, int protocolIndex,
+                                             bool closePage)
+{
+    const DockerContainer container = static_cast<DockerContainer>(containerIndex);
+
+    ContainerConfig containerConfig;
+    if (!buildContainerConfigFromModel(containerIndex, protocolIndex, containerConfig)) {
+        return;
+    }
+
+    const ErrorCode errorCode = m_serversController->updateClientConfig(serverId, container, containerConfig);
+    if (errorCode != ErrorCode::NoError) {
+        emit updateContainerErrorOccurred(errorCode);
+        return;
+    }
+
+    ContainerConfig updatedConfig = m_serversController->getContainerConfig(serverId, container);
+    updatedConfig.container = container;
+    m_protocolsModel->updateModel(updatedConfig);
+    updateProtocolConfigModel(serverId, containerIndex, protocolIndex);
+    updateModel();
+
+    emit updateContainerFinished(tr("Settings updated successfully"), closePage);
+}
+
+QRegularExpression ServersUiController::ipAddressRegExp()
+{
+    return NetworkUtilities::ipAddressRegExp();
+}
+
+bool ServersUiController::buildContainerConfigFromModel(int containerIndex, int protocolIndex,
+                                                        ContainerConfig &containerConfig)
+{
+    containerConfig.container = static_cast<DockerContainer>(containerIndex);
+
+    switch (static_cast<Proto>(protocolIndex)) {
+    case Proto::Awg: containerConfig.protocolConfig = m_awgConfigModel->getProtocolConfig(); break;
+    case Proto::WireGuard: containerConfig.protocolConfig = m_wireGuardConfigModel->getProtocolConfig(); break;
+    case Proto::OpenVpn: containerConfig.protocolConfig = m_openVpnConfigModel->getProtocolConfig(); break;
+    case Proto::Xray:
+    case Proto::SSXray: containerConfig.protocolConfig = m_xrayConfigModel->getProtocolConfig(); break;
+    case Proto::MasterDnsVpn: containerConfig.protocolConfig = m_masterDnsVpnConfigModel->getProtocolConfig(); break;
+    case Proto::QqDns: containerConfig.protocolConfig = m_qqDnsConfigModel->getProtocolConfig(); break;
+#ifdef Q_OS_WINDOWS
+    case Proto::Ikev2: containerConfig.protocolConfig = m_ikev2ConfigModel->getProtocolConfig(); break;
+#endif
+    default: return false;
+    }
+    return true;
+}
+
+void ServersUiController::updateProtocolConfigModel(const QString &serverId, int containerIndex, int protocolIndex)
+{
+    const DockerContainer container = static_cast<DockerContainer>(containerIndex);
+    ContainerConfig containerConfig = m_serversController->getContainerConfig(serverId, container);
+    containerConfig.container = container;
+
+    auto updateIfPresent = [&](auto* model, auto* config) {
+        if (model && config) model->updateModel(container, *config);
+    };
+
+    switch (static_cast<Proto>(protocolIndex)) {
+    case Proto::Awg: updateIfPresent(m_awgConfigModel, containerConfig.getAwgProtocolConfig()); break;
+    case Proto::WireGuard: updateIfPresent(m_wireGuardConfigModel, containerConfig.getWireGuardProtocolConfig()); break;
+    case Proto::OpenVpn: updateIfPresent(m_openVpnConfigModel, containerConfig.getOpenVpnProtocolConfig()); break;
+    case Proto::Xray:
+    case Proto::SSXray: updateIfPresent(m_xrayConfigModel, containerConfig.getXrayProtocolConfig()); break;
+    case Proto::MasterDnsVpn:
+        updateIfPresent(m_masterDnsVpnConfigModel, containerConfig.getMasterDnsVpnProtocolConfig());
+        break;
+    case Proto::QqDns: updateIfPresent(m_qqDnsConfigModel, containerConfig.getQqDnsProtocolConfig()); break;
+#ifdef Q_OS_WINDOWS
+    case Proto::Ikev2: updateIfPresent(m_ikev2ConfigModel, containerConfig.getIkev2ProtocolConfig()); break;
+#endif
+    default: break;
+    }
 }
 
 void ServersUiController::removeServerAtIndex(int index)
@@ -127,7 +241,7 @@ void ServersUiController::onDefaultServerChanged(const QString &defaultServerId)
 void ServersUiController::updateModel()
 {
     QVector<ServerDescription> descriptions =
-        m_serversController->buildServerDescriptions(m_settingsController->isAmneziaDnsEnabled());
+        m_serversController->buildServerDescriptions();
 
     const QString defaultServerId = m_serversController->getDefaultServerId();
     m_orderedServerDescriptions = descriptions;
@@ -229,16 +343,6 @@ bool ServersUiController::isDefaultServerDefaultContainerHasSplitTunneling() con
     return false;
 }
 
-bool ServersUiController::hasServerWithWriteAccess() const
-{
-    for (const auto &description : m_orderedServerDescriptions) {
-        if (description.hasWriteAccess) {
-            return true;
-        }
-    }
-    return false;
-}
-
 QString ServersUiController::serverName(const QString &serverId) const
 {
     return serverDescriptionById(serverId).serverName;
@@ -253,11 +357,6 @@ int ServersUiController::serverDefaultContainer(const QString &serverId) const
 {
     const auto &description = serverDescriptionById(serverId);
     return description.serverId.isEmpty() ? -1 : static_cast<int>(description.defaultContainer);
-}
-
-bool ServersUiController::isServerHasWriteAccess(const QString &serverId) const
-{
-    return serverDescriptionById(serverId).hasWriteAccess;
 }
 
 bool ServersUiController::serverHasInstalledContainers(const QString &serverId) const
@@ -307,12 +406,6 @@ bool ServersUiController::isDefaultServerCurrentlyProcessed() const
 
 bool ServersUiController::serverHasOutdatedAwgContainer(const QString &serverId) const
 {
-    // The warning suggests reinstalling the container, so it only makes sense
-    // for servers the user can administer
-    if (!isServerHasWriteAccess(serverId)) {
-        return false;
-    }
-
     const QMap<DockerContainer, ContainerConfig> containers = m_serversController->getServerContainersMap(serverId);
     for (DockerContainer container : { DockerContainer::Awg, DockerContainer::Awg2 }) {
         if (!containers.contains(container)) {
@@ -334,10 +427,6 @@ bool ServersUiController::defaultServerHasOutdatedAwgContainer() const
 
 bool ServersUiController::isContainerOutdatedAwg(int containerIndex) const
 {
-    if (!isProcessedServerHasWriteAccess()) {
-        return false;
-    }
-
     DockerContainer container = static_cast<DockerContainer>(containerIndex);
     if (!ContainerUtils::isAwgContainer(container)) {
         return false;
@@ -356,11 +445,6 @@ bool ServersUiController::isContainerOutdatedAwg(int containerIndex) const
 bool ServersUiController::isProcessedContainerOutdatedAwg() const
 {
     return isContainerOutdatedAwg(m_processedContainerIndex);
-}
-
-bool ServersUiController::isProcessedServerHasWriteAccess() const
-{
-    return isServerHasWriteAccess(m_processedServerId);
 }
 
 const ServerDescription &ServersUiController::processedServerDescription() const

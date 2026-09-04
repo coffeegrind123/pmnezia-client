@@ -13,6 +13,18 @@
 #include "core/controllers/settingsController.h"
 #include "ui/models/serversModel.h"
 #include "ui/models/containersModel.h"
+#include "ui/models/protocolsModel.h"
+#include "ui/models/protocols/awgConfigModel.h"
+#include "ui/models/protocols/wireguardConfigModel.h"
+#include "ui/models/protocols/openvpnConfigModel.h"
+#include "ui/models/protocols/xrayConfigModel.h"
+#include "ui/models/protocols/masterDnsVpnConfigModel.h"
+#include "ui/models/protocols/qqDnsConfigModel.h"
+#ifdef Q_OS_WINDOWS
+#include "ui/models/protocols/ikev2ConfigModel.h"
+#endif
+
+#include <QRegularExpression>
 
 class ServersUiController : public QObject
 {
@@ -36,10 +48,29 @@ public:
                                  ServersModel* serversModel,
                                  ContainersModel* containersModel,
                                  ContainersModel* defaultServerContainersModel,
+                                 ProtocolsModel* protocolsModel,
+                                 AwgConfigModel* awgConfigModel,
+                                 WireGuardConfigModel* wireGuardConfigModel,
+                                 OpenVpnConfigModel* openVpnConfigModel,
+                                 XrayConfigModel* xrayConfigModel,
+                                 MasterDnsVpnConfigModel* masterDnsVpnConfigModel,
+                                 QqDnsConfigModel* qqDnsConfigModel,
+#ifdef Q_OS_WINDOWS
+                                 Ikev2ConfigModel* ikev2ConfigModel,
+#endif
                                  QObject *parent = nullptr);
 
 public slots:
     void removeServer(const QString &serverId);
+
+    // Reloads ProtocolsModel from the stored container config.
+    Q_INVOKABLE void updateProtocols(const QString &serverId, int containerIndex);
+    // Loads the per-protocol config model so a client-settings page can bind to it.
+    void openClientSettings(const QString &serverId, int containerIndex, int protocolIndex);
+    // Saves edits made on a client-settings page back into the stored config.
+    void updateClientConfig(const QString &serverId, int containerIndex, int protocolIndex, bool closePage = true);
+
+    QRegularExpression ipAddressRegExp();
     void removeServerAtIndex(int index);
 
     void editServerName(const QString &serverId, const QString &name);
@@ -60,7 +91,6 @@ public slots:
     QString getDefaultServerDescriptionCollapsed() const;
     QString getDefaultServerDescriptionExpanded() const;
     bool isDefaultServerDefaultContainerHasSplitTunneling() const;
-    bool hasServerWithWriteAccess() const;
 
     bool serverHasOutdatedAwgContainer(const QString &serverId) const;
     bool defaultServerHasOutdatedAwgContainer() const;
@@ -70,7 +100,6 @@ public slots:
     QString serverName(const QString &serverId) const;
     QString serverHostName(const QString &serverId) const;
     int serverDefaultContainer(const QString &serverId) const;
-    bool isServerHasWriteAccess(const QString &serverId) const;
     bool serverHasInstalledContainers(const QString &serverId) const;
     
     QString getProcessedServerId() const;
@@ -80,7 +109,6 @@ public slots:
     void setProcessedContainerIndex(int index);
     
     bool isDefaultServerCurrentlyProcessed() const;
-    bool isProcessedServerHasWriteAccess() const;
     
     QString getServerId(int index) const;
     int getServerIndexById(const QString &serverId) const;
@@ -88,6 +116,10 @@ public slots:
     QStringList getAllInstalledServicesName(int serverIndex) const;
 
 signals:
+    void updateContainerFinished(const QString &message, bool closePage);
+    void updateContainerErrorOccurred(ErrorCode errorCode);
+    void removeServerFinished(const QString &finishedMessage);
+
     void errorOccurred(const QString &errorMessage);
     void finished(const QString &message);
     void defaultServerIdChanged(const QString &serverId);
@@ -105,11 +137,24 @@ private:
     void updateContainersModel();
     void updateDefaultServerContainersModel();
 
+    bool buildContainerConfigFromModel(int containerIndex, int protocolIndex, ContainerConfig &containerConfig);
+    void updateProtocolConfigModel(const QString &serverId, int containerIndex, int protocolIndex);
+
     ServersController* m_serversController;
     SettingsController* m_settingsController;
     ServersModel* m_serversModel;
     ContainersModel* m_containersModel;
     ContainersModel* m_defaultServerContainersModel;
+    ProtocolsModel* m_protocolsModel;
+    AwgConfigModel* m_awgConfigModel;
+    WireGuardConfigModel* m_wireGuardConfigModel;
+    OpenVpnConfigModel* m_openVpnConfigModel;
+    XrayConfigModel* m_xrayConfigModel;
+    MasterDnsVpnConfigModel* m_masterDnsVpnConfigModel;
+    QqDnsConfigModel* m_qqDnsConfigModel;
+#ifdef Q_OS_WINDOWS
+    Ikev2ConfigModel* m_ikev2ConfigModel;
+#endif
 
     QVector<amnezia::ServerDescription> m_orderedServerDescriptions;
     

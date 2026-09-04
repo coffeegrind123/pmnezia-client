@@ -1,28 +1,25 @@
 #include "configuratorBase.h"
 
-#include "core/configurators/awgConfigurator.h"
-#include "core/configurators/ikev2Configurator.h"
 #include "core/configurators/openVpnConfigurator.h"
-#include "core/configurators/wireguardConfigurator.h"
 #include "core/configurators/xrayConfigurator.h"
 
 using namespace amnezia;
 
-ConfiguratorBase::ConfiguratorBase(SshSession* sshSession, QObject *parent)
-    : QObject { parent }, m_sshSession(sshSession)
+ConfiguratorBase::ConfiguratorBase(QObject *parent)
+    : QObject { parent }
 {
 }
 
-QScopedPointer<ConfiguratorBase> ConfiguratorBase::create(Proto protocol,
-                                                          SshSession* sshSession)
+QScopedPointer<ConfiguratorBase> ConfiguratorBase::create(Proto protocol)
 {
     switch (protocol) {
-    case Proto::OpenVpn: return QScopedPointer<ConfiguratorBase>(new OpenVpnConfigurator(sshSession));
-    case Proto::WireGuard: return QScopedPointer<ConfiguratorBase>(new WireguardConfigurator(sshSession, false));
-    case Proto::Awg: return QScopedPointer<ConfiguratorBase>(new AwgConfigurator(sshSession));
-    case Proto::Ikev2: return QScopedPointer<ConfiguratorBase>(new Ikev2Configurator(sshSession));
-    case Proto::Xray: return QScopedPointer<ConfiguratorBase>(new XrayConfigurator(sshSession));
-    case Proto::SSXray: return QScopedPointer<ConfiguratorBase>(new XrayConfigurator(sshSession));
+    case Proto::OpenVpn: return QScopedPointer<ConfiguratorBase>(new OpenVpnConfigurator());
+    case Proto::Xray:
+    case Proto::SSXray: return QScopedPointer<ConfiguratorBase>(new XrayConfigurator());
+    // WireGuard, AmneziaWG and IKEv2 need only the shared DNS substitution.
+    case Proto::WireGuard:
+    case Proto::Awg:
+    case Proto::Ikev2: return QScopedPointer<ConfiguratorBase>(new ConfiguratorBase());
     default: return QScopedPointer<ConfiguratorBase>();
     }
 }

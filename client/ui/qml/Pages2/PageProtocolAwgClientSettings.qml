@@ -426,7 +426,7 @@ PageType {
                     return
                 }
 
-                InstallController.updateClientConfig(ServersUiController.processedServerId, ServersUiController.processedContainerIndex, ProtocolEnum.Awg)
+                ServersUiController.updateClientConfig(ServersUiController.processedServerId, ServersUiController.processedContainerIndex, ProtocolEnum.Awg)
             }
 
             var noButtonFunction = function() {}

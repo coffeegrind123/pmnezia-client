@@ -445,13 +445,9 @@ int ImportController::qrChunksTotal() const
 
 void ImportController::importConfig(const QJsonObject &config)
 {
-    ServerCredentials credentials;
-    credentials.hostName = config.value(configKey::hostName).toString();
-    credentials.port = config.value(configKey::port).toInt();
-    credentials.userName = config.value(configKey::userName).toString();
-    credentials.secretData = config.value(configKey::password).toString();
-
-    if (credentials.isValid() || config.contains(configKey::containers)) {
+    // Every importable config carries its connection containers; there is no
+    // credentials-only "empty server" to add any more.
+    if (config.contains(configKey::containers)) {
         m_serversRepository->addServer(QString(), config, serverConfigUtils::configTypeFromJson(config));
         emit importFinished();
     } else {
