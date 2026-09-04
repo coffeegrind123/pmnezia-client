@@ -659,9 +659,9 @@ namespace {
         if (onlyDigits.match(t).hasMatch()) {
             return false;
         }
-        QRegExp re = NetworkUtilities::domainRegExp();
-        re.setCaseSensitivity(Qt::CaseInsensitive);
-        return re.exactMatch(t);
+        QRegularExpression re = NetworkUtilities::domainRegExp();
+        re.setPatternOptions(re.patternOptions() | QRegularExpression::CaseInsensitiveOption);
+        return re.match(t).hasMatch();
     }
 }
 

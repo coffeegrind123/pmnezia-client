@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Qt5Compat.GraphicalEffects
 
 import Style 1.0
 
@@ -147,7 +146,7 @@ Item {
                 visible: leftImageColor === ""
             }
 
-            ColorOverlay {
+            ColorOverlayEffect {
                 anchors.fill: leftImage
                 source: leftImage
                 color: leftImageColor
@@ -247,7 +246,7 @@ Item {
                 visible: false
             }
 
-            ColorOverlay {
+            ColorOverlayEffect {
                 anchors.fill: rightWarningImage
                 source: rightWarningImage
                 color: rightWarningImageColor

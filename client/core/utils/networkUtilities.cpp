@@ -50,28 +50,19 @@ QRegularExpression NetworkUtilities::ipAddressRegExp()
     return QRegularExpression("^((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])(\\.(?!$)|$)){4}$");
 }
 
-QRegExp NetworkUtilities::ipAddressWithSubnetRegExp()
+QRegularExpression NetworkUtilities::ipAddressWithSubnetRegExp()
 {
-    return QRegExp("(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\\.){3}"
-                   "(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])"
-                   "(\\/(?:[0-9]|[1-2][0-9]|3[0-2])){0,1}");
+    return QRegularExpression(QRegularExpression::anchoredPattern(
+            QStringLiteral("(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\\.){3}"
+                           "(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])"
+                           "(\\/(?:[0-9]|[1-2][0-9]|3[0-2])){0,1}")));
 }
 
-QRegExp NetworkUtilities::ipNetwork24RegExp()
+QRegularExpression NetworkUtilities::domainRegExp()
 {
-    return QRegExp("^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\\.){3}"
-                   "0$");
-}
-
-QRegExp NetworkUtilities::ipPortRegExp()
-{
-    return QRegExp("^()([1-9]|[1-5]?[0-9]{2,4}|6[1-4][0-9]{3}|65[1-4][0-9]{2}|655[1-2][0-9]|6553[1-5])$");
-}
-
-QRegExp NetworkUtilities::domainRegExp()
-{
-    return QRegExp("(((?!\\-))(xn\\-\\-)?[a-z0-9\\-_]{0,61}[a-z0-9]{1,1}\\.)*(xn\\-\\-)?([a-z0-9\\-]{1,61}|[a-z0-"
-                   "9\\-]{1,30})\\.[a-z]{2,}");
+    return QRegularExpression(QRegularExpression::anchoredPattern(
+            QStringLiteral("(((?!\\-))(xn\\-\\-)?[a-z0-9\\-_]{0,61}[a-z0-9]{1,1}\\.)*(xn\\-\\-)?([a-z0-9\\-]{1,61}|[a-z0-"
+                           "9\\-]{1,30})\\.[a-z]{2,}")));
 }
 
 QString NetworkUtilities::netMaskFromIpWithSubnet(const QString ip)

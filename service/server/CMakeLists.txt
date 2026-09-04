@@ -13,7 +13,13 @@ endif()
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS DBus Core Network Widgets RemoteObjects Core5Compat Concurrent)
+# The service is a headless daemon: no Gui/Widgets, and Core5Compat is unused.
+# DBus is needed only by the Linux platform sources added under if(LINUX) below.
+set(SERVICE_QT_PACKAGES Core Network RemoteObjects Concurrent)
+if(LINUX)
+    list(APPEND SERVICE_QT_PACKAGES DBus)
+endif()
+find_package(Qt6 REQUIRED COMPONENTS ${SERVICE_QT_PACKAGES})
 qt_standard_project_setup()
 
 configure_file(${CMAKE_SOURCE_DIR}/version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h)
@@ -327,7 +333,10 @@ include_directories(
 
 
 add_executable(${PROJECT} ${SOURCES} ${HEADERS} ${RESOURCES})
-target_link_libraries(${PROJECT} PRIVATE Qt6::Core Qt6::Widgets Qt6::Network Qt6::RemoteObjects Qt6::Core5Compat Qt6::DBus Qt6::Concurrent ${LIBS})
+target_link_libraries(${PROJECT} PRIVATE Qt6::Core Qt6::Network Qt6::RemoteObjects Qt6::Concurrent ${LIBS})
+if(LINUX)
+    target_link_libraries(${PROJECT} PRIVATE Qt6::DBus)
+endif()
 target_compile_definitions(${PROJECT} PRIVATE "MZ_$<UPPER_CASE:${MZ_PLATFORM_NAME}>")
 
 find_package(amnezia-xray-bindings REQUIRED)

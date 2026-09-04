@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Qt5Compat.GraphicalEffects
 
 import Style 1.0
 
@@ -149,7 +148,7 @@ Button {
 
                 layer {
                     enabled: leftImageColor !== "" ? true : false
-                    effect: ColorOverlay {
+                    effect: ColorOverlayEffect {
                         color: leftImageColor
                     }
                 }
@@ -182,7 +181,7 @@ Button {
 
                 layer {
                     enabled: true
-                    effect: ColorOverlay {
+                    effect: ColorOverlayEffect {
                         color: textColor
                     }
                 }

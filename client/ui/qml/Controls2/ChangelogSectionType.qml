@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Layouts
-import Qt5Compat.GraphicalEffects
 
 import Style 1.0
 
@@ -29,7 +28,7 @@ ColumnLayout {
             sourceSize: Qt.size(18, 18)
 
             layer.enabled: true
-            layer.effect: ColorOverlay {
+            layer.effect: ColorOverlayEffect {
                 color: AmneziaStyle.color.accentSuccess
             }
         }

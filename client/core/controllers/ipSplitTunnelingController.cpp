@@ -81,7 +81,7 @@ bool IpSplitTunnelingController::addSite(const QString &hostname)
         return false;
     }
     
-    if (NetworkUtilities::ipAddressWithSubnetRegExp().exactMatch(normalizedHostname)) {
+    if (NetworkUtilities::ipAddressWithSubnetRegExp().match(normalizedHostname).hasMatch()) {
         processSite(normalizedHostname, {});
         return true;
     }
@@ -155,7 +155,7 @@ QString IpSplitTunnelingController::normalizeHostname(const QString &hostname) c
     normalized.replace("http://", "");
     normalized.replace("ftp://", "");
 
-    if (NetworkUtilities::ipAddressWithSubnetRegExp().exactMatch(normalized)) {
+    if (NetworkUtilities::ipAddressWithSubnetRegExp().match(normalized).hasMatch()) {
         return normalized;
     }
 
@@ -168,7 +168,7 @@ bool IpSplitTunnelingController::validateHostname(const QString &hostname) const
     if (hostname.isEmpty()) {
         return false;
     }
-    if (!hostname.contains(".") && !NetworkUtilities::ipAddressWithSubnetRegExp().exactMatch(hostname)) {
+    if (!hostname.contains(".") && !NetworkUtilities::ipAddressWithSubnetRegExp().match(hostname).hasMatch()) {
         return false;
     }
     return true;

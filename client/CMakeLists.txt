@@ -11,9 +11,9 @@ set_property(GLOBAL PROPERTY AUTOMOC_TARGETS_FOLDER "Autogen")
 set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "Autogen")
 
 set(PACKAGES
-    Core Gui Network Xml
+    Core Gui Network
     RemoteObjects Quick Svg QuickControls2
-    Core5Compat Concurrent LinguistTools
+    Concurrent LinguistTools ShaderTools
 )
 
 execute_process(
@@ -42,9 +42,9 @@ find_package(lz4 REQUIRED)
 
 set(LIBS ${LIBS}
     Qt6::Core Qt6::Gui
-    Qt6::Network Qt6::Xml Qt6::RemoteObjects
+    Qt6::Network Qt6::RemoteObjects
     Qt6::Quick Qt6::Svg Qt6::QuickControls2
-    Qt6::Core5Compat Qt6::Concurrent
+    Qt6::Concurrent
     ZLIB::ZLIB
     zstd::libzstd_static
     lz4::lz4
@@ -67,6 +67,17 @@ if(WIN32 OR (APPLE AND NOT IOS AND NOT MACOS_NE) OR (LINUX AND NOT ANDROID))
     qt_add_repc_replicas(${PROJECT} ${CMAKE_CURRENT_LIST_DIR}/../ipc/ipc_interface.rep)
     qt_add_repc_replicas(${PROJECT} ${CMAKE_CURRENT_LIST_DIR}/../ipc/ipc_process_interface.rep)
 endif()
+
+qt6_add_shaders(${PROJECT} "amneziaShaders"
+    PREFIX
+        "/shaders"
+    FILES
+        ${CMAKE_CURRENT_LIST_DIR}/ui/qml/shaders/coloroverlay.frag
+        ${CMAKE_CURRENT_LIST_DIR}/ui/qml/shaders/opacitymask.frag
+    OUTPUTS
+        coloroverlay.frag.qsb
+        opacitymask.frag.qsb
+)
 
 qt6_add_resources(QRC ${QRC}
     ${CMAKE_CURRENT_LIST_DIR}/images/images.qrc

@@ -9,7 +9,6 @@
 #include "qrcodegen.hpp"
 
 #include <QHostAddress>
-#include <QRegExp>
 #include <QRegularExpression>
 #include <QtGlobal>
 
@@ -402,7 +401,7 @@ bool MtProxyConfigModel::isValidPublicHost(const QString &host) const {
     if (onlyAsciiDigits.match(t).hasMatch()) {
         return false;
     }
-    return NetworkUtilities::domainRegExp().exactMatch(t);
+    return NetworkUtilities::domainRegExp().match(t).hasMatch();
 }
 
 bool MtProxyConfigModel::isPublicHostInputAllowed(const QString &text) const {
@@ -497,9 +496,9 @@ bool MtProxyConfigModel::isValidFakeTlsDomain(const QString &domain) const {
     if (onlyAsciiDigits.match(t).hasMatch()) {
         return false;
     }
-    QRegExp re(NetworkUtilities::domainRegExp());
-    re.setCaseSensitivity(Qt::CaseInsensitive);
-    if (!re.exactMatch(t)) {
+    QRegularExpression re(NetworkUtilities::domainRegExp());
+    re.setPatternOptions(re.patternOptions() | QRegularExpression::CaseInsensitiveOption);
+    if (!re.match(t).hasMatch()) {
         return false;
     }
     if (t.toUtf8().size() > 111) {

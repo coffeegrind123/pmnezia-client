@@ -24,7 +24,7 @@ jobs:
         host: 'linux'
         target: 'desktop'
         arch: 'gcc_64'
-        modules: 'qtremoteobjects qt5compat qtimageformats qtshadertools'
+        modules: 'qtremoteobjects qtshadertools'
         dir: ${{ runner.temp }}
         setup-python: 'true'
         set-env: 'true'
@@ -37,7 +37,7 @@ jobs:
         host: 'linux'
         target: 'android'
         arch: 'android_x86_64'
-        modules: 'qtremoteobjects qt5compat qtimageformats qtshadertools'
+        modules: 'qtremoteobjects qtshadertools'
         dir: ${{ runner.temp }}
         setup-python: 'true'
         set-env: 'true'
@@ -50,7 +50,7 @@ jobs:
         host: 'linux'
         target: 'android'
         arch: 'android_x86'
-        modules: 'qtremoteobjects qt5compat qtimageformats qtshadertools'
+        modules: 'qtremoteobjects qtshadertools'
         dir: ${{ runner.temp }}
         setup-python: 'true'
         set-env: 'true'
@@ -63,7 +63,7 @@ jobs:
         host: 'linux'
         target: 'android'
         arch: 'android_armv7'
-        modules: 'qtremoteobjects qt5compat qtimageformats qtshadertools'
+        modules: 'qtremoteobjects qtshadertools'
         dir: ${{ runner.temp }}
         setup-python: 'true'
         set-env: 'true'
@@ -76,7 +76,7 @@ jobs:
         host: 'linux'
         target: 'android'
         arch: 'android_arm64_v8a'
-        modules: 'qtremoteobjects qt5compat qtimageformats qtshadertools'
+        modules: 'qtremoteobjects qtshadertools'
         dir: ${{ runner.temp }}
         setup-python: 'true'
         set-env: 'true'

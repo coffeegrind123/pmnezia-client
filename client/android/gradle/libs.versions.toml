@@ -29,7 +29,10 @@ androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", versi
 androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "androidx-camera" }
 androidx-fragment = { module = "androidx.fragment:fragment-ktx", version.ref = "androidx-fragment" }
 androidx-security-crypto = { module = "androidx.security:security-crypto-ktx", version.ref = "androidx-security-crypto" }
-androidx-datastore = { module = "androidx.datastore:datastore-preferences", version.ref = "androidx-datastore" }
+# Only the DataStore *core* API is used (MultiProcessDataStoreFactory / Serializer /
+# dataStoreFile in VpnState.kt); no Preferences DataStore API appears anywhere, so the
+# -preferences artifact and its protobuf-lite transitive are not needed.
+androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "androidx-datastore" }
 kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 kotlinx-serialization-protobuf = { module = "org.jetbrains.kotlinx:kotlinx-serialization-protobuf", version.ref = "kotlinx-serialization" }
 zxingcpp-android = { module = "io.github.zxing-cpp:android", version.ref = "zxingcpp" }

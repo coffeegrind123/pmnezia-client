@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Qt5Compat.GraphicalEffects
 
 import PageEnum 1.0
 import UpdateState 1.0
@@ -91,7 +90,7 @@ PageType {
                     Layout.preferredHeight: 98
 
                     layer.enabled: true
-                    layer.effect: OpacityMask {
+                    layer.effect: OpacityMaskEffect {
                         maskSource: imageBlockMask
                     }
 

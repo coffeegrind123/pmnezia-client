@@ -1,3 +1,4 @@
+import QtCore
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -10,7 +11,6 @@ import "../Controls2"
 import "../Controls2/TextTypes"
 import "../Config"
 import "../Components"
-import Qt.labs.platform 1.1
 
 PageType {
     id: root

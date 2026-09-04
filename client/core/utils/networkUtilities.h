@@ -2,7 +2,6 @@
 #define NETWORKUTILITIES_H
 
 #include <QRegularExpression>
-#include <QRegExp>
 #include <QString>
 #include <QHostAddress>
 #include <QNetworkReply>
@@ -22,10 +21,11 @@ public:
     static int AdapterIndexTo(const QHostAddress& dst);
 
     static QRegularExpression ipAddressRegExp();
-    static QRegExp ipAddressWithSubnetRegExp();
-    static QRegExp ipNetwork24RegExp();
-    static QRegExp ipPortRegExp();
-    static QRegExp domainRegExp();
+    // Both of the below return *anchored* patterns: every call site matched the
+    // whole string via QRegExp::exactMatch(), so the anchoring now lives in the
+    // pattern and callers use match(...).hasMatch().
+    static QRegularExpression ipAddressWithSubnetRegExp();
+    static QRegularExpression domainRegExp();
 
     static QString netMaskFromIpWithSubnet(const QString ip);
     static QString ipAddressFromIpWithSubnet(const QString ip);

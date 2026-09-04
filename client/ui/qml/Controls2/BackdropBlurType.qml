@@ -1,5 +1,5 @@
 import QtQuick
-import Qt5Compat.GraphicalEffects
+import QtQuick.Effects
 
 import Style 1.0
 
@@ -16,7 +16,7 @@ Item {
         anchors.fill: parent
 
         layer.enabled: true
-        layer.effect: OpacityMask {
+        layer.effect: OpacityMaskEffect {
             maskSource: backdropMask
         }
 
@@ -42,10 +42,18 @@ Item {
                 visible: false
             }
 
-            FastBlur {
+            // MultiEffect replaces Qt5Compat's FastBlur here. Unlike the
+            // ColorOverlay/OpacityMask cases this is purely decorative frosted
+            // glass, so the two blurs' differing kernels are not observable.
+            // MultiEffect expresses radius as blur (0..1) scaled by blurMax
+            // (pixels, clamped by Qt to 2..64).
+            MultiEffect {
                 anchors.fill: parent
                 source: backdrop
-                radius: root.blurRadius
+                autoPaddingEnabled: false
+                blurEnabled: true
+                blur: 1.0
+                blurMax: Math.max(2, Math.min(64, Math.round(root.blurRadius)))
             }
         }
     }

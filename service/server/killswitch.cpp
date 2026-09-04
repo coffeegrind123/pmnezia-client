@@ -1,7 +1,7 @@
 #include "killswitch.h"
 
 
-#include <QApplication>
+#include <QCoreApplication>
 #include <QHostAddress>
 #include <QRegularExpression>
 #include <algorithm>

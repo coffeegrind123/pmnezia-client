@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Shapes
-import Qt5Compat.GraphicalEffects
+import QtQuick.Effects
 
 import ConnectionState 1.0
 import PageEnum 1.0
@@ -71,14 +71,20 @@ Button {
             layer.enabled: true
             layer.samples: 4
             layer.smooth: true
-            layer.effect: DropShadow {
-                anchors.fill: backgroundCircle
-                horizontalOffset: 0
-                verticalOffset: 0
-                radius: 10
-                samples: 25
-                color: root.buttonActiveFocus ? AmneziaStyle.color.paleGray : AmneziaStyle.color.goldenApricot
-                source: backgroundCircle
+            // MultiEffect replaces Qt5Compat's DropShadow. With both offsets
+            // at zero this is a coloured glow around the ring, so the exact
+            // blur kernel is not observable; blurMax approximates the old
+            // radius: 10. autoPaddingEnabled stays off to keep the effect item
+            // the same size as the layered item, matching DropShadow's
+            // (untransparent-bordered) clipping behaviour.
+            layer.effect: MultiEffect {
+                autoPaddingEnabled: false
+                shadowEnabled: true
+                shadowHorizontalOffset: 0
+                shadowVerticalOffset: 0
+                shadowBlur: 1.0
+                blurMax: 12
+                shadowColor: root.buttonActiveFocus ? AmneziaStyle.color.paleGray : AmneziaStyle.color.goldenApricot
             }
 
             ShapePath {

@@ -18,6 +18,7 @@
         <file>Controls2/BackButtonType.qml</file>
         <file>Controls2/BasicButtonType.qml</file>
         <file>Controls2/BusyIndicatorType.qml</file>
+        <file>Controls2/ColorOverlayEffect.qml</file>
         <file>Controls2/CardType.qml</file>
         <file>Controls2/ChangelogSectionType.qml</file>
         <file>Controls2/BackdropBlurType.qml</file>
@@ -38,6 +39,7 @@
         <file>Controls2/LabelWithButtonType.qml</file>
         <file>Controls2/ListViewWithLabelsType.qml</file>
         <file>Controls2/ListViewWithRadioButtonType.qml</file>
+        <file>Controls2/OpacityMaskEffect.qml</file>
         <file>Controls2/PageType.qml</file>
         <file>Controls2/PopupType.qml</file>
         <file>Controls2/ProgressBarType.qml</file>

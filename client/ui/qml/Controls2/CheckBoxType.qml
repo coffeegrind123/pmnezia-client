@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Qt5Compat.GraphicalEffects
 
 import Style 1.0
 
@@ -111,7 +110,7 @@ CheckBox {
                 source: root.pressed ? imageSource : root.checked ? imageSource : ""
                 layer {
                     enabled: true
-                    effect: ColorOverlay {
+                    effect: ColorOverlayEffect {
                         color: {
                             if (root.pressed) {
                                 return root.pressedImageColor
