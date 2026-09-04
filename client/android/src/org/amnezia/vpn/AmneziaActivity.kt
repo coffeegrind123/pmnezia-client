@@ -99,7 +99,6 @@ class AmneziaActivity : QtActivity() {
     private var pendingOpenFileUri: String? = null
     private var openFileDeliveryScheduled = false
 
-
     private val vpnServiceEventHandler: Handler by lazy(NONE) {
         object : Handler(Looper.getMainLooper()) {
             override fun handleMessage(msg: Message) {
