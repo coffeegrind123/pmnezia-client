@@ -29,6 +29,13 @@ with `gh api repos/coffeegrind123/pmnezia-client/actions/jobs/<job>/logs`.
 - Fork features that must survive every merge: MasterDnsVPN (`client/masterdnsvpn/`),
   QQ-DNS (`client/qqdns/`), the xhttp transport, zxing-cpp instead of ML Kit, the
   non-matrix Android job and `Publish-Release` in `deploy.yml`.
+- Tests live in `client/tests/` (upstream #3172, adopted in merge `8d88ae23a`) and
+  build only with `AMNEZIA_BUILD_TESTS=ON`, which the CI build jobs set. The harness
+  `utils/testCoreController.h` exposes only the getters the fork's `CoreController`
+  has; upstream suites for deleted code (`api/`, `selfHostedAdmin/`) stay out. Fork-only
+  suites: `testMasterDnsVpnEngine`, `testMasterDnsVpnConfig`, `testComplexOperations`.
+  `deploy.yml` runs them in `test-linux` / `test-windows`, and `Publish-Release`
+  waits for both. `coffeegrind123/amnezia-client-tests` is superseded.
 
 ## Upstream upgrade protocol
 
