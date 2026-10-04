@@ -37,7 +37,7 @@ class AmneziaVPN(ConanFile):
             self.requires("amnezia-libxray/1.0.3")
             self.requires("awg-android/3.1.20260814")
 
-        self.requires("openssl/3.6.2")
+        self.requires("openssl/3.6.5")
         self.requires("zlib/1.3.2")
 
         # MasterDnsVPN engine (§8) — compression codecs negotiated via

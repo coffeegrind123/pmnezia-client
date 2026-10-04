@@ -17,7 +17,7 @@ required_conan_version = ">=1.57.0"
 
 class OpenSSLConan(ConanFile):
     name = "openssl"
-    version = "3.6.2"
+    version = "3.6.5"
     url = "https://github.com/conan-io/conan-center-index"
     homepage = "https://github.com/openssl/openssl"
     license = "Apache-2.0"
@@ -148,8 +148,8 @@ class OpenSSLConan(ConanFile):
                     self.tool_requires("msys2/cci.latest")
 
     def source(self):
-        get(self, url="https://github.com/openssl/openssl/releases/download/openssl-3.6.2/openssl-3.6.2.tar.gz",
-            sha256="aaf51a1fe064384f811daeaeb4ec4dce7340ec8bd893027eee676af31e83a04f", strip_root=True)
+        get(self, url="https://github.com/openssl/openssl/releases/download/openssl-3.6.5/openssl-3.6.5.tar.gz",
+            sha256="a2157c2830efdec3788939b00c9b0638306d3f0bbb76dc4832ee503bb397df98", strip_root=True)
 
     @property
     def _target(self):
