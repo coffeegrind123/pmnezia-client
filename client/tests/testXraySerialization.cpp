@@ -36,14 +36,13 @@ private:
         lastConfig[configKey::lastConfig] = jsonConf.toJson().constData();
         lastConfig[configKey::isThirdPartyConfig] = true;
 
+        // Only VLESS (Xray) remains in this fork; Shadowsocks went with
+        // ee013bf1f, so every config lands in the Xray container.
+        Q_UNUSED(configType);
+
         QJsonObject containers;
-        if (configType == ConfigTypes::ShadowSocks) {
-            containers.insert(configKey::ssxray, QJsonValue(lastConfig));
-            containers.insert(configKey::container, QJsonValue(configKey::amneziaSsxray));
-        } else {
-            containers.insert(configKey::container, QJsonValue(configKey::amneziaXray));
-            containers.insert(configKey::xray, QJsonValue(lastConfig));
-        }
+        containers.insert(configKey::container, QJsonValue(configKey::amneziaXray));
+        containers.insert(configKey::xray, QJsonValue(lastConfig));
 
         QJsonArray arr;
         arr.push_back(containers);
@@ -58,8 +57,7 @@ private:
 
         QJsonObject config;
         config[configKey::containers] = arr;
-        config[configKey::defaultContainer] =
-                (configType == ConfigTypes::ShadowSocks) ? configKey::amneziaSsxray : configKey::amneziaXray;
+        config[configKey::defaultContainer] = configKey::amneziaXray;
         if (description.isEmpty()) {
             config[configKey::description] = m_coreController->m_serversRepository->nextAvailableServerName();
         } else {
@@ -119,167 +117,6 @@ private slots:
             QVERIFY2(!importResult.config.empty(), "Config shouldn't be empty");
         } else {
             QSKIP("Config not starts with vless://");
-        }
-
-        QCOMPARE(importResult.config, config);
-    }
-
-    void testVmessNew()
-    {
-        const QString configData = getEnvValue("THIRD_PARTY_VMESS_NEW_IMPORT_DATA");
-        if (!isEnvValueConfigured(configData)) {
-            QSKIP("THIRD_PARTY_VMESS_NEW_IMPORT_DATA is not configured");
-        }
-
-        QString clientName = "Test Client (vmess_new deserialization)";
-
-        ImportController::ImportResult importResult;
-        
-        m_coreController->m_importCoreController->extractConfigFromData(configData);
-
-        QString config = configData;
-        QString prefix;
-        QString errormsg;
-        ConfigTypes configType = ConfigTypes::Invalid;
-
-        if (config.startsWith("vmess://") && config.contains("@")) {
-            configType = ConfigTypes::Xray;
-            importResult.config = extractXrayConfig(
-                Utils::JsonToString(serialization::vmess_new::Deserialize(config, &prefix, &errormsg), QJsonDocument::JsonFormat::Compact),
-                configType, prefix);
-            QVERIFY2(!importResult.config.empty(), "Config shouldn't be empty");
-        } else {
-            QSKIP("Config not starts with vmess:// or not contain @");
-        }
-
-        QCOMPARE(importResult.config, config);
-    }
-
-    void testVmess()
-    {
-        const QString configData = getEnvValue("THIRD_PARTY_VMESS_IMPORT_DATA");
-        if (!isEnvValueConfigured(configData)) {
-            QSKIP("THIRD_PARTY_VMESS_IMPORT_DATA is not configured");
-        }
-
-        QString clientName = "Test Client (vmess deserialization)";
-
-        ImportController::ImportResult importResult;
-
-        m_coreController->m_importCoreController->extractConfigFromData(configData);
-
-        QString config = configData;
-        QString prefix;
-        QString errormsg;
-        ConfigTypes configType = ConfigTypes::Invalid;
-
-        if (config.startsWith("vmess://")) {
-            configType = ConfigTypes::Xray;
-            importResult.config = extractXrayConfig(
-                Utils::JsonToString(serialization::vmess::Deserialize(config, &prefix, &errormsg), QJsonDocument::JsonFormat::Compact),
-                configType, prefix);
-            QVERIFY2(!importResult.config.empty(), "Config shouldn't be empty");
-        } else {
-            QSKIP("Config not starts with vmess://");
-        }
-
-        QCOMPARE(importResult.config, config);
-    }
-
-    void testTrojan()
-    {
-        const QString configData = getEnvValue("THIRD_PARTY_TROJAN_IMPORT_DATA");
-        if (!isEnvValueConfigured(configData)) {
-            QSKIP("THIRD_PARTY_TROJAN_IMPORT_DATA is not configured");
-        }
-
-        QString clientName = "Test Client (trojan deserialization)";
-
-        ImportController::ImportResult importResult;
-
-        m_coreController->m_importCoreController->extractConfigFromData(configData);
-
-        QString config = configData;
-        QString prefix;
-        QString errormsg;
-        ConfigTypes configType = ConfigTypes::Invalid;
-
-        if (config.startsWith("trojan://")) {
-            configType = ConfigTypes::Xray;
-            importResult.config = extractXrayConfig(
-                Utils::JsonToString(serialization::trojan::Deserialize(config, &prefix, &errormsg), QJsonDocument::JsonFormat::Compact),
-                configType, prefix);
-            QVERIFY2(!importResult.config.empty(), "Config shouldn't be empty");
-        } else {
-            QSKIP("Config not starts with trojan://");
-        }
-
-        QCOMPARE(importResult.config, config);
-    }
-
-    void testSS()
-    {
-        const QString configData = getEnvValue("THIRD_PARTY_SHADOWSOCKS_IMPORT_DATA");
-        if (!isEnvValueConfigured(configData)) {
-            QSKIP("THIRD_PARTY_SHADOWSOCKS_IMPORT_DATA is not configured");
-        }
-
-        QString clientName = "Test Client (ss deserialization)";
-
-        ImportController::ImportResult importResult;
-
-        m_coreController->m_importCoreController->extractConfigFromData(configData);
-
-        QString config = configData;
-        QString prefix;
-        QString errormsg;
-        ConfigTypes configType = ConfigTypes::Invalid;
-
-        if (config.startsWith("ss://") && !config.contains("plugin=")) {
-            configType = ConfigTypes::ShadowSocks;
-            importResult.config = extractXrayConfig(
-                Utils::JsonToString(serialization::ss::Deserialize(config, &prefix, &errormsg), QJsonDocument::JsonFormat::Compact),
-                configType, prefix);
-            QVERIFY2(!importResult.config.empty(), "Config shouldn't be empty");
-        } else {
-            QSKIP("Config not starts with ss:// or contain plugin=");
-        }
-
-        QCOMPARE(importResult.config, config);
-    }
-
-    void testSSd()
-    {
-        const QString configData = getEnvValue("THIRD_PARTY_SHADOWSOCKS_SUBSCRIPTION_IMPORT_DATA");
-        if (!isEnvValueConfigured(configData)) {
-            QSKIP("THIRD_PARTY_SHADOWSOCKS_SUBSCRIPTION_IMPORT_DATA is not configured");
-        }
-
-        QString clientName = "Test Client (ssd deserialization)";
-
-        ImportController::ImportResult importResult;
-
-        m_coreController->m_importCoreController->extractConfigFromData(configData);
-
-        QString config = configData;
-        QString prefix;
-        QString errormsg;
-        ConfigTypes configType = ConfigTypes::Invalid;
-
-        if (config.startsWith("ssd://")) {
-            QStringList tmp;
-            QList<std::pair<QString, QJsonObject>> servers = serialization::ssd::Deserialize(config, &prefix, &tmp);
-            configType = ConfigTypes::ShadowSocks;
-            // Took only first config from list
-            if (!servers.isEmpty()) {
-                importResult.config = extractXrayConfig(servers.first().first, configType);
-            }
-            if (!importResult.config.empty()) {
-                importResult.configType = configType;
-            }
-            QVERIFY2(!importResult.config.empty(), "Config shouldn't be empty");
-        } else {
-            QSKIP("Config not starts with ssd://");
         }
 
         QCOMPARE(importResult.config, config);
