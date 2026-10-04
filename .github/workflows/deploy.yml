@@ -426,6 +426,14 @@ jobs:
 
 
     steps:
+    # Checkout comes first: the provisioning-profile steps below are local
+    # actions under .github/actions, which do not exist until it has run.
+    - name: 'Get sources'
+      uses: actions/checkout@v4
+      with:
+        submodules: 'true'
+        fetch-depth: 10
+
     - uses: ./.github/actions/apple-setup-provisioning-profile
       with:
         provisioning_profile_base64: ${{ secrets.MAC_APP_PROVISIONING_PROFILE }}
@@ -462,12 +470,6 @@ jobs:
           export PATH=$PATH:~/go/bin
           go install golang.org/x/mobile/cmd/gomobile@latest
           gomobile init
-
-    - name: 'Get sources'
-      uses: actions/checkout@v4
-      with:
-        submodules: 'true'
-        fetch-depth: 10
 
     - name: 'Apply brand'
       shell: bash
