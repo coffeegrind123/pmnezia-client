@@ -9,6 +9,36 @@ import os
 import platform
 from pathlib import Path
 
+# The newest amneziawg-{android,windows,apple} tags still embed amneziawg-go
+# v3.1.20260814. v3.1.20260828 keeps ContentPaddingAddition padding inside the
+# UDP window (it could overrun the MTU) and turns all underload handling off
+# with DisableCookies, matching the 3.1.20260906 kernel module servers run.
+# Repin the module until a platform tag ships it. The go.sum hash is
+# sum.golang.org's for that tag, so `go build` still verifies the download;
+# the go.mod hash is unchanged because the dependency set is. replace_in_file
+# fails the build if upstream's lines stop matching. The same block is in
+# recipes/awg-android, awg-windows and awg-apple; keep them and
+# recipes/awg-go on one version.
+AWG_GO_MODULE = "github.com/amnezia-vpn/amneziawg-go/v3"
+AWG_GO_EMBEDDED = "v3.1.20260814"
+AWG_GO_EMBEDDED_SUM = "h1:l2AhBD+sFycU8Im81n/bZORMxW7fWtlZJEuJ4Hh0+z0="
+AWG_GO_PINNED = "v3.1.20260828"
+AWG_GO_PINNED_SUM = "h1:D8d8gGvwXcTxUIsE4z6F6vjy4/VZddu95vMNtOygh1c="
+
+
+def pin_awg_go(conanfile, module_dir):
+    replace_in_file(conanfile, os.path.join(module_dir, "go.mod"),
+                    f"{AWG_GO_MODULE} {AWG_GO_EMBEDDED}",
+                    f"{AWG_GO_MODULE} {AWG_GO_PINNED}")
+    go_sum = os.path.join(module_dir, "go.sum")
+    replace_in_file(conanfile, go_sum,
+                    f"{AWG_GO_MODULE} {AWG_GO_EMBEDDED} {AWG_GO_EMBEDDED_SUM}",
+                    f"{AWG_GO_MODULE} {AWG_GO_PINNED} {AWG_GO_PINNED_SUM}")
+    replace_in_file(conanfile, go_sum,
+                    f"{AWG_GO_MODULE} {AWG_GO_EMBEDDED}/go.mod ",
+                    f"{AWG_GO_MODULE} {AWG_GO_PINNED}/go.mod ")
+
+
 class AwgAndroid(ConanFile):
     name = "awg-android"
     version = "3.1.20260814"
@@ -40,6 +70,7 @@ class AwgAndroid(ConanFile):
             target=".",
             args=["--recurse-submodules", "--branch", f"v{self.version}"]
         )
+        pin_awg_go(self, os.path.join(self.source_folder, "tunnel", "tools", "libwg-go"))
 
     def generate(self):
         VirtualBuildEnv(self).generate()
