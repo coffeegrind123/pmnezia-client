@@ -45,6 +45,10 @@
 
 set -euo pipefail
 
+# Portable to macOS's bash 3.2 and BSD userland as well as GNU: no mapfile, no
+# `sed -i` without a suffix argument (BSD reads the next word as the backup
+# suffix), no `grep -P`.
+
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
 CHECK_ONLY=0
@@ -60,6 +64,13 @@ source deploy/brand.env
 : "${BRAND_APPLE_ID_PREFIX:?deploy/brand.env must define BRAND_APPLE_ID_PREFIX}"
 
 say() { printf '  %s\n' "$*"; }
+
+# In-place sed that behaves the same on GNU and BSD: both accept an attached
+# backup suffix, which is then removed.
+sed_inplace() {
+    local f="${@: -1}"
+    LC_ALL=C sed -i.rebrand-bak "$@" && rm -f "$f.rebrand-bak"
+}
 
 # ---------------------------------------------------------------- guards ----
 # Already applied? Re-running must be a no-op rather than a corruption.
@@ -99,12 +110,13 @@ eligible_files() {
 if [[ $CHECK_ONLY -eq 0 ]]; then
     echo "rebrand: applying $BRAND_APP_NAME"
 
-    mapfile -t FILES < <(eligible_files)
+    FILES=()
+    while IFS= read -r f; do FILES+=("$f"); done < <(eligible_files)
 
     # Identity tokens. Order matters only in that the longest, most specific
     # forms come first; none of these can match AmneziaWG.
     for f in "${FILES[@]}"; do
-        LC_ALL=C sed -i \
+        sed_inplace \
             -e "s/AmneziaVPN/${BRAND_APP_NAME}/g" \
             -e "s/amneziavpn/${BRAND_LOWER}/g" \
             -e "s/org\.amnezia\.vpn/${BRAND_ANDROID_PACKAGE}/g" \
@@ -117,7 +129,7 @@ if [[ $CHECK_ONLY -eq 0 ]]; then
 
     # -- upstream links: a rebranded app must not point at Amnezia's support --
     for f in "${FILES[@]}"; do
-        LC_ALL=C sed -i \
+        sed_inplace \
             -e "s|https://docs\.amnezia\.org[^\"']*|${BRAND_HOMEPAGE}|g" \
             -e "s|https://storage\.googleapis\.com/amnezia/amnezia\.org[^\"']*|${BRAND_HOMEPAGE}|g" \
             -e "s|https://amnezia\.org[^\"']*|${BRAND_HOMEPAGE}|g" \
@@ -136,7 +148,7 @@ if [[ $CHECK_ONLY -eq 0 ]]; then
     # whose mangling breaks dependency resolution outright.
     for f in "${FILES[@]}"; do
         [[ "$f" == *.qml ]] || continue
-        LC_ALL=C sed -i \
+        sed_inplace \
             -e "s|amnezia\\.host|${BRAND_HOMEPAGE}|g" \
             -e "s|amnezia\\.org|${BRAND_HOMEPAGE}|g" \
             "$f"
@@ -169,7 +181,7 @@ if [[ $CHECK_ONLY -eq 0 ]]; then
                 -path ./.git -prune -o \
                 -path ./client/3rd -prune -o \
                 -path ./deploy/build -prune -o \
-                -type f \( -name '*AmneziaVPN*' -o -name '*amneziavpn*' \) -print)
+                        -type f \( -name '*AmneziaVPN*' -o -name '*amneziavpn*' \) -print)
     say "renamed $renamed brand-carrying filenames"
 fi
 
@@ -204,7 +216,7 @@ while IFS= read -r qrc; do
     qrcdir=$(dirname "$qrc")
     while IFS= read -r ref; do
         [[ -e "$qrcdir/$ref" ]] || { echo "  FAIL: $qrc references missing $ref" >&2; fail=1; }
-    done < <(grep -oP '(?<=<file>)[^<]+' "$qrc" 2>/dev/null)
+    done < <(sed -n 's|.*<file>\([^<]*\)</file>.*|\1|p' "$qrc" 2>/dev/null)
 done < <(find . -path ./.git -prune -o -path ./client/3rd -prune -o -type f -name '*.qrc' -print)
 [[ $fail -eq 0 ]] && say "ok: every .qrc file reference resolves"
 
