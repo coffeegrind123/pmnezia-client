@@ -6,7 +6,7 @@
 
 #include "utils/testCoreController.h"
 #include "core/models/serverDescription.h"
-#include "utils/testServerRepositoryHelpers.h"
+#include "utils/testUtils.h"
 #include "vpnConnection.h"
 #include "secureQSettings.h"
 
@@ -72,7 +72,7 @@ private slots:
 
         QVERIFY2(serverEditedSpy.count() == 1, "serverEdited should be emitted");
         QString editedDesc0 = amnezia::test::serverDescription(m_coreController->m_serversRepository,
-                                                               m_coreController->m_serversRepository->serverIdAt(0));
+                                                               m_coreController->m_serversRepository->serverIdAt(0)).value_or(QString());
         QVERIFY2(editedDesc0 == "Edited First Server", "First server should be edited");
 
         m_coreController->m_serversController->removeServer(m_coreController->m_serversController->getServerId(1));
@@ -92,7 +92,7 @@ private slots:
 
         QVERIFY2(serverEditedSpy.count() == 2, "serverEdited should be emitted again");
         QString finalDesc0 = amnezia::test::serverDescription(m_coreController->m_serversRepository,
-                                                              m_coreController->m_serversRepository->serverIdAt(0));
+                                                              m_coreController->m_serversRepository->serverIdAt(0)).value_or(QString());
         QVERIFY2(finalDesc0 == "Final Edited Server", "First server should be edited again");
 
         QVERIFY2(m_coreController->m_serversRepository->serversCount() == 2, "Final servers count should be 2");

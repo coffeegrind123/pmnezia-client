@@ -44,20 +44,12 @@ bool isEnvValueConfigured(const QString &value)
 std::optional<QString> serverDescription(SecureServersRepository *repo, const QString &serverId)
 {
     switch (repo->serverKind(serverId)) {
-    case serverConfigUtils::ConfigType::SelfHostedAdmin: {
-        const auto cfg = repo->selfHostedAdminConfig(serverId);
-        return cfg ? std::optional<QString>(cfg->description) : std::nullopt;
-    }
     case serverConfigUtils::ConfigType::SelfHostedUser: {
         const auto cfg = repo->selfHostedUserConfig(serverId);
         return cfg ? std::optional<QString>(cfg->description) : std::nullopt;
     }
     case serverConfigUtils::ConfigType::Native: {
         const auto cfg = repo->nativeConfig(serverId);
-        return cfg ? std::optional<QString>(cfg->description) : std::nullopt;
-    }
-    case serverConfigUtils::ConfigType::AmneziaPremiumV2: {
-        const auto cfg = repo->apiV2Config(serverId);
         return cfg ? std::optional<QString>(cfg->description) : std::nullopt;
     }
     default:
@@ -68,6 +60,35 @@ std::optional<QString> serverDescription(SecureServersRepository *repo, const QS
 std::optional<QString> serverDescriptionAt(SecureServersRepository *repo, int index)
 {
     return serverDescription(repo, repo->serverIdAt(index));
+}
+
+void setServerDescription(SecureServersRepository *repo, const QString &serverId, const QString &description)
+{
+    const auto kind = repo->serverKind(serverId);
+    switch (kind) {
+    case serverConfigUtils::ConfigType::SelfHostedUser: {
+        auto cfg = repo->selfHostedUserConfig(serverId);
+        if (!cfg) {
+            return;
+        }
+        cfg->description = description;
+        cfg->displayName = description;
+        repo->editServer(serverId, cfg->toJson(), kind);
+        return;
+    }
+    case serverConfigUtils::ConfigType::Native: {
+        auto cfg = repo->nativeConfig(serverId);
+        if (!cfg) {
+            return;
+        }
+        cfg->description = description;
+        cfg->displayName = description;
+        repo->editServer(serverId, cfg->toJson(), kind);
+        return;
+    }
+    default:
+        return;
+    }
 }
 
 } // namespace amnezia::test

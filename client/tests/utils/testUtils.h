@@ -21,6 +21,10 @@ void logEnvValueState(const QString &key);
 std::optional<QString> serverDescription(SecureServersRepository *repo, const QString &serverId);
 std::optional<QString> serverDescriptionAt(SecureServersRepository *repo, int index);
 
+// Renames a server through the repository, as the edit page does. Fork-only:
+// a no-op for an unknown id.
+void setServerDescription(SecureServersRepository *repo, const QString &serverId, const QString &description);
+
 } // namespace amnezia::test
 
 #endif // TESTUTILS_H

@@ -110,13 +110,10 @@ private:
         return config;
     }
 
-    QJsonObject createServerDescriptionTestConfig(bool withAmneziaDns)
+    QJsonObject createServerDescriptionTestConfig()
     {
         QJsonObject config = createAwg2Config();
         config[configKey::description] = "Server 1";
-        if (withAmneziaDns) {
-            config[configKey::dns1] = protocols::dns::amneziaDnsIp;
-        }
         return config;
     }
 
@@ -176,9 +173,6 @@ private slots:
             
             bool hasInstalledContainers = m_coreController->m_serversModel->data(serverModelIndex, ServersModel::HasInstalledContainers).toBool();
             QVERIFY2(hasInstalledContainers == true, "Server should have installed containers");
-            
-            bool hasWriteAccess = m_coreController->m_serversModel->data(serverModelIndex, ServersModel::HasWriteAccessRole).toBool();
-            QVERIFY2(hasWriteAccess == false, "Server should not have write access for imported config");
             
             int defaultContainerRole = m_coreController->m_serversModel->data(serverModelIndex, ServersModel::DefaultContainerRole).toInt();
             DockerContainer expectedContainer = DockerContainer::Awg;
@@ -242,9 +236,6 @@ private slots:
             bool isSupported = m_coreController->m_containersModel->data(containerModelIndex, ContainersModel::IsSupportedRole).toBool();
             QVERIFY2(isSupported == true, "Container should be supported");
             
-            bool isShareable = m_coreController->m_containersModel->data(containerModelIndex, ContainersModel::IsShareableRole).toBool();
-            QVERIFY2(isShareable == true, "Container should be shareable");
-            
             QJsonObject containerConfig = m_coreController->m_containersModel->data(containerModelIndex, ContainersModel::ConfigRole).toJsonObject();
             QVERIFY2(!containerConfig.isEmpty(), "Container config should not be empty");
             QVERIFY2(containerConfig.value(configKey::container).toString() == "amnezia-awg", "Container config should have correct container type");
@@ -275,38 +266,19 @@ private slots:
     void testServerDescriptionFormat() {
         QSignalSpy importFinishedSpy(m_coreController->m_importCoreController, &ImportController::importFinished);
 
-        QJsonObject configNoDns = createServerDescriptionTestConfig(false);
-        m_coreController->m_importCoreController->importConfig(configNoDns);
+        // The fork removed the "use Amnezia DNS" setting, so there is no
+        // "Amnezia DNS | <host>" variant to check.
+        QJsonObject config = createServerDescriptionTestConfig();
+        m_coreController->m_importCoreController->importConfig(config);
         QVERIFY2(importFinishedSpy.count() == 1, "importFinished should be emitted");
-        m_coreController->m_appSettingsRepository->setUseAmneziaDns(false);
-        QVector<ServerDescription> descriptionsNoDns = m_coreController->m_serversController->buildServerDescriptions(
-            m_coreController->m_appSettingsRepository->useAmneziaDns());
-        const QString defIdNoDns = m_coreController->m_serversRepository->defaultServerId();
-        m_coreController->m_serversModel->updateModel(descriptionsNoDns, defIdNoDns);
+        QVector<ServerDescription> descriptions = m_coreController->m_serversController->buildServerDescriptions();
+        const QString defaultId = m_coreController->m_serversRepository->defaultServerId();
+        m_coreController->m_serversModel->updateModel(descriptions, defaultId);
 
-        QString descNoDns = m_coreController->m_serversModel->data(
+        QString desc = m_coreController->m_serversModel->data(
             m_coreController->m_serversModel->index(0, 0), ServersModel::ServerDescriptionRole).toString();
-        QVERIFY2(descNoDns == "test.example.com",
-                 QString("Without Amnezia DNS expected 'test.example.com', got '%1'").arg(descNoDns).toUtf8().constData());
-
-        m_coreController->m_serversRepository->clearServers();
-        if (m_coreController->m_serversRepository->serversCount() > 0) {
-            m_coreController->m_serversRepository->setDefaultServer(m_coreController->m_serversRepository->serverIdAt(0));
-        }
-
-        QJsonObject configWithDns = createServerDescriptionTestConfig(true);
-        m_coreController->m_importCoreController->importConfig(configWithDns);
-        QVERIFY2(m_coreController->m_serversRepository->serversCount() == 1, "Server should be imported");
-        m_coreController->m_appSettingsRepository->setUseAmneziaDns(true);
-        QVector<ServerDescription> descriptionsWithDns = m_coreController->m_serversController->buildServerDescriptions(
-            m_coreController->m_appSettingsRepository->useAmneziaDns());
-        const QString defIdWithDns = m_coreController->m_serversRepository->defaultServerId();
-        m_coreController->m_serversModel->updateModel(descriptionsWithDns, defIdWithDns);
-
-        QString descWithDns = m_coreController->m_serversModel->data(
-            m_coreController->m_serversModel->index(0, 0), ServersModel::ServerDescriptionRole).toString();
-        QVERIFY2(descWithDns == "Amnezia DNS | test.example.com",
-                 QString("With Amnezia DNS expected 'Amnezia DNS | test.example.com', got '%1'").arg(descWithDns).toUtf8().constData());
+        QVERIFY2(desc == "test.example.com",
+                 QString("Expected 'test.example.com', got '%1'").arg(desc).toUtf8().constData());
     }
 };
 

@@ -78,26 +78,6 @@ private slots:
         QVERIFY2(modelDnsList == dnsList, "Allowed DNS servers should be available in AllowedDnsModel");
     }
 
-    void testAmneziaDnsToggleSignal() {
-        QSignalSpy amneziaDnsToggledSpy(m_coreController->m_settingsUiController, &SettingsUiController::amneziaDnsToggled);
-        QSignalSpy useAmneziaDnsChangedSpy(m_coreController->m_appSettingsRepository, &SecureAppSettingsRepository::useAmneziaDnsChanged);
-
-        bool initialValue = m_coreController->m_settingsController->isAmneziaDnsEnabled();
-        
-        m_coreController->m_settingsUiController->toggleAmneziaDns(!initialValue);
-        QVERIFY2(amneziaDnsToggledSpy.count() == 1, "amneziaDnsToggled signal should be emitted");
-        QVERIFY2(amneziaDnsToggledSpy.at(0).at(0).toBool() == !initialValue, "amneziaDnsToggled should emit correct value");
-        QVERIFY2(useAmneziaDnsChangedSpy.count() == 1, "useAmneziaDnsChanged signal should be emitted");
-        QVERIFY2(m_coreController->m_settingsController->isAmneziaDnsEnabled() == !initialValue, "Amnezia DNS state should be updated in SettingsController");
-        QVERIFY2(m_coreController->m_settingsUiController->isAmneziaDnsEnabled() == !initialValue, "Amnezia DNS state should be available in SettingsUiController");
-        QVERIFY2(m_coreController->m_appSettingsRepository->useAmneziaDns() == !initialValue, "Amnezia DNS state should be available in SecureAppSettingsRepository");
-
-        m_coreController->m_settingsUiController->toggleAmneziaDns(initialValue);
-        QVERIFY2(amneziaDnsToggledSpy.count() == 2, "amneziaDnsToggled signal should be emitted again");
-        QVERIFY2(useAmneziaDnsChangedSpy.count() == 2, "useAmneziaDnsChanged signal should be emitted again");
-        QVERIFY2(m_coreController->m_settingsUiController->isAmneziaDnsEnabled() == initialValue, "Amnezia DNS state should be restored in SettingsUiController");
-    }
-
     void testLoggingSignals() {
         QSignalSpy loggingStateChangedSpy(m_coreController->m_settingsUiController, &SettingsUiController::loggingStateChanged);
         QSignalSpy saveLogsChangedSpy(m_coreController->m_appSettingsRepository, &SecureAppSettingsRepository::saveLogsChanged);
