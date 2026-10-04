@@ -88,7 +88,15 @@ jobs:
       shell: bash
       env:
         QT_INSTALL_DIR: ${{ runner.temp }}
+        AMNEZIA_BUILD_TESTS: ON
       run: deploy/build.sh --generator Ninja --installer all
+
+    - name: 'Upload Linux test build'
+      uses: actions/upload-artifact@v7
+      with:
+        name: linux-build
+        path: deploy/build/client/tests
+        retention-days: 7
 
     - name: 'Upload installer artifact'
       uses: actions/upload-artifact@v7
@@ -177,9 +185,19 @@ jobs:
       shell: cmd
       env:
         QT_INSTALL_DIR: ${{ runner.temp }}
+        AMNEZIA_BUILD_TESTS: ON
       run: |
         set WIX_ROOT_PATH="${{ env.USERPROFILE }}\.dotnet\tools"
         deploy\build.bat --installer all
+
+    - name: 'Upload Windows test build'
+      uses: actions/upload-artifact@v7
+      with:
+        name: windows-build
+        path: |
+          deploy/build/client/tests
+          deploy/build/client/Release
+        retention-days: 7
 
     - name: 'Upload WIX installer artifact'
       uses: actions/upload-artifact@v7
@@ -343,7 +361,7 @@ jobs:
         xcode-version: '16.2.0'
 
     - name: 'Install Qt'
-      uses: jurplel/install-qt-action@v4
+      uses: jurplel/install-qt-action@v4.3.1
       with:
         version: ${{ env.QT_VERSION }}
         host: 'mac'
@@ -373,8 +391,16 @@ jobs:
         NOTARYTOOL_TEAM_ID: ${{ secrets.MAC_TEAM_ID }}
         NOTARYTOOL_EMAIL: ${{ secrets.APPLE_DEV_EMAIL }}
         NOTARYTOOL_PASSWORD: ${{ secrets.APPLE_DEV_PASSWORD }}
+        AMNEZIA_BUILD_TESTS: ON
       shell: bash
       run: deploy/build.sh --generator Ninja --installer all
+
+    - name: 'Upload macOS test build'
+      uses: actions/upload-artifact@v7
+      with:
+        name: macos-build
+        path: deploy/build/client/tests
+        retention-days: 7
 
     - name: 'Upload installer artifact'
       uses: actions/upload-artifact@v7
@@ -493,7 +519,7 @@ jobs:
         deploy/rebrand.sh
 
     - name: 'Install desktop Qt'
-      uses: jurplel/install-qt-action@v4
+      uses: jurplel/install-qt-action@v4.3.1
       with:
         version: ${{ env.QT_VERSION }}
         host: 'linux'
@@ -505,10 +531,10 @@ jobs:
         extra: '--base ${{ env.QT_MIRROR }}'
 
     - name: 'Install android_x86_64 Qt'
-      uses: jurplel/install-qt-action@v4
+      uses: jurplel/install-qt-action@v4.3.1
       with:
         version: ${{ env.QT_VERSION }}
-        host: 'linux'
+        host: 'all_os'
         target: 'android'
         arch: 'android_x86_64'
         modules: ${{ env.QT_MODULES }}
@@ -517,10 +543,10 @@ jobs:
         extra: '--base ${{ env.QT_MIRROR }}'
 
     - name: 'Install android_x86 Qt'
-      uses: jurplel/install-qt-action@v4
+      uses: jurplel/install-qt-action@v4.3.1
       with:
         version: ${{ env.QT_VERSION }}
-        host: 'linux'
+        host: 'all_os'
         target: 'android'
         arch: 'android_x86'
         modules: ${{ env.QT_MODULES }}
@@ -529,10 +555,10 @@ jobs:
         extra: '--base ${{ env.QT_MIRROR }}'
 
     - name: 'Install android_armv7 Qt'
-      uses: jurplel/install-qt-action@v4
+      uses: jurplel/install-qt-action@v4.3.1
       with:
         version: ${{ env.QT_VERSION }}
-        host: 'linux'
+        host: 'all_os'
         target: 'android'
         arch: 'android_armv7'
         modules: ${{ env.QT_MODULES }}
@@ -541,10 +567,10 @@ jobs:
         extra: '--base ${{ env.QT_MIRROR }}'
 
     - name: 'Install android_arm64_v8a Qt'
-      uses: jurplel/install-qt-action@v4
+      uses: jurplel/install-qt-action@v4.3.1
       with:
         version: ${{ env.QT_VERSION }}
-        host: 'linux'
+        host: 'all_os'
         target: 'android'
         arch: 'android_arm64_v8a'
         modules: ${{ env.QT_MODULES }}
@@ -667,6 +693,8 @@ jobs:
       - Build-Linux-Ubuntu
       - Build-Windows
       - Build-Android
+      - test-linux
+      - test-windows
     permissions:
       contents: write
 
@@ -748,3 +776,201 @@ jobs:
         run: |
           echo "Pull request:" >> $GITHUB_STEP_SUMMARY
           echo "[[#${{ fromJSON(steps.pull_request.outputs.data)[0].number }}] ${{ fromJSON(steps.pull_request.outputs.data)[0].title }}](${{ fromJSON(steps.pull_request.outputs.data)[0].html_url }})" >> $GITHUB_STEP_SUMMARY
+
+# ------------------------------------------------------
+# Tests (upstream #3172). Each build job compiles client/tests with
+# AMNEZIA_BUILD_TESTS=ON and uploads them; these jobs run one suite per
+# matrix entry. Suites that need THIRD_PARTY_* keys QSKIP when the secret is
+# unset. Not adopted: test-vps (exercises the server-install stack this fork
+# removed), test-macos and test-android (need jobs and secrets the fork does
+# not have), and BackupExportImportTest (needs the BACKUP_FILE_BASE64 secret).
+
+  test-linux:
+    name: Test Linux (${{ matrix.filter }})
+    needs: Build-Linux-Ubuntu
+
+    strategy:
+      fail-fast: false
+      matrix:
+        filter:
+          - MultipleImportsTest
+          - ServerEditTest
+          - DefaultServerChangeTest
+          - ServerEdgeCasesTest
+          - SignalOrderTest
+          - ServersModelSyncTest
+          - ServerRenameTest
+          - SettingsSignalsTest
+          - UiServersModelAndControllerTest
+          - XraySerializationTest
+          - UiLanguageModelAndControllerTest
+          - UiIpModelAndControllerTest
+          - UiAppSTModelAndControllerTest
+          - UiAllowedDnsModelAndControllerTest
+          - ConnectionTest
+          - OpenSSLLibraryTest
+          - ConfigFormatVersionTest
+          - ComplexOperationsTest
+          - MasterDnsVpnConfigTest
+          - MasterDnsVpnEngineTest
+
+    runs-on: ubuntu-22.04
+
+    env:
+      QT_VERSION: 6.10.1
+      QTEST_FUNCTION_TIMEOUT: 7200000
+      THIRD_PARTY_AWG_VPN_KEY: ${{ secrets.THIRD_PARTY_AWG_VPN_KEY }}
+      THIRD_PARTY_WIRE_GUARD_VPN_KEY: ${{ secrets.THIRD_PARTY_WIRE_GUARD_VPN_KEY }}
+      THIRD_PARTY_XRAY_VPN_KEY: ${{ secrets.THIRD_PARTY_XRAY_VPN_KEY }}
+      THIRD_PARTY_OPEN_VPN_KEY: ${{ secrets.THIRD_PARTY_OPEN_VPN_KEY }}
+      THIRD_PARTY_CLOAK_VPN_KEY: ${{ secrets.THIRD_PARTY_CLOAK_VPN_KEY }}
+      THIRD_PARTY_SS_VPN_KEY: ${{ secrets.THIRD_PARTY_SS_VPN_KEY }}
+      THIRD_PARTY_IKEV_VPN_KEY: ${{ secrets.THIRD_PARTY_IKEV_VPN_KEY }}
+      THIRD_PARTY_VMESS_NEW_IMPORT_DATA: ${{ secrets.THIRD_PARTY_VMESS_NEW_IMPORT_DATA }}
+      THIRD_PARTY_VMESS_IMPORT_DATA: ${{ secrets.THIRD_PARTY_VMESS_IMPORT_DATA }}
+      THIRD_PARTY_TROJAN_IMPORT_DATA: ${{ secrets.THIRD_PARTY_TROJAN_IMPORT_DATA }}
+      THIRD_PARTY_VLESS_IMPORT_DATA: ${{ secrets.THIRD_PARTY_VLESS_IMPORT_DATA }}
+      THIRD_PARTY_SHADOWSOCKS_IMPORT_DATA: ${{ secrets.THIRD_PARTY_SHADOWSOCKS_IMPORT_DATA }}
+      THIRD_PARTY_SHADOWSOCKS_SUBSCRIPTION_IMPORT_DATA: ${{ secrets.THIRD_PARTY_SHADOWSOCKS_SUBSCRIPTION_IMPORT_DATA }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+          fetch-depth: 10
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: linux
+          target: desktop
+          arch: linux_gcc_64
+          modules: qtremoteobjects qtshadertools
+          dir: ${{ runner.temp }}
+          set-env: true
+          aqtversion: '==3.3.0'
+          py7zrversion: '==0.22.*'
+          extra: '--base ${{ env.QT_MIRROR }}'
+
+      - name: Install system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libxkbcommon-x11-0 \
+            libsecret-1-dev
+
+      - name: Download build
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-build
+          path: deploy/build/client/tests
+
+      - name: Restore executable permissions
+        run: |
+          find deploy/build/client/tests \
+            -type f \
+            -name "test_*" \
+            -exec chmod +x {} \;
+
+      - name: Run tests
+        shell: bash
+        run: |
+          QT_ROOT="${{ runner.temp }}/Qt/${{ env.QT_VERSION }}/gcc_64"
+
+          export LD_LIBRARY_PATH="$PWD/deploy/build/client/tests:$QT_ROOT/lib:${LD_LIBRARY_PATH:-}"
+          export QT_QPA_PLATFORM=offscreen
+
+          ctest --test-dir deploy/build/client/tests --output-on-failure -VV -R "^${{ matrix.filter }}$"
+
+# ------------------------------------------------------
+
+  test-windows:
+    name: Test Windows (${{ matrix.filter }})
+    needs: Build-Windows
+
+    strategy:
+      fail-fast: false
+      matrix:
+        filter:
+          - MultipleImportsTest
+          - ServerEditTest
+          - DefaultServerChangeTest
+          - ServerEdgeCasesTest
+          - SignalOrderTest
+          - ServersModelSyncTest
+          - ServerRenameTest
+          - SettingsSignalsTest
+          - UiServersModelAndControllerTest
+          - XraySerializationTest
+          - UiLanguageModelAndControllerTest
+          - UiIpModelAndControllerTest
+          - UiAppSTModelAndControllerTest
+          - UiAllowedDnsModelAndControllerTest
+          - ConnectionTest
+          - OpenSSLLibraryTest
+          - ConfigFormatVersionTest
+          - ComplexOperationsTest
+          - MasterDnsVpnConfigTest
+          - MasterDnsVpnEngineTest
+
+    runs-on: windows-latest
+
+    env:
+      QT_VERSION: 6.10.1
+      QTEST_FUNCTION_TIMEOUT: 7200000
+      THIRD_PARTY_AWG_VPN_KEY: ${{ secrets.THIRD_PARTY_AWG_VPN_KEY }}
+      THIRD_PARTY_WIRE_GUARD_VPN_KEY: ${{ secrets.THIRD_PARTY_WIRE_GUARD_VPN_KEY }}
+      THIRD_PARTY_XRAY_VPN_KEY: ${{ secrets.THIRD_PARTY_XRAY_VPN_KEY }}
+      THIRD_PARTY_OPEN_VPN_KEY: ${{ secrets.THIRD_PARTY_OPEN_VPN_KEY }}
+      THIRD_PARTY_CLOAK_VPN_KEY: ${{ secrets.THIRD_PARTY_CLOAK_VPN_KEY }}
+      THIRD_PARTY_SS_VPN_KEY: ${{ secrets.THIRD_PARTY_SS_VPN_KEY }}
+      THIRD_PARTY_IKEV_VPN_KEY: ${{ secrets.THIRD_PARTY_IKEV_VPN_KEY }}
+      THIRD_PARTY_VMESS_NEW_IMPORT_DATA: ${{ secrets.THIRD_PARTY_VMESS_NEW_IMPORT_DATA }}
+      THIRD_PARTY_VMESS_IMPORT_DATA: ${{ secrets.THIRD_PARTY_VMESS_IMPORT_DATA }}
+      THIRD_PARTY_TROJAN_IMPORT_DATA: ${{ secrets.THIRD_PARTY_TROJAN_IMPORT_DATA }}
+      THIRD_PARTY_VLESS_IMPORT_DATA: ${{ secrets.THIRD_PARTY_VLESS_IMPORT_DATA }}
+      THIRD_PARTY_SHADOWSOCKS_IMPORT_DATA: ${{ secrets.THIRD_PARTY_SHADOWSOCKS_IMPORT_DATA }}
+      THIRD_PARTY_SHADOWSOCKS_SUBSCRIPTION_IMPORT_DATA: ${{ secrets.THIRD_PARTY_SHADOWSOCKS_SUBSCRIPTION_IMPORT_DATA }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+          fetch-depth: 10
+
+      - name: Download build
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-build
+          path: deploy/build/client
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: windows
+          target: desktop
+          arch: win64_msvc2022_64
+          modules: qtremoteobjects qtshadertools
+          dir: ${{ runner.temp }}
+          set-env: true
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Run tests
+        shell: cmd
+        run: |
+          rem Without an attached console (GitHub runner), QTest sends its output to
+          rem OutputDebugString instead of stdout, so ctest captures nothing.
+          set QT_FORCE_STDERR_LOGGING=1
+
+          set PATH=%PATH%;%CD%\client\3rd-prebuilt\deploy-prebuilt\windows\x64
+          set PATH=%PATH%;%Qt6_DIR%\..\..\..\bin
+
+          ctest --test-dir deploy\build\client\tests -C Release -R "${{ matrix.filter }}" --output-on-failure

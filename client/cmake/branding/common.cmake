@@ -75,3 +75,8 @@ endif()
 if(NOT DEFINED CLIENT_GITHUB_UPDATE_ALLOW_PRERELEASE)
     set(CLIENT_GITHUB_UPDATE_ALLOW_PRERELEASE 1 CACHE STRING "Accept prerelease GitHub releases as updates (1/0)")
 endif()
+
+# Upstream's switch for the whole in-app update feature; 0 compiles the check out.
+if(NOT DEFINED CLIENT_ENABLE_APP_UPDATES)
+    set(CLIENT_ENABLE_APP_UPDATES 1)
+endif()

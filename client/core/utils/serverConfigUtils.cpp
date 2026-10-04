@@ -32,6 +32,16 @@ bool hasThirdPartyConfig(const QJsonObject &json)
 namespace serverConfigUtils
 {
 
+int configFormatVersion(const QJsonObject &serverConfigObject)
+{
+    return serverConfigObject.value(amnezia::configKey::formatVersion).toInt(0);
+}
+
+bool isConfigFormatVersionSupported(const QJsonObject &serverConfigObject)
+{
+    return configFormatVersion(serverConfigObject) <= currentConfigFormatVersion;
+}
+
 ConfigType configTypeFromJson(const QJsonObject &serverConfigObject)
 {
     return hasThirdPartyConfig(serverConfigObject) ? ConfigType::Native : ConfigType::SelfHostedUser;

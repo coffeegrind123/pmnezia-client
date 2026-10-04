@@ -37,6 +37,7 @@ public:
 
     QByteArray backupAppConfig() const;
     ErrorCode restoreAppConfigFromData(const QByteArray &data);
+    int unsupportedFormatConfigsSkippedCount() const;
 
     QString getAppVersion() const;
 

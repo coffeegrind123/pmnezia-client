@@ -108,6 +108,11 @@ QByteArray SettingsController::backupAppConfig() const
     return QJsonDocument(config).toJson();
 }
 
+int SettingsController::unsupportedFormatConfigsSkippedCount() const
+{
+    return m_serversRepository->unsupportedFormatConfigsCount();
+}
+
 ErrorCode SettingsController::restoreAppConfigFromData(const QByteArray &data)
 {
     if (!m_appSettingsRepository->restoreAppConfig(data)) {

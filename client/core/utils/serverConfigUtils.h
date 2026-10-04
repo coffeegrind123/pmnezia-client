@@ -12,6 +12,12 @@ enum ConfigType {
     Invalid
 };
 
+constexpr int currentConfigFormatVersion = 1;
+
+int configFormatVersion(const QJsonObject &serverConfigObject);
+
+bool isConfigFormatVersionSupported(const QJsonObject &serverConfigObject);
+
 ConfigType configTypeFromJson(const QJsonObject &serverConfigObject);
 
 } // namespace serverConfigUtils

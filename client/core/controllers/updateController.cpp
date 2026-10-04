@@ -258,6 +258,10 @@ void UpdateController::setUpdateCheckRunning(bool running)
 
 void UpdateController::checkForUpdates()
 {
+#if !CLIENT_ENABLE_APP_UPDATES
+    return;
+#endif
+
     // Auto-update discovery via the Amnezia gateway has been removed: the v1/app_update request
     // carried the installation uuid, os/app version and distribution tag. This fork ships through
     // GitHub releases, so discovery is a plain unauthenticated GET against the releases API. It

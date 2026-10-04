@@ -36,6 +36,8 @@ namespace amnezia
         NoInstalledContainersError = 902,
         ImportBackupFileUseRestoreInstead = 903,
         RestoreBackupInvalidError = 904,
+        ConfigFormatVersionNotSupportedError = 907,
+        RestoreBackupUnsupportedConfigsSkipped = 908,
 
         // Android errors
         AndroidError = 1000,
