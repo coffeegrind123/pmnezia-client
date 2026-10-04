@@ -814,7 +814,7 @@ jobs:
           - MasterDnsVpnConfigTest
           - MasterDnsVpnEngineTest
 
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest  # same image as Build-Linux-Ubuntu, so the glibc the tests link against exists
 
     env:
       QT_VERSION: 6.10.1
