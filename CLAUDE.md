@@ -24,6 +24,13 @@ with `gh api repos/coffeegrind123/pmnezia-client/actions/jobs/<job>/logs`.
 
 - The tree keeps upstream's Amnezia naming; `deploy/rebrand.sh` applies the brand
   per build from `deploy/brand.env`. Never rebrand files in git — it breaks merges.
+- Artwork is replaced the same way: `deploy/brand/overlay/` mirrors the repo paths
+  of every upstream image it replaces and `rebrand.sh` copies it in. Never edit
+  upstream images in git. A merge that adds or resizes a branded image needs a
+  matching entry in `deploy/brand/generate.py`; regenerate with the venv recipe in
+  `deploy/brand/README.md` (rendering, not compiling).
+- `rebrand.sh` must run on macOS's bash 3.2 and BSD tools: no `mapfile`, no
+  `grep -P`, `sed -i` only through its `sed_inplace` helper.
 - Premium / gateway / news / IAP / telemetry code stays deleted. Update checks go
   to this repo's GitHub releases and must not send identifiers.
 - Fork features that must survive every merge: MasterDnsVPN (`client/masterdnsvpn/`),

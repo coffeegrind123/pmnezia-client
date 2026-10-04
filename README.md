@@ -162,6 +162,11 @@ deploy/rebrand.sh            # apply, in place
 deploy/rebrand.sh --check    # verify only
 ```
 
+The artwork follows the same rule. The PmneziaVPN mark, the Crema Shield, and every image that
+replaces an upstream one live in `deploy/brand/` (generator, SVG masters and an overlay laid out at
+repository paths); `rebrand.sh` copies the overlay over the tree before building. See
+[`deploy/brand/README.md`](deploy/brand/README.md).
+
 `deploy/rebrand.sh` reads `deploy/brand.env`, which is the single source of truth — the release workflow reads the
 same file, so artifact names stay consistent with what the build produces. To change the brand, edit `brand.env`
 and nothing else.
