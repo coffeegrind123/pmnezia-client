@@ -34,13 +34,28 @@ with `gh api repos/coffeegrind123/pmnezia-client/actions/jobs/<job>/logs`.
 - Premium / gateway / news / IAP / telemetry code stays deleted. Update checks go
   to this repo's GitHub releases and must not send identifiers.
 - Fork features that must survive every merge: MasterDnsVPN (`client/masterdnsvpn/`),
-  QQ-DNS (`client/qqdns/`), the xhttp transport, zxing-cpp instead of ML Kit, the
-  non-matrix Android job and `Publish-Release` in `deploy.yml`.
+  QQ-DNS (`client/qqdns/`), TrustTunnel (`client/core/utils/serialization/trustTunnel.*`,
+  `client/core/protocols/trustTunnelProtocol.*`, `client/android/trusttunnel/`,
+  `recipes/trusttunnel-client/`, `service/server/trust_tunnel_service.*`), the xhttp
+  transport, zxing-cpp instead of ML Kit, the non-matrix Android job and
+  `Publish-Release` in `deploy.yml`.
+- A new protocol must be added to **every** `std::visit` in
+  `client/core/models/protocolConfig.cpp`; a missing `hasClientConfig` branch makes
+  every import of it fail at connect with `ImportInvalidConfigError` (QQ-DNS did).
+- JNI names follow the Android package only through `rebrand.sh`, which rewrites the
+  dotted, slashed (`org/amnezia/vpn/...`) and mangled (`Java_org_amnezia_vpn_...`)
+  spellings. Keep native code to those spellings; the script fails the build if any
+  upstream spelling survives.
+- `trusttunnel_client` runs as root, so `sanitizeArguments()` accepts only `-c`
+  with the path the service wrote (`Utils::trustTunnelConfigPath()`), and the
+  service renders that TOML from validated fields. Never pass a client-supplied
+  TOML or path through.
 - Tests live in `client/tests/` (upstream #3172, adopted in merge `8d88ae23a`) and
   build only with `AMNEZIA_BUILD_TESTS=ON`, which the CI build jobs set. The harness
   `utils/testCoreController.h` exposes only the getters the fork's `CoreController`
   has; upstream suites for deleted code (`api/`, `selfHostedAdmin/`) stay out. Fork-only
-  suites: `testMasterDnsVpnEngine`, `testMasterDnsVpnConfig`, `testComplexOperations`.
+  suites: `testMasterDnsVpnEngine`, `testMasterDnsVpnConfig`, `testComplexOperations`,
+  `testQqDnsConfig`, `testTrustTunnel`.
   `deploy.yml` runs them in `test-linux` / `test-windows`, and `Publish-Release`
   waits for both. `coffeegrind123/amnezia-client-tests` is superseded.
 
@@ -90,6 +105,14 @@ Where an upstream platform repo (amneziawg-android/-windows/-apple) embeds an ol
 amneziawg-go than the one coffeeblack-vpn ships, the recipe repins it in `source()`
 via `pin_awg_go()` — update those constants, and delete the block once a platform
 tag embeds the version.
+
+`recipes/trusttunnel-client` downloads upstream's release archives instead of
+building: bump `version` and every per-asset sha256 together from
+`gh api repos/TrustTunnel/TrustTunnelClient/releases/tags/v<ver> --jq '.assets[] | "\(.name) \(.digest)"'`.
+Stable releases only (its `-rc`/`-beta` tags are pre-releases). Before bumping, read
+upstream's `trusttunnel/src/trusttunnel_client.cpp` and `config.cpp` diff: the
+`connectedLogLine` constant, the `-c` flag and the `[endpoint]`/`[listener.socks]`
+keys `buildClientToml()` writes must still hold.
 
 ### 4. Ship
 

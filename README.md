@@ -39,6 +39,7 @@ server over SSH has been removed, along with every protocol coffeeblack-vpn does
 | **XRay** | Censorship-resistant | VLESS + Reality + Vision over TCP, and the `xhttp` stream mode (HTTP/2 over a secret path). |
 | **MasterDnsVPN** | Blackout survival | DNS tunnel carrying TCP/SOCKS5 inside DNS queries. Native C++ engine. |
 | **QQ-DNS** | Blackout survival | UDP-over-DNS carrying the AmneziaWG datapath itself, for networks where only port 53 escapes. |
+| **TrustTunnel** | Censorship-resistant | [AdGuard's protocol](https://github.com/TrustTunnel/TrustTunnel): HTTP CONNECT streams inside HTTP/2 (TLS over TCP) or HTTP/3 (QUIC over UDP), with UDP multiplexed alongside. Runs upstream's `trusttunnel_client` 1.1.11 in SOCKS5 mode under tun2socks. Windows, Linux, macOS (non-NE) and Android `arm64-v8a`/`armeabi-v7a`/`x86_64`; not iOS, the macOS Network Extension build or Android `x86`. |
 
 The protocol name **AmneziaWG** is upstream's and is deliberately preserved — coffeeblack-vpn serves it under that
 name and the configuration format uses it.
@@ -78,6 +79,7 @@ Accepted formats:
 | XRay | `vless://` URL, or native JSON |
 | MasterDnsVPN | `mdnsvpn://b64?…` blob, or `client_config.json` |
 | QQ-DNS | transport JSON |
+| TrustTunnel | `tt://?…` deep link (versions 1 and 2), the endpoint's `-c <user> --format toml` export, or a `trusttunnel_client` TOML with an `[endpoint]` table |
 | Any of the above | the Amnezia `vpn://` envelope, or a QR code |
 
 Open the app, choose **Add server**, and supply the file, link, QR code or pasted text. No credentials are required
@@ -99,6 +101,7 @@ MTProxy, TProxy, SFTP, SOCKS5, Tor-website and AmneziaDNS protocols and services
 | --- | --- |
 | MasterDnsVPN engine | Native C++ port of the upstream Go client (`client/masterdnsvpn/`): DNS and wire framing, per-stream ARQ with adaptive RTO and bounded NACKs, an eight-strategy resolver pool, MTU probing, ZSTD/LZ4/raw-deflate compression, a SOCKS5 server, and an Android JNI bridge. Parity-tested against upstream's own Go test vectors. |
 | QQ-DNS engine | Native UDP-over-DNS (`client/qqdns/`) carrying the AmneziaWG datapath, with its own Android `VpnService` module. |
+| TrustTunnel | Protocol, `tt://` and TOML importers (`client/core/utils/serialization/trustTunnel.*`), the prebuilt `trusttunnel_client` pinned by sha256 (`recipes/trusttunnel-client`), and an Android module that runs the static Linux client from `nativeLibraryDir`. The privileged service renders the client's TOML itself; `trusttunnel_client` only ever runs with that file. |
 | xhttp transport | XRay VLESS + Reality over HTTP/2 on a secret path ([upstream PR #2339](https://github.com/amnezia-vpn/amnezia-client/pull/2339)). |
 | Play-free Android | ML Kit barcode scanning replaced with zxing-cpp (Apache-2.0). |
 | In-app updates | Update checks and installer download via this repository's GitHub releases. |

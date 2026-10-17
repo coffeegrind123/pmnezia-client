@@ -142,6 +142,14 @@ Each component is distributed under its own license as linked below.
 
 ---
 
+## TrustTunnel Client
+
+- Source: https://github.com/TrustTunnel/TrustTunnelClient (prebuilt `trusttunnel_client` v1.1.11)
+- License: Apache License 2.0
+- License Text: https://github.com/TrustTunnel/TrustTunnelClient/blob/master/LICENSE
+
+---
+
 ## TAP-Windows Driver
 
 - Source: https://github.com/OpenVPN/tap-windows6
