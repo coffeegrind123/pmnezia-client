@@ -32,6 +32,11 @@ public:
     static QString wireguardExecPath();
     static QString certUtilPath();
     static QString tun2socksPath();
+    static QString trustTunnelClientPath();
+    // Where the privileged service writes trusttunnel_client's TOML. Only
+    // meaningful inside the service: it resolves against the service
+    // account's own data directory.
+    static QString trustTunnelConfigPath();
 
     static void logException(const std::exception &e);
     static void logException(const std::exception_ptr &eptr = std::current_exception());

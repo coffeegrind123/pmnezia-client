@@ -48,6 +48,9 @@ public:
     virtual bool qqDnsStart(const QString& cfg) override;
     virtual bool qqDnsStop() override;
     virtual quint16 qqDnsLocalPort() override;
+    virtual QString trustTunnelWriteConfig(const QString &endpointJson, const QString &socksAddress,
+                                           const QString &socksUser, const QString &socksPassword) override;
+    virtual bool trustTunnelRemoveConfig() override;
     virtual bool startNetworkCheck(const QString& serverIpv4Gateway, const QString& deviceIpv4Address) override;
     virtual bool stopNetworkCheck() override;
 

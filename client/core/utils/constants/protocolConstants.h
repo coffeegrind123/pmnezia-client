@@ -275,6 +275,25 @@ namespace amnezia
             constexpr int defaultSendSockNumbers = 16;
         }
 
+        namespace trustTunnel
+        {
+            // TrustTunnel (HTTP/2 or HTTP/3 CONNECT tunnel, AdGuard). The
+            // client half is upstream's prebuilt trusttunnel_client run in
+            // SOCKS5 mode; tun2socks carries the TUN into that listener.
+            constexpr char defaultPort[] = "443";
+            constexpr char defaultLocalAddr[] = "10.35.0.2";
+            constexpr char upstreamHttp2[] = "http2";
+            constexpr char upstreamHttp3[] = "http3";
+
+            // Deep-link versions this client decodes (DEEP_LINK.md). Version 2
+            // adds subscription_url and client_random_auth_key.
+            constexpr int deepLinkMaxVersion = 2;
+
+            // Line trusttunnel_client logs on VPN_SS_CONNECTED
+            // (trusttunnel/src/trusttunnel_client.cpp, v1.1.11).
+            constexpr char connectedLogLine[] = "Successfully connected to endpoint";
+        }
+
 
 
 

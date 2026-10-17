@@ -19,6 +19,7 @@
 #include "xray.h"
 #include "master_dns_vpn_service.h"
 #include "qq_dns_service.h"
+#include "trust_tunnel_service.h"
 
 
 IpcServer::IpcServer(QObject *parent) : IpcInterfaceSource(parent)
@@ -334,4 +335,18 @@ bool IpcServer::qqDnsStop()
 quint16 IpcServer::qqDnsLocalPort()
 {
     return QqDnsService::getInstance().localUdpPort();
+}
+
+QString IpcServer::trustTunnelWriteConfig(const QString &endpointJson, const QString &socksAddress,
+                                          const QString &socksUser, const QString &socksPassword)
+{
+#ifdef MZ_DEBUG
+    qDebug() << "IpcServer::trustTunnelWriteConfig";
+#endif
+    return TrustTunnelService::writeConfig(endpointJson, socksAddress, socksUser, socksPassword);
+}
+
+bool IpcServer::trustTunnelRemoveConfig()
+{
+    return TrustTunnelService::removeConfig();
 }

@@ -33,6 +33,14 @@ void IpcServerProcess::start()
         qDebug() << "IpcServerProcess failed to start, program is empty";
     }
 
+    // Without its -c the client falls back to a TOML in the working
+    // directory, which the caller can choose; never run it that way.
+    if (m_program == amnezia::PermittedProcess::TrustTunnelClient && m_process->arguments().isEmpty()) {
+        qWarning() << "IpcServerProcess refused to start trusttunnel_client without the service-written config";
+        emit errorOccurred(QProcess::FailedToStart);
+        return;
+    }
+
     Utils::killProcessByName(m_process->program());
     m_process->start();
     qDebug() << "IpcServerProcess started, " << m_process->program() << m_process->arguments();

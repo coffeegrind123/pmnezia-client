@@ -24,6 +24,7 @@ namespace amnezia
             Xray,
             MasterDnsVpn,
             QqDns,
+            TrustTunnel,
         };
         Q_ENUM_NS(Proto)
 

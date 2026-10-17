@@ -65,6 +65,7 @@ QMap<DockerContainer, QString> ContainerUtils::containerHumanNames()
              { DockerContainer::Xray, "XRay" },
              { DockerContainer::MasterDnsVpn, QObject::tr("MasterDnsVPN") },
              { DockerContainer::QqDns, QObject::tr("QQ-DNS") },
+             { DockerContainer::TrustTunnel, QObject::tr("TrustTunnel") },
     };
 }
 
@@ -89,6 +90,9 @@ QMap<DockerContainer, QString> ContainerUtils::containerDescriptions()
              { DockerContainer::QqDns,
                QObject::tr("QQ-DNS carries the AmneziaWG datapath itself inside DNS query names. "
                            "Reaches the low-latency Gaming config when only port 53 escapes the network.") },
+             { DockerContainer::TrustTunnel,
+               QObject::tr("TrustTunnel carries traffic as HTTP/2 or HTTP/3 requests to an ordinary-looking TLS "
+                           "website, so the tunnel reads as web browsing.") },
     };
 }
 
@@ -152,6 +156,18 @@ QMap<DockerContainer, QString> ContainerUtils::containerDetailedDescriptions()
                       "* Blackout survival, not low latency - base32 encoding and fragmentation multiply overhead\n"
                       "* One server instance serves one client endpoint\n"
                       "* Operator must own a domain and create an NS delegation pointing to the server") },
+
+        { DockerContainer::TrustTunnel,
+          QObject::tr("TrustTunnel is AdGuard's VPN protocol. Each connection is an HTTP CONNECT stream "
+                      "inside an HTTP/2 (TLS over TCP) or HTTP/3 (QUIC over UDP) session to the endpoint, which "
+                      "answers anything without valid credentials like a regular web server. UDP and ICMP are "
+                      "multiplexed over the same session.\n"
+                      "\nFeatures:\n"
+                      "* Looks like HTTPS browsing to DPI; optional anti-DPI handshake shaping\n"
+                      "* Choice of HTTP/2 over TCP or HTTP/3 over UDP per profile\n"
+                      "* Works with CA-signed or self-signed endpoint certificates (pinned in the link)\n"
+                      "* Imports tt:// deep links and TrustTunnel client TOML files\n"
+                      "* Not available on iOS or with the macOS Network Extension build") },
     };
 }
 
@@ -169,6 +185,7 @@ Proto ContainerUtils::defaultProtocol(DockerContainer c)
     case DockerContainer::Xray: return Proto::Xray;
     case DockerContainer::MasterDnsVpn: return Proto::MasterDnsVpn;
     case DockerContainer::QqDns: return Proto::QqDns;
+    case DockerContainer::TrustTunnel: return Proto::TrustTunnel;
     case DockerContainer::None:
     default: return Proto::Unknown;
     }
@@ -185,9 +202,16 @@ QString ContainerUtils::containerTypeToProtocolString(DockerContainer c)
 
 bool ContainerUtils::isSupportedByCurrentPlatform(DockerContainer c)
 {
-#if defined(Q_OS_MAC) && !defined(MACOS_NE)
+#if defined(Q_OS_IOS) || defined(MACOS_NE)
+    // TrustTunnel needs upstream's Apple framework inside the packet tunnel
+    // extension, which this fork does not build.
+    return c != DockerContainer::TrustTunnel;
+#elif defined(Q_OS_MAC)
     // The mdnsvpn binary has no macOS build yet.
     return c != DockerContainer::MasterDnsVpn;
+#elif defined(Q_OS_ANDROID) && defined(Q_PROCESSOR_X86_32)
+    // TrustTunnelClient publishes no 32-bit x86 Linux build to bundle.
+    return c != DockerContainer::TrustTunnel;
 #else
     Q_UNUSED(c)
     return true;
@@ -227,6 +251,7 @@ int ContainerUtils::installPageOrder(DockerContainer container)
     case DockerContainer::Xray: return 3;
     case DockerContainer::MasterDnsVpn: return 9;
     case DockerContainer::QqDns: return 10;
+    case DockerContainer::TrustTunnel: return 4;
     default: return 0;
     }
 }

@@ -52,6 +52,8 @@ struct ContainerConfig {
     const MasterDnsVpnProtocolConfig* getMasterDnsVpnProtocolConfig() const;
     QqDnsProtocolConfig* getQqDnsProtocolConfig();
     const QqDnsProtocolConfig* getQqDnsProtocolConfig() const;
+    TrustTunnelProtocolConfig* getTrustTunnelProtocolConfig();
+    const TrustTunnelProtocolConfig* getTrustTunnelProtocolConfig() const;
 };
 
 } // namespace amnezia

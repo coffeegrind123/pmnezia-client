@@ -17,6 +17,7 @@ enum PermittedProcess {
     Wireguard,
     Tun2Socks,
     CertUtil,
+    TrustTunnelClient,
     PermittedProcessCount
 };
 
@@ -29,6 +30,8 @@ inline QString permittedProcessPath(PermittedProcess pid)
             return Utils::certUtilPath();
         case PermittedProcess::Tun2Socks:
             return Utils::tun2socksPath();
+        case PermittedProcess::TrustTunnelClient:
+            return Utils::trustTunnelClientPath();
         default:
             return "";
     }
@@ -63,6 +66,12 @@ inline QStringList sanitizeArguments(PermittedProcess proc, const QStringList &a
         break;
     case CertUtil:
         return args;
+    case TrustTunnelClient:
+        // Only the TOML the service itself wrote (trustTunnelWriteConfig).
+        // A caller-chosen path would let any local user run the client as
+        // root against a config they control.
+        namedArgs["-c"] = [](const QString& v) { return v == Utils::trustTunnelConfigPath(); };
+        break;
     default:
         return {};
     }

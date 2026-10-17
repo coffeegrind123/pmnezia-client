@@ -28,6 +28,8 @@ Proto ProtocolConfig::type() const
             return Proto::MasterDnsVpn;
         } else if constexpr (std::is_same_v<T, QqDnsProtocolConfig>) {
             return Proto::QqDns;
+        } else if constexpr (std::is_same_v<T, TrustTunnelProtocolConfig>) {
+            return Proto::TrustTunnel;
         }
         return Proto::Unknown;
     }, data);
@@ -47,6 +49,8 @@ QString ProtocolConfig::port() const
             return arg.serverConfig.port;
         } else if constexpr (std::is_same_v<T, QqDnsProtocolConfig>) {
             return QString::number(arg.receivePort);
+        } else if constexpr (std::is_same_v<T, TrustTunnelProtocolConfig>) {
+            return arg.serverConfig.port;
         }
         return QString();
     }, data);
@@ -68,6 +72,8 @@ QString ProtocolConfig::transportProto() const
             return QStringLiteral("udp");
         } else if constexpr (std::is_same_v<T, QqDnsProtocolConfig>) {
             return QStringLiteral("udp");
+        } else if constexpr (std::is_same_v<T, TrustTunnelProtocolConfig>) {
+            return arg.serverConfig.transportProto;
         }
         return QString();
     }, data);
@@ -81,7 +87,8 @@ bool ProtocolConfig::hasClientConfig() const
                       std::is_same_v<T, WireGuardProtocolConfig> ||
                       std::is_same_v<T, XrayProtocolConfig> ||
                       std::is_same_v<T, MasterDnsVpnProtocolConfig> ||
-                      std::is_same_v<T, QqDnsProtocolConfig>) {
+                      std::is_same_v<T, QqDnsProtocolConfig> ||
+                      std::is_same_v<T, TrustTunnelProtocolConfig>) {
             return arg.hasClientConfig();
         }
         return false;
@@ -110,6 +117,10 @@ QString ProtocolConfig::clientId() const
             }
         } else if constexpr (std::is_same_v<T, QqDnsProtocolConfig>) {
             return arg.id;
+        } else if constexpr (std::is_same_v<T, TrustTunnelProtocolConfig>) {
+            if (arg.clientConfig.has_value()) {
+                return arg.clientConfig->id;
+            }
         }
         return QString();
     }, data);
@@ -141,6 +152,10 @@ QJsonObject ProtocolConfig::getClientConfigJson() const
             if (arg.hasClientConfig()) {
                 return arg.toJson();
             }
+        } else if constexpr (std::is_same_v<T, TrustTunnelProtocolConfig>) {
+            if (arg.hasClientConfig()) {
+                return arg.clientConfig->toJson();
+            }
         }
         return QJsonObject();
     }, data);
@@ -162,6 +177,8 @@ void ProtocolConfig::setClientConfigJson(const QJsonObject& json)
             const bool thirdParty = arg.isThirdPartyConfig;
             arg = QqDnsProtocolConfig::fromJson(json);
             arg.isThirdPartyConfig = arg.isThirdPartyConfig || thirdParty;
+        } else if constexpr (std::is_same_v<T, TrustTunnelProtocolConfig>) {
+            arg.setClientConfig(TrustTunnelClientConfig::fromJson(json));
         }
     }, data);
 }
@@ -174,7 +191,8 @@ void ProtocolConfig::clearClientConfig()
                       std::is_same_v<T, WireGuardProtocolConfig> ||
                       std::is_same_v<T, XrayProtocolConfig> ||
                       std::is_same_v<T, MasterDnsVpnProtocolConfig> ||
-                      std::is_same_v<T, QqDnsProtocolConfig>) {
+                      std::is_same_v<T, QqDnsProtocolConfig> ||
+                      std::is_same_v<T, TrustTunnelProtocolConfig>) {
             arg.clearClientConfig();
         }
     }, data);
@@ -204,6 +222,10 @@ QString ProtocolConfig::nativeConfig() const
         } else if constexpr (std::is_same_v<T, QqDnsProtocolConfig>) {
             // Same as MasterDnsVPN: structured engine JSON, no config string.
             return QString();
+        } else if constexpr (std::is_same_v<T, TrustTunnelProtocolConfig>) {
+            // Structured endpoint profile; the CLI's TOML is rendered per
+            // connection with that session's SOCKS listener.
+            return QString();
         }
         return QString();
     }, data);
@@ -228,7 +250,8 @@ void ProtocolConfig::setNativeConfig(const QString &config)
         } else if constexpr (std::is_same_v<T, MasterDnsVpnProtocolConfig>) {
             // No-op: see ProtocolConfig::nativeConfig() above for rationale.
             (void)config;
-        } else if constexpr (std::is_same_v<T, QqDnsProtocolConfig>) {
+        } else if constexpr (std::is_same_v<T, QqDnsProtocolConfig> ||
+                             std::is_same_v<T, TrustTunnelProtocolConfig>) {
             (void)config;
         }
     }, data);
@@ -241,7 +264,8 @@ bool ProtocolConfig::isThirdPartyConfig() const
         if constexpr (std::is_same_v<T, AwgProtocolConfig> ||
                       std::is_same_v<T, WireGuardProtocolConfig> ||
                       std::is_same_v<T, XrayProtocolConfig> ||
-                      std::is_same_v<T, MasterDnsVpnProtocolConfig>) {
+                      std::is_same_v<T, MasterDnsVpnProtocolConfig> ||
+                      std::is_same_v<T, TrustTunnelProtocolConfig>) {
             return arg.serverConfig.isThirdPartyConfig;
         } else if constexpr (std::is_same_v<T, QqDnsProtocolConfig>) {
             return arg.isThirdPartyConfig;
@@ -270,6 +294,8 @@ ProtocolConfig ProtocolConfig::fromJson(const QJsonObject& json, Proto type)
         return ProtocolConfig{MasterDnsVpnProtocolConfig::fromJson(json)};
     case Proto::QqDns:
         return ProtocolConfig{QqDnsProtocolConfig::fromJson(json)};
+    case Proto::TrustTunnel:
+        return ProtocolConfig{TrustTunnelProtocolConfig::fromJson(json)};
     default:
         return ProtocolConfig{AwgProtocolConfig{}};
     }

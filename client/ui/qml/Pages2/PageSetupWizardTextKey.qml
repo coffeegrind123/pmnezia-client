@@ -45,7 +45,7 @@ PageType {
                 Layout.leftMargin: 16
 
                 headerText: qsTr("Connection key")
-                descriptionText: qsTr("A line that starts with vpn://...")
+                descriptionText: qsTr("A line that starts with vpn://, tt://, vless:// or mdnsvpn://")
             }
         }
 
@@ -64,7 +64,7 @@ PageType {
                 Layout.leftMargin: 16
 
                 headerText: qsTr("Key")
-                textField.placeholderText: "vpn://"
+                textField.placeholderText: "vpn:// or tt://"
                 buttonText: qsTr("Insert")
 
                 clickedFunc: function() {

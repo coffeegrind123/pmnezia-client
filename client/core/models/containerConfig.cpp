@@ -103,5 +103,15 @@ const QqDnsProtocolConfig* ContainerConfig::getQqDnsProtocolConfig() const
     return protocolConfig.as<QqDnsProtocolConfig>();
 }
 
+TrustTunnelProtocolConfig* ContainerConfig::getTrustTunnelProtocolConfig()
+{
+    return protocolConfig.as<TrustTunnelProtocolConfig>();
+}
+
+const TrustTunnelProtocolConfig* ContainerConfig::getTrustTunnelProtocolConfig() const
+{
+    return protocolConfig.as<TrustTunnelProtocolConfig>();
+}
+
 } // namespace amnezia
 

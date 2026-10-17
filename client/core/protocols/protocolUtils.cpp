@@ -41,6 +41,7 @@ QMap<Proto, QString> ProtocolUtils::protocolHumanNames()
              { Proto::Xray, "XRay" },
              { Proto::MasterDnsVpn, "MasterDnsVPN" },
              { Proto::QqDns, "QQ-DNS" },
+             { Proto::TrustTunnel, "TrustTunnel" },
     };
 }
 
@@ -53,6 +54,8 @@ TransportProto ProtocolUtils::defaultTransportProto(Proto p)
 {
     switch (p) {
     case Proto::Xray: return TransportProto::Tcp;
+    // HTTP/2 over TLS rides TCP, HTTP/3 over QUIC rides UDP; endpoints listen on both.
+    case Proto::TrustTunnel: return TransportProto::TcpAndUdp;
     // WireGuard and AmneziaWG are UDP; both DNS tunnels ride DNS over UDP.
     default: return TransportProto::Udp;
     }

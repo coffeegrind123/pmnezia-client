@@ -47,6 +47,13 @@ class IpcInterface
     SLOT(bool qqDnsStop());
     SLOT(quint16 qqDnsLocalPort());
 
+    // Renders trusttunnel_client's TOML from an endpoint profile (JSON, the
+    // [endpoint] key spelling) and a loopback SOCKS5 listener, writes it
+    // where only the service can read it, and returns that path for the
+    // PermittedProcess::TrustTunnelClient launch. Empty on validation failure.
+    SLOT(QString trustTunnelWriteConfig(const QString &endpointJson, const QString &socksAddress, const QString &socksUser, const QString &socksPassword));
+    SLOT(bool trustTunnelRemoveConfig());
+
     SLOT( bool startNetworkCheck(const QString& serverIpv4Gateway, const QString& deviceIpv4Address) );
     SLOT( bool stopNetworkCheck() );
 

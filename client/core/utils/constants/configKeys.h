@@ -151,6 +151,7 @@ namespace amnezia
         constexpr QLatin1String amneziaXray("amnezia-xray");
         constexpr QLatin1String amneziaMasterDnsVpn("amnezia-masterdnsvpn");
         constexpr QLatin1String amneziaQqDns("amnezia-qqdns");
+        constexpr QLatin1String amneziaTrustTunnel("amnezia-trusttunnel");
 
         // MasterDnsVPN-specific JSON keys for the protocol_config_data wrapper.
         constexpr QLatin1String mdvDomains("domains");
@@ -192,6 +193,25 @@ namespace amnezia
         constexpr QLatin1String qqSendSockNumbers("send_sock_numbers");
         constexpr QLatin1String qqAwg("awg");
         constexpr QLatin1String qqAdditionalConfig("additionalConfig");
+
+        // TrustTunnel client-config keys. Spelled as TrustTunnelClient's own
+        // [endpoint] TOML keys, so the stored object reads like the file the
+        // CLI consumes and the deep-link fields map one to one.
+        constexpr QLatin1String ttHostname("hostname");
+        constexpr QLatin1String ttAddresses("addresses");
+        constexpr QLatin1String ttCustomSni("custom_sni");
+        constexpr QLatin1String ttHasIpv6("has_ipv6");
+        constexpr QLatin1String ttUsername("username");
+        constexpr QLatin1String ttPassword("password");
+        constexpr QLatin1String ttSkipVerification("skip_verification");
+        constexpr QLatin1String ttCertificate("certificate");
+        constexpr QLatin1String ttUpstreamProtocol("upstream_protocol");
+        constexpr QLatin1String ttAntiDpi("anti_dpi");
+        constexpr QLatin1String ttClientRandom("client_random");
+        constexpr QLatin1String ttName("name");
+        constexpr QLatin1String ttDnsUpstreams("dns_upstreams");
+        constexpr QLatin1String ttSubscriptionUrl("subscription_url");
+        constexpr QLatin1String ttClientRandomAuthKey("client_random_auth_key");
 
         constexpr QLatin1String clientName("clientName");
         constexpr QLatin1String userData("userData");

@@ -53,6 +53,8 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/../../client/masterdnsvpn/mtuprober.h
     ${CMAKE_CURRENT_LIST_DIR}/../../client/masterdnsvpn/pingpacer.h
     ${CMAKE_CURRENT_LIST_DIR}/qq_dns_service.h
+    ${CMAKE_CURRENT_LIST_DIR}/trust_tunnel_service.h
+    ${CMAKE_CURRENT_LIST_DIR}/../../client/core/utils/serialization/trustTunnel.h
     ${CMAKE_CURRENT_LIST_DIR}/../../client/qqdns/codec.h
     ${CMAKE_CURRENT_LIST_DIR}/../../client/qqdns/dnsframing.h
     ${CMAKE_CURRENT_LIST_DIR}/../../client/qqdns/reassembly.h
@@ -88,6 +90,8 @@ set(SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/../../client/masterdnsvpn/dnsmsg.cpp
     ${CMAKE_CURRENT_LIST_DIR}/../../client/masterdnsvpn/mtuprober.cpp
     ${CMAKE_CURRENT_LIST_DIR}/qq_dns_service.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/trust_tunnel_service.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/../../client/core/utils/serialization/trustTunnel.cpp
     ${CMAKE_CURRENT_LIST_DIR}/../../client/qqdns/codec.cpp
     ${CMAKE_CURRENT_LIST_DIR}/../../client/qqdns/dnsframing.cpp
     ${CMAKE_CURRENT_LIST_DIR}/../../client/qqdns/reassembly.cpp
@@ -409,6 +413,11 @@ endif()
 
 find_package(tun2socks REQUIRED)
 list(APPEND CONAN_EXECS $<TARGET_FILE:xjasonlyu::tun2socks>)
+
+# Upstream's prebuilt CLI client, run by the service in SOCKS5 mode for the
+# TrustTunnel transport (PermittedProcess::TrustTunnelClient).
+find_package(trusttunnel-client REQUIRED)
+list(APPEND CONAN_EXECS $<TARGET_FILE:trusttunnel::trusttunnel-client>)
 
 find_package(v2ray-rules-dat REQUIRED)
 list(APPEND CONAN_BINS ${GEOSITE_DAT_PATH} ${GEOIP_DAT_PATH})

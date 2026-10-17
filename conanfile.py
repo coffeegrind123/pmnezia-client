@@ -28,6 +28,7 @@ class AmneziaVPN(ConanFile):
             self.requires("amnezia-xray-bindings/1.4.0")
             self.requires("tun2socks/2.6.0")
             self.requires("v2ray-rules-dat/202603162227")
+            self.requires("trusttunnel-client/1.1.11")
 
         if has_ne:
             self.requires("awg-apple/3.1.4")
@@ -36,6 +37,9 @@ class AmneziaVPN(ConanFile):
         if os == "Android":
             self.requires("amnezia-libxray/1.0.3")
             self.requires("awg-android/3.1.20260814")
+            # No 32-bit x86 Linux build upstream; that ABI ships without TrustTunnel.
+            if str(self.settings.arch) != "x86":
+                self.requires("trusttunnel-client/1.1.11")
 
         self.requires("openssl/3.6.5")
         self.requires("zlib/1.3.2")

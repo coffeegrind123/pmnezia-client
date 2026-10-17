@@ -38,6 +38,7 @@ set(HEADERS ${HEADERS}
     ${CLIENT_ROOT_DIR}/core/utils/wireguardKeys.h
     ${CLIENT_ROOT_DIR}/core/utils/serialization/serialization.h
     ${CLIENT_ROOT_DIR}/core/utils/serialization/transfer.h
+    ${CLIENT_ROOT_DIR}/core/utils/serialization/trustTunnel.h
     ${CLIENT_ROOT_DIR}/../common/logger/logger.h
     ${CLIENT_ROOT_DIR}/../common/crypto/cryptoUtils.h
     ${CLIENT_ROOT_DIR}/ui/utils/qmlUtils.h
@@ -117,6 +118,7 @@ set(SOURCES ${SOURCES}
     ${CLIENT_ROOT_DIR}/core/utils/wireguardKeys.cpp
     ${CLIENT_ROOT_DIR}/core/utils/serialization/inbound.cpp
     ${CLIENT_ROOT_DIR}/core/utils/serialization/vless.cpp
+    ${CLIENT_ROOT_DIR}/core/utils/serialization/trustTunnel.cpp
     ${CLIENT_ROOT_DIR}/../common/logger/logger.cpp
     ${CLIENT_ROOT_DIR}/../common/crypto/cryptoUtils.cpp
     ${CLIENT_ROOT_DIR}/ui/utils/qmlUtils.cpp
@@ -264,6 +266,7 @@ if(WIN32 OR (APPLE AND NOT IOS AND NOT MACOS_NE) OR (LINUX AND NOT ANDROID))
         ${CLIENT_ROOT_DIR}/core/protocols/xrayProtocol.h
         ${CLIENT_ROOT_DIR}/core/protocols/masterDnsVpnProtocol.h
         ${CLIENT_ROOT_DIR}/core/protocols/qqDnsProtocol.h
+        ${CLIENT_ROOT_DIR}/core/protocols/trustTunnelProtocol.h
         ${CLIENT_ROOT_DIR}/mozilla/localsocketcontroller.h
     )
 
@@ -275,6 +278,7 @@ if(WIN32 OR (APPLE AND NOT IOS AND NOT MACOS_NE) OR (LINUX AND NOT ANDROID))
         ${CLIENT_ROOT_DIR}/core/protocols/xrayProtocol.cpp
         ${CLIENT_ROOT_DIR}/core/protocols/masterDnsVpnProtocol.cpp
         ${CLIENT_ROOT_DIR}/core/protocols/qqDnsProtocol.cpp
+        ${CLIENT_ROOT_DIR}/core/protocols/trustTunnelProtocol.cpp
     )
 endif()
 

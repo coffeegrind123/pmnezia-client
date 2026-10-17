@@ -1,6 +1,7 @@
 #include "importController.h"
 
 #include <QDataStream>
+#include <QHostAddress>
 #include <QIODevice>
 #include <QDebug>
 #include <QJsonArray>
@@ -19,8 +20,10 @@
 #include "core/utils/protocolEnum.h"
 #include "core/models/protocols/masterDnsVpnProtocolConfig.h"
 #include "core/models/protocols/qqDnsProtocolConfig.h"
+#include "core/models/protocols/trustTunnelProtocolConfig.h"
 #include "core/utils/serverConfigUtils.h"
 #include "core/utils/serialization/serialization.h"
+#include "core/utils/serialization/trustTunnel.h"
 #include "core/utils/utilities.h"
 #include "core/utils/protocolEnum.h"
 #include "core/protocols/protocolUtils.h"
@@ -81,6 +84,10 @@ namespace
             // Amnezia-envelope / WireGuard checks above already win for wrapped
             // configs that happen to carry them.
             return ConfigTypes::QqDns;
+        } else if (serialization::trusttunnel::looksLikeEndpointToml(config)) {
+            // TrustTunnel TOML: trusttunnel_client's [endpoint] file or the
+            // endpoint's flat `-c <user> --format toml` export.
+            return ConfigTypes::TrustTunnel;
         } else if ((config.contains(xrayConfigPatternInbound)) && (config.contains(xrayConfigPatternOutbound))) {
             return ConfigTypes::Xray;
         }
@@ -164,6 +171,16 @@ ImportController::ImportResult ImportController::extractConfigFromData(const QSt
         return result;
     }
 
+    if (config.trimmed().startsWith("tt://")) {
+        result.config = extractTrustTunnelConfig(config.trimmed());
+        if (!result.config.empty()) {
+            result.configType = ConfigTypes::TrustTunnel;
+            return result;
+        }
+        result.errorCode = ErrorCode::ImportInvalidConfigError;
+        return result;
+    }
+
     configType = checkConfigFormat(config);
     if (configType == ConfigTypes::Invalid) {
         config.replace("vpn://", "");
@@ -214,6 +231,14 @@ ImportController::ImportResult ImportController::extractConfigFromData(const QSt
         result.errorCode = ErrorCode::ImportInvalidConfigError;
         return result;
     }
+    case ConfigTypes::TrustTunnel: {
+        result.config = extractTrustTunnelConfig(config);
+        if (!result.config.empty()) {
+            return result;
+        }
+        result.errorCode = ErrorCode::ImportInvalidConfigError;
+        return result;
+    }
     case ConfigTypes::Amnezia: {
         result.config = QJsonDocument::fromJson(config.toUtf8()).object();
 
@@ -251,7 +276,7 @@ ImportController::ImportResult ImportController::extractConfigFromQr(const QByte
     // Scheme-prefixed share strings (e.g. the MasterDnsVPN `mdnsvpn://b64?`
     // blob) aren't content-sniffable, so route them straight through the
     // string importer which handles the scheme.
-    if (dataStr.startsWith("mdnsvpn://")) {
+    if (dataStr.startsWith("mdnsvpn://") || dataStr.trimmed().startsWith("tt://")) {
         return extractConfigFromData(dataStr, "");
     }
     ConfigTypes configType = checkConfigFormat(dataStr);
@@ -764,6 +789,51 @@ QJsonObject ImportController::extractQqDnsConfig(const QString &data, const QStr
         config[configKey::hostName] = proto.sendDomains.first().toString();
     }
 
+    return config;
+}
+
+QJsonObject ImportController::extractTrustTunnelConfig(const QString &data) const
+{
+    namespace tt = serialization::trusttunnel;
+
+    QString error;
+    const std::optional<tt::Endpoint> endpoint =
+            data.startsWith("tt://") ? tt::decodeDeepLink(data, &error) : tt::parseToml(data, &error);
+    if (!endpoint) {
+        qWarning() << "TrustTunnel import rejected:" << error;
+        return {};
+    }
+
+    const TrustTunnelProtocolConfig proto = TrustTunnelProtocolConfig::fromEndpoint(*endpoint);
+
+    QJsonObject container;
+    container[configKey::container] = ContainerUtils::containerToString(DockerContainer::TrustTunnel);
+    container[ProtocolUtils::protoToString(Proto::TrustTunnel)] = proto.toJson();
+
+    QJsonArray containers;
+    containers.push_back(container);
+
+    QJsonObject config;
+    config[configKey::containers] = containers;
+    config[configKey::defaultContainer] = ContainerUtils::containerToString(DockerContainer::TrustTunnel);
+    config[configKey::description] =
+            endpoint->name.isEmpty() ? m_serversRepository->nextAvailableServerName() : endpoint->name;
+    config[configKey::hostName] = endpoint->hostname;
+    if (!endpoint->dnsUpstreams.isEmpty()) {
+        // Plain-IP upstreams double as the tunnel's DNS; tls://, https:// and
+        // the like stay with trusttunnel_client's own resolver.
+        QStringList plain;
+        for (const QString &d : endpoint->dnsUpstreams) {
+            const QString host = d.section(':', 0, 0);
+            if (QHostAddress(host).protocol() == QAbstractSocket::IPv4Protocol) {
+                plain.append(host);
+            }
+        }
+        if (!plain.isEmpty()) {
+            config[configKey::dns1] = plain.value(0);
+            config[configKey::dns2] = plain.value(1, plain.value(0));
+        }
+    }
     return config;
 }
 

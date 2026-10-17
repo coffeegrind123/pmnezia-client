@@ -24,11 +24,14 @@ namespace amnezia
         ExecutableMissing = 604,
         XrayExecutableMissing = 605,
         Tun2SockExecutableMissing = 606,
+        TrustTunnelExecutableMissing = 607,
 
         // 3rd party utils errors
         OpenSslFailed = 800,
         XrayExecutableCrashed = 803,
         Tun2SockExecutableCrashed = 804,
+        TrustTunnelExecutableCrashed = 805,
+        TrustTunnelConnectionFailed = 806,
 
         // import and install errors
         ImportInvalidConfigError = 900,

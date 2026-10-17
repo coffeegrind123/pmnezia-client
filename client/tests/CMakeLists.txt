@@ -128,6 +128,15 @@ if(NOT ANDROID)
         test_common
     )
 
+    add_executable(test_trust_tunnel
+        testTrustTunnel.cpp
+    )
+
+    target_link_libraries(test_trust_tunnel PRIVATE
+        Qt6::Test
+        test_common
+    )
+
     add_executable(test_server_rename
         testServerRename.cpp
     )
@@ -443,6 +452,7 @@ if(NOT ANDROID)
     add_test(NAME MasterDnsVpnConfigTest           COMMAND test_master_dns_vpn_config)
     add_test(NAME MasterDnsVpnEngineTest           COMMAND test_master_dns_vpn_engine)
     add_test(NAME QqDnsConfigTest                  COMMAND test_qq_dns_config)
+    add_test(NAME TrustTunnelTest                  COMMAND test_trust_tunnel)
 endif()
 
 # Android tests are executed on-device via androidtestrunner in CI (see .github/workflows/tests.yml).

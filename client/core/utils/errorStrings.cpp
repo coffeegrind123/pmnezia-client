@@ -17,6 +17,9 @@ QString errorString(ErrorCode code) {
     // Distro errors
     case (ErrorCode::AmneziaServiceConnectionFailed): errorMessage = QObject::tr("Amnezia helper service error"); break;
     case (ErrorCode::OpenSslFailed): errorMessage = QObject::tr("OpenSSL failed"); break;
+    case (ErrorCode::TrustTunnelExecutableMissing): errorMessage = QObject::tr("TrustTunnel client executable is missing"); break;
+    case (ErrorCode::TrustTunnelExecutableCrashed): errorMessage = QObject::tr("TrustTunnel client exited unexpectedly"); break;
+    case (ErrorCode::TrustTunnelConnectionFailed): errorMessage = QObject::tr("TrustTunnel could not connect to the endpoint. Check the credentials and the endpoint certificate"); break;
 
     case (ErrorCode::ImportInvalidConfigError): errorMessage = QObject::tr("The config does not contain any containers and credentials for connecting to the server"); break;
     case (ErrorCode::ImportBackupFileUseRestoreInstead): errorMessage = QObject::tr("Backup files cannot be imported here. Use 'Restore from backup' instead."); break;

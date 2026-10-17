@@ -18,6 +18,7 @@
 #include "core/models/protocols/xrayProtocolConfig.h"
 #include "core/models/protocols/masterDnsVpnProtocolConfig.h"
 #include "core/models/protocols/qqDnsProtocolConfig.h"
+#include "core/models/protocols/trustTunnelProtocolConfig.h"
 
 namespace amnezia
 {
@@ -30,7 +31,8 @@ struct ProtocolConfig {
         WireGuardProtocolConfig,
         XrayProtocolConfig,
         MasterDnsVpnProtocolConfig,
-        QqDnsProtocolConfig
+        QqDnsProtocolConfig,
+        TrustTunnelProtocolConfig
     >;
     
     Variant data;

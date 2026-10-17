@@ -21,6 +21,7 @@ namespace
         Xray,
         MasterDnsVpn,
         QqDns,
+        TrustTunnel,
         Backup,
         Invalid
     };
@@ -86,6 +87,9 @@ private:
     // QQ-DNS (UDP-over-DNS) import: a JSON object with a "qqdns" transport block
     // and an embedded "awg" AmneziaWG config. Builds the canonical container.
     QJsonObject extractQqDnsConfig(const QString &data, const QString &description = "") const;
+    // TrustTunnel import, from a tt:// deep link or from either TOML shape
+    // (trusttunnel_client's [endpoint] file, the endpoint's -c export).
+    QJsonObject extractTrustTunnelConfig(const QString &data) const;
     void processAmneziaConfig(QJsonObject &config) const;
 
     SecureServersRepository* m_serversRepository;
