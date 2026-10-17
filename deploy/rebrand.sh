@@ -131,6 +131,19 @@ if [[ $CHECK_ONLY -eq 0 ]]; then
     FILES=()
     while IFS= read -r f; do FILES+=("$f"); done < <(eligible_files)
 
+    # The Android package also appears in two non-dotted spellings that the
+    # dotted rule below cannot see: JNI class paths ("org/amnezia/vpn/qt/...",
+    # passed to FindClass / RegisterNatives and used in "Lorg/...;" method
+    # signatures) and mangled JNI export names ("Java_org_amnezia_vpn_...").
+    # Both must follow the Kotlin package or the native side resolves classes
+    # and methods that no longer exist. JNI mangles '_' in a package name as
+    # "_1", which a plain substitution cannot produce, so refuse such a brand.
+    case "$BRAND_ANDROID_PACKAGE" in
+        *_*) echo "rebrand: BRAND_ANDROID_PACKAGE must not contain '_' (JNI mangling)" >&2; exit 1 ;;
+    esac
+    BRAND_ANDROID_PATH=$(printf '%s' "$BRAND_ANDROID_PACKAGE" | tr . /)
+    BRAND_ANDROID_JNI=$(printf '%s' "$BRAND_ANDROID_PACKAGE" | tr . _)
+
     # Identity tokens. Order matters only in that the longest, most specific
     # forms come first; none of these can match AmneziaWG.
     for f in "${FILES[@]}"; do
@@ -138,6 +151,9 @@ if [[ $CHECK_ONLY -eq 0 ]]; then
             -e "s/AmneziaVPN/${BRAND_APP_NAME}/g" \
             -e "s/amneziavpn/${BRAND_LOWER}/g" \
             -e "s/org\.amnezia\.vpn/${BRAND_ANDROID_PACKAGE}/g" \
+            -e "s|org/amnezia/vpn/|${BRAND_ANDROID_PATH}/|g" \
+            -e "s|${BRAND_ANDROID_PATH}/protocol/xray/libXray|org/amnezia/vpn/protocol/xray/libXray|g" \
+            -e "s/Java_org_amnezia_vpn_/Java_${BRAND_ANDROID_JNI}_/g" \
             -e "s/${BRAND_ANDROID_PACKAGE}\.protocol\.xray\.libXray/org.amnezia.vpn.protocol.xray.libXray/g" \
             -e "s/org\.amnezia\.${BRAND_APP_NAME}/${BRAND_APPLE_ID_PREFIX}.${BRAND_APP_NAME}/g" \
             -e "s/org\.amnezia\.amneziaVPN/${BRAND_APPLE_ID_PREFIX}.${BRAND_LOWER}/g" \
@@ -249,6 +265,23 @@ if grep -rn 'https://[^"'"'"' ]*https://' --include='*.cmake' --include='*.cpp' 
         --include='*.h' --include='*.qml' --include='*.yml' . 2>/dev/null \
         | grep -v '^./.git/' | head -5 >&2
     fail=1
+fi
+
+# The JNI spellings of the Android package must have followed the Kotlin
+# package (see the identity-token pass). Checked after a real rewrite only:
+# --check runs against the upstream-named tree, where they are expected.
+if [[ $CHECK_ONLY -eq 0 ]]; then
+    stale=$(grep -rn -e 'org/amnezia/vpn/' -e 'Java_org_amnezia_vpn_' \
+                --include='*.cpp' --include='*.h' --include='*.mm' --include='*.c' \
+                client service ipc 2>/dev/null \
+            | grep -v '/3rd/' | grep -v 'org/amnezia/vpn/protocol/xray/libXray' || true)
+    if [[ -n "$stale" ]]; then
+        echo "  FAIL: JNI references still name the upstream Android package:" >&2
+        printf '%s\n' "$stale" | head -10 >&2
+        fail=1
+    else
+        say "ok: JNI class paths and exports follow ${BRAND_ANDROID_PACKAGE}"
+    fi
 fi
 
 if [[ $fail -ne 0 ]]; then
