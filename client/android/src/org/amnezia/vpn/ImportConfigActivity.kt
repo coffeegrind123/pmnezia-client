@@ -73,7 +73,7 @@ class ImportConfigActivity : ComponentActivity() {
                         return
                     }
 
-                    "vpn" -> intent.data?.toString()?.let(::startMainActivity)
+                    "vpn", "tt" -> intent.data?.toString()?.let(::startMainActivity)
                 }
 
             }

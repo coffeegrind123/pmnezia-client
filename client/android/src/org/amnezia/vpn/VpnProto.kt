@@ -4,6 +4,7 @@ import org.amnezia.vpn.protocol.Protocol
 import org.amnezia.vpn.protocol.awg.Awg
 import org.amnezia.vpn.protocol.masterdnsvpn.MasterDnsVpn
 import org.amnezia.vpn.protocol.qqdns.QqDns
+import org.amnezia.vpn.protocol.trusttunnel.TrustTunnel
 import org.amnezia.vpn.protocol.wireguard.Wireguard
 import org.amnezia.vpn.protocol.xray.Xray
 
@@ -50,6 +51,14 @@ enum class VpnProto(
         QqDnsService::class.java
     ) {
         override fun createProtocol(): Protocol = QqDns.instance
+    },
+
+    TRUSTTUNNEL(
+        "TrustTunnel",
+        "org.amnezia.vpn:amneziaTrustTunnelService",
+        TrustTunnelService::class.java
+    ) {
+        override fun createProtocol(): Protocol = TrustTunnel.instance
     };
 
     private var _protocol: Protocol? = null

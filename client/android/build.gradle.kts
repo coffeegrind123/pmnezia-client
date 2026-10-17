@@ -171,6 +171,7 @@ dependencies {
     implementation(project(":xray"))
     implementation(project(":master_dns_vpn"))
     implementation(project(":qqdns"))
+    implementation(project(":trusttunnel"))
     implementation(libs.androidx.core)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.fragment)

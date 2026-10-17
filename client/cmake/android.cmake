@@ -60,6 +60,16 @@ set_property(TARGET ${PROJECT} APPEND PROPERTY QT_ANDROID_EXTRA_LIBS ${AMNEZIA_A
 find_package(amnezia-libxray REQUIRED)
 file(COPY ${AMNEZIA_LIBXRAY_PATH} DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/android/xray/libXray)
 
+# trusttunnel_client is a static Linux executable. Packaged as lib*.so it is
+# extracted to nativeLibraryDir (jniLibs.useLegacyPackaging), the one place
+# an app may exec from; the TrustTunnel protocol module runs it from there.
+if(NOT CMAKE_ANDROID_ARCH_ABI STREQUAL "x86")
+    find_package(trusttunnel-client REQUIRED)
+    set(_tt_android_lib "${CMAKE_CURRENT_BINARY_DIR}/libtrusttunnel_client.so")
+    configure_file("${TRUSTTUNNEL_CLIENT_PATH}" "${_tt_android_lib}" COPYONLY)
+    set_property(TARGET ${PROJECT} APPEND PROPERTY QT_ANDROID_EXTRA_LIBS ${_tt_android_lib})
+endif()
+
 
 set(APP_ANDROID_PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/android)
 
