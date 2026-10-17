@@ -815,6 +815,7 @@ jobs:
           - ComplexOperationsTest
           - MasterDnsVpnConfigTest
           - MasterDnsVpnEngineTest
+          - QqDnsConfigTest
 
     runs-on: ubuntu-latest  # same image as Build-Linux-Ubuntu, so the glibc the tests link against exists
 
@@ -916,6 +917,7 @@ jobs:
           - ComplexOperationsTest
           - MasterDnsVpnConfigTest
           - MasterDnsVpnEngineTest
+          - QqDnsConfigTest
 
     runs-on: windows-latest
 
