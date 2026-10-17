@@ -19,6 +19,7 @@
 #include "ui/models/protocols/xrayConfigModel.h"
 #include "ui/models/protocols/masterDnsVpnConfigModel.h"
 #include "ui/models/protocols/qqDnsConfigModel.h"
+#include "ui/models/protocols/trustTunnelConfigModel.h"
 
 #include <QRegularExpression>
 
@@ -49,6 +50,7 @@ public:
                                  XrayConfigModel* xrayConfigModel,
                                  MasterDnsVpnConfigModel* masterDnsVpnConfigModel,
                                  QqDnsConfigModel* qqDnsConfigModel,
+                                 TrustTunnelConfigModel* trustTunnelConfigModel,
                                  QObject *parent = nullptr);
 
 public slots:
@@ -136,6 +138,7 @@ private:
     XrayConfigModel* m_xrayConfigModel;
     MasterDnsVpnConfigModel* m_masterDnsVpnConfigModel;
     QqDnsConfigModel* m_qqDnsConfigModel;
+    TrustTunnelConfigModel* m_trustTunnelConfigModel;
 
     QVector<amnezia::ServerDescription> m_orderedServerDescriptions;
     

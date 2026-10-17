@@ -99,6 +99,7 @@ PageLoader::PageEnum ProtocolsModel::clientProtocolPage(Proto protocol) const
     case Proto::Awg: return PageLoader::PageEnum::PageProtocolAwgClientSettings;
     case Proto::MasterDnsVpn: return PageLoader::PageEnum::PageProtocolMasterDnsVpnSettings;
     case Proto::QqDns: return PageLoader::PageEnum::PageProtocolQqDnsSettings;
+    case Proto::TrustTunnel: return PageLoader::PageEnum::PageProtocolTrustTunnelSettings;
     // Everything else is viewed and edited as raw config.
     default: return PageLoader::PageEnum::PageProtocolRaw;
     }

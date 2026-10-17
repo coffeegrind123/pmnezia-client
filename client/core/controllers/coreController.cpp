@@ -89,6 +89,8 @@ void CoreController::initModels()
     setQmlContextProperty("MasterDnsVpnConfigModel", m_masterDnsVpnConfigModel);
     m_qqDnsConfigModel = new QqDnsConfigModel(this);
     setQmlContextProperty("QqDnsConfigModel", m_qqDnsConfigModel);
+    m_trustTunnelConfigModel = new TrustTunnelConfigModel(this);
+    setQmlContextProperty("TrustTunnelConfigModel", m_trustTunnelConfigModel);
 
 }
 
@@ -141,7 +143,7 @@ void CoreController::initControllers()
                                                      m_containersModel, m_defaultServerContainersModel,
                                                      m_protocolsModel, m_awgConfigModel, m_wireGuardConfigModel,
                                                      m_xrayConfigModel, m_masterDnsVpnConfigModel,
-                                                     m_qqDnsConfigModel, this);
+                                                     m_qqDnsConfigModel, m_trustTunnelConfigModel, this);
     setQmlContextProperty("ServersUiController", m_serversUiController);
 
     m_ipSplitTunnelingUiController = new IpSplitTunnelingUiController(m_ipSplitTunnelingController, m_ipSplitTunnelingModel, this);

@@ -70,6 +70,7 @@
         <file>Pages2/PageHome.qml</file>
         <file>Pages2/PageProtocolMasterDnsVpnSettings.qml</file>
         <file>Pages2/PageProtocolQqDnsSettings.qml</file>
+        <file>Pages2/PageProtocolTrustTunnelSettings.qml</file>
         <file>Pages2/PageProtocolRaw.qml</file>
 
 

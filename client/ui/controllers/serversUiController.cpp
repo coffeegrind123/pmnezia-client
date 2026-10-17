@@ -42,6 +42,7 @@ ServersUiController::ServersUiController(ServersController* serversController,
                                          XrayConfigModel* xrayConfigModel,
                                          MasterDnsVpnConfigModel* masterDnsVpnConfigModel,
                                          QqDnsConfigModel* qqDnsConfigModel,
+                                         TrustTunnelConfigModel* trustTunnelConfigModel,
                                          QObject *parent)
     : QObject(parent),
       m_serversController(serversController),
@@ -54,7 +55,8 @@ ServersUiController::ServersUiController(ServersController* serversController,
       m_wireGuardConfigModel(wireGuardConfigModel),
       m_xrayConfigModel(xrayConfigModel),
       m_masterDnsVpnConfigModel(masterDnsVpnConfigModel),
-      m_qqDnsConfigModel(qqDnsConfigModel)
+      m_qqDnsConfigModel(qqDnsConfigModel),
+      m_trustTunnelConfigModel(trustTunnelConfigModel)
 {
 }
 
@@ -123,6 +125,7 @@ bool ServersUiController::buildContainerConfigFromModel(int containerIndex, int 
     case Proto::Xray: containerConfig.protocolConfig = m_xrayConfigModel->getProtocolConfig(); break;
     case Proto::MasterDnsVpn: containerConfig.protocolConfig = m_masterDnsVpnConfigModel->getProtocolConfig(); break;
     case Proto::QqDns: containerConfig.protocolConfig = m_qqDnsConfigModel->getProtocolConfig(); break;
+    case Proto::TrustTunnel: containerConfig.protocolConfig = m_trustTunnelConfigModel->getProtocolConfig(); break;
     default: return false;
     }
     return true;
@@ -146,6 +149,9 @@ void ServersUiController::updateProtocolConfigModel(const QString &serverId, int
         updateIfPresent(m_masterDnsVpnConfigModel, containerConfig.getMasterDnsVpnProtocolConfig());
         break;
     case Proto::QqDns: updateIfPresent(m_qqDnsConfigModel, containerConfig.getQqDnsProtocolConfig()); break;
+    case Proto::TrustTunnel:
+        updateIfPresent(m_trustTunnelConfigModel, containerConfig.getTrustTunnelProtocolConfig());
+        break;
     default: break;
     }
 }

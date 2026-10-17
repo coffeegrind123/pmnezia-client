@@ -37,6 +37,7 @@ namespace PageLoader
 
         PageProtocolMasterDnsVpnSettings,
         PageProtocolQqDnsSettings,
+        PageProtocolTrustTunnelSettings,
         PageProtocolRaw,
 
         PageProtocolWireGuardClientSettings,

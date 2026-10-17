@@ -45,6 +45,7 @@
 #include "ui/models/protocols/xrayConfigModel.h"
 #include "ui/models/protocols/masterDnsVpnConfigModel.h"
 #include "ui/models/protocols/qqDnsConfigModel.h"
+#include "ui/models/protocols/trustTunnelConfigModel.h"
 #include "ui/models/protocolsModel.h"
 #include "ui/models/serversModel.h"
 
@@ -161,6 +162,7 @@ private:
     XrayConfigModel* m_xrayConfigModel;
     MasterDnsVpnConfigModel* m_masterDnsVpnConfigModel;
     QqDnsConfigModel* m_qqDnsConfigModel;
+    TrustTunnelConfigModel* m_trustTunnelConfigModel;
     WireGuardConfigModel* m_wireGuardConfigModel;
     AwgConfigModel* m_awgConfigModel;
 
