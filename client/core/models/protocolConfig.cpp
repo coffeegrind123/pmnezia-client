@@ -45,6 +45,8 @@ QString ProtocolConfig::port() const
             return arg.serverConfig.port;
         } else if constexpr (std::is_same_v<T, MasterDnsVpnProtocolConfig>) {
             return arg.serverConfig.port;
+        } else if constexpr (std::is_same_v<T, QqDnsProtocolConfig>) {
+            return QString::number(arg.receivePort);
         }
         return QString();
     }, data);
@@ -64,6 +66,8 @@ QString ProtocolConfig::transportProto() const
             // Always UDP (DNS envelopes); the server-side TOML doesn't carry a
             // string in the same wire slot, so we synthesize the literal here.
             return QStringLiteral("udp");
+        } else if constexpr (std::is_same_v<T, QqDnsProtocolConfig>) {
+            return QStringLiteral("udp");
         }
         return QString();
     }, data);
@@ -76,7 +80,8 @@ bool ProtocolConfig::hasClientConfig() const
         if constexpr (std::is_same_v<T, AwgProtocolConfig> ||
                       std::is_same_v<T, WireGuardProtocolConfig> ||
                       std::is_same_v<T, XrayProtocolConfig> ||
-                      std::is_same_v<T, MasterDnsVpnProtocolConfig>) {
+                      std::is_same_v<T, MasterDnsVpnProtocolConfig> ||
+                      std::is_same_v<T, QqDnsProtocolConfig>) {
             return arg.hasClientConfig();
         }
         return false;
@@ -103,6 +108,8 @@ QString ProtocolConfig::clientId() const
             if (arg.clientConfig.has_value()) {
                 return arg.clientConfig->id;
             }
+        } else if constexpr (std::is_same_v<T, QqDnsProtocolConfig>) {
+            return arg.id;
         }
         return QString();
     }, data);
@@ -128,6 +135,12 @@ QJsonObject ProtocolConfig::getClientConfigJson() const
             if (arg.hasClientConfig()) {
                 return arg.clientConfig->toJson();
             }
+        } else if constexpr (std::is_same_v<T, QqDnsProtocolConfig>) {
+            // QQ-DNS has no server/client split: the whole flat object is the
+            // engine blob QqDnsProtocol consumes (transport fields + "awg").
+            if (arg.hasClientConfig()) {
+                return arg.toJson();
+            }
         }
         return QJsonObject();
     }, data);
@@ -145,6 +158,10 @@ void ProtocolConfig::setClientConfigJson(const QJsonObject& json)
             arg.setClientConfig(XrayClientConfig::fromJson(json));
         } else if constexpr (std::is_same_v<T, MasterDnsVpnProtocolConfig>) {
             arg.setClientConfig(MasterDnsVpnClientConfig::fromJson(json));
+        } else if constexpr (std::is_same_v<T, QqDnsProtocolConfig>) {
+            const bool thirdParty = arg.isThirdPartyConfig;
+            arg = QqDnsProtocolConfig::fromJson(json);
+            arg.isThirdPartyConfig = arg.isThirdPartyConfig || thirdParty;
         }
     }, data);
 }
@@ -156,7 +173,8 @@ void ProtocolConfig::clearClientConfig()
         if constexpr (std::is_same_v<T, AwgProtocolConfig> ||
                       std::is_same_v<T, WireGuardProtocolConfig> ||
                       std::is_same_v<T, XrayProtocolConfig> ||
-                      std::is_same_v<T, MasterDnsVpnProtocolConfig>) {
+                      std::is_same_v<T, MasterDnsVpnProtocolConfig> ||
+                      std::is_same_v<T, QqDnsProtocolConfig>) {
             arg.clearClientConfig();
         }
     }, data);
@@ -183,6 +201,9 @@ QString ProtocolConfig::nativeConfig() const
             // state is structured JSON consumed by the in-process engine.
             // The "nativeConfig" concept doesn't apply.
             return QString();
+        } else if constexpr (std::is_same_v<T, QqDnsProtocolConfig>) {
+            // Same as MasterDnsVPN: structured engine JSON, no config string.
+            return QString();
         }
         return QString();
     }, data);
@@ -206,6 +227,8 @@ void ProtocolConfig::setNativeConfig(const QString &config)
             }
         } else if constexpr (std::is_same_v<T, MasterDnsVpnProtocolConfig>) {
             // No-op: see ProtocolConfig::nativeConfig() above for rationale.
+            (void)config;
+        } else if constexpr (std::is_same_v<T, QqDnsProtocolConfig>) {
             (void)config;
         }
     }, data);

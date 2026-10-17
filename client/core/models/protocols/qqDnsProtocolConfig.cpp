@@ -8,6 +8,16 @@
 namespace amnezia
 {
 
+bool QqDnsProtocolConfig::hasClientConfig() const
+{
+    return !dnsIps.isEmpty() && !sendDomains.isEmpty() && !recvDomains.isEmpty() && !awg.isEmpty();
+}
+
+void QqDnsProtocolConfig::clearClientConfig()
+{
+    awg = QJsonObject();
+}
+
 QJsonObject QqDnsProtocolConfig::toJson() const
 {
     QJsonObject o;
@@ -30,6 +40,9 @@ QJsonObject QqDnsProtocolConfig::toJson() const
     }
     if (!id.isEmpty()) {
         o[QStringLiteral("id")] = id;
+    }
+    if (isThirdPartyConfig) {
+        o[configKey::isThirdPartyConfig] = true;
     }
     return o;
 }
@@ -56,6 +69,7 @@ QqDnsProtocolConfig QqDnsProtocolConfig::fromJson(const QJsonObject &json)
     c.awg = json.value(configKey::qqAwg).toObject();
     c.additionalConfig = json.value(configKey::qqAdditionalConfig).toObject();
     c.id = json.value(QStringLiteral("id")).toString();
+    c.isThirdPartyConfig = json.value(configKey::isThirdPartyConfig).toBool(false);
     return c;
 }
 

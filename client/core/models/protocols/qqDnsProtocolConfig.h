@@ -55,6 +55,11 @@ struct QqDnsProtocolConfig
     QString id;
     bool isThirdPartyConfig = false;
 
+    // Imported configs are complete: the transport needs resolvers and both
+    // delegations, and the embedded AmneziaWG config is the client half.
+    bool hasClientConfig() const;
+    void clearClientConfig();
+
     QJsonObject toJson() const;
     static QqDnsProtocolConfig fromJson(const QJsonObject &json);
 };
