@@ -149,14 +149,14 @@ PageType {
                     }
 
                     clickedFunction: function() {
-                        encryptionMethod = selectedValue
+                        encryptionMethod = model.get(selectedIndex).value
                         encryptionMethodDropDown.menuVisible = false
                     }
 
                     Component.onCompleted: {
                         for (var i = 0; i < model.count; ++i) {
                             if (model.get(i).value === encryptionMethod) {
-                                currentIndex = i
+                                selectedIndex = i
                                 break
                             }
                         }
@@ -212,7 +212,7 @@ PageType {
                     }
 
                     clickedFunction: function() {
-                        protocolType = selectedValue
+                        protocolType = model.get(selectedIndex).value
                         protocolTypeDropDown.menuVisible = false
                     }
 
@@ -220,7 +220,7 @@ PageType {
                         var pt = protocolType !== "" ? protocolType : "SOCKS5"
                         for (var i = 0; i < model.count; ++i) {
                             if (model.get(i).value === pt) {
-                                currentIndex = i
+                                selectedIndex = i
                                 break
                             }
                         }
