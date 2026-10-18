@@ -9,6 +9,7 @@
 #include <QEventLoop>
 
 #include "../core/protocols/vpnProtocol.h"
+#include "core/utils/serialization/trustTunnel.h"
 #import "ios_controller_wrapper.h"
 #import "core/utils/swiftBridge.h"
 
@@ -300,6 +301,9 @@ bool IosController::connectVpn(amnezia::Proto proto, const QJsonObject& configur
     }
     if (proto == amnezia::Proto::Xray) {
         return setupXray();
+    }
+    if (proto == amnezia::Proto::TrustTunnel) {
+        return setupTrustTunnel();
     }
 
     return false;
@@ -599,6 +603,66 @@ bool IosController::setupXray()
     return startXray(finalConfigStr);
 }
 
+// TrustTunnel runs in the network extension through TrustTunnelClient's
+// VpnClientFramework, which reads NEPacketTunnelFlow itself and binds its own
+// sockets to the uplink. The app renders the client TOML (one renderer for
+// every platform) and the route lists; the extension only applies them.
+bool IosController::setupTrustTunnel()
+{
+    namespace tt = amnezia::serialization::trusttunnel;
+    const tt::Endpoint endpoint = tt::Endpoint::fromJson(
+            m_rawConfig[ProtocolUtils::key_proto_config_data(amnezia::Proto::TrustTunnel)].toObject());
+
+    if (const QString missing = endpoint.missingRequiredField(); !missing.isEmpty()) {
+        qCritical() << "TrustTunnel config is missing" << missing;
+        return false;
+    }
+    if (endpoint.hostname.isEmpty() || endpoint.addresses.isEmpty()) {
+        qCritical() << "TrustTunnel: subscription-only profiles are not supported by the bundled client";
+        return false;
+    }
+
+    // splitTunnelType: 0 everything, 1 only the listed sites, 2 all but them.
+    // Sites are IPs or CIDRs; a bare address becomes a host route.
+    const int splitType = m_rawConfig[configKey::splitTunnelType].toInt();
+    QStringList sites;
+    if (splitType != 0) {
+        const QJsonArray rawSites = m_rawConfig[configKey::splitTunnelSites].toArray();
+        for (const QJsonValue &v : rawSites) {
+            const QString site = v.toString().remove(' ');
+            if (site.isEmpty()) {
+                continue;
+            }
+            sites.append(site.contains('/') ? site : site + (site.contains(':') ? "/128" : "/32"));
+        }
+    }
+
+    tt::TunListener tun;
+    if (splitType == 1 && !sites.isEmpty()) {
+        tun.includedRoutes = sites;
+    } else {
+        tun.includedRoutes = { QStringLiteral("0.0.0.0/0") };
+        if (endpoint.hasIpv6) {
+            tun.includedRoutes.append(QStringLiteral("::/0"));
+        }
+        if (splitType == 2) {
+            tun.excludedRoutes = sites;
+        }
+    }
+
+    QJsonObject finalConfig;
+    finalConfig.insert(configKey::dns1, m_rawConfig[configKey::dns1].toString());
+    finalConfig.insert(configKey::dns2, m_rawConfig[configKey::dns2].toString());
+    finalConfig.insert(QStringLiteral("mtu"), tun.mtu);
+    finalConfig.insert(QStringLiteral("includedRoutes"), QJsonArray::fromStringList(tun.includedRoutes));
+    finalConfig.insert(QStringLiteral("excludedRoutes"), QJsonArray::fromStringList(tun.excludedRoutes));
+    finalConfig.insert(QStringLiteral("dnsUpstreams"), QJsonArray::fromStringList(endpoint.dnsUpstreams));
+    finalConfig.insert(QStringLiteral("addresses"), QJsonArray::fromStringList(endpoint.addresses));
+    finalConfig.insert(configKey::config, tt::buildClientToml(endpoint, tun));
+
+    return startTrustTunnel(QString::fromUtf8(QJsonDocument(finalConfig).toJson(QJsonDocument::Compact)));
+}
+
 bool IosController::setupAwg()
 {
     QJsonObject config = m_rawConfig[ProtocolUtils::key_proto_config_data(amnezia::Proto::Awg)].toObject();
@@ -661,7 +725,9 @@ bool IosController::startWireGuard(const QString &config)
 
     m_currentTunnel.protocolConfiguration = tunnelProtocol;
 
+    // startTunnel() is asynchronous; failures arrive as NEVPNStatus changes.
     startTunnel();
+    return true;
 }
 
 bool IosController::startXray(const QString &config)
@@ -678,6 +744,24 @@ bool IosController::startXray(const QString &config)
     m_currentTunnel.protocolConfiguration = tunnelProtocol;
 
     startTunnel();
+    return true;
+}
+
+bool IosController::startTrustTunnel(const QString &config)
+{
+    qDebug() << "IosController::startTrustTunnel";
+
+    NETunnelProviderProtocol *tunnelProtocol = [[NETunnelProviderProtocol alloc] init];
+    tunnelProtocol.providerBundleIdentifier = [NSString stringWithUTF8String:VPN_NE_BUNDLEID];
+    QByteArray configUtf8 = config.toUtf8();
+    NSData *ttConfigData = [NSData dataWithBytes:configUtf8.constData() length:configUtf8.size()];
+    tunnelProtocol.providerConfiguration = @{@"trusttunnel": ttConfigData};
+    tunnelProtocol.serverAddress = m_serverAddress;
+
+    m_currentTunnel.protocolConfiguration = tunnelProtocol;
+
+    startTunnel();
+    return true;
 }
 
 void IosController::startTunnel()

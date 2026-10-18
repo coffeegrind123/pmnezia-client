@@ -1,6 +1,7 @@
 #include "wireguard-go-version.h"
 #include "3rd/amneziawg-apple/Sources/WireGuardKitGo/wireguard.h"
 #include "3rd/amneziawg-apple/Sources/WireGuardKitC/WireGuardKitC.h"
+#import "platforms/ios/TrustTunnelClientFactory.h"
 
 #include <stdbool.h>
 #include <stdint.h>

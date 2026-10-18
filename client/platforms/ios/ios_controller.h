@@ -81,9 +81,11 @@ private:
     bool setupWireGuard();
     bool setupAwg();
     bool setupXray();
+    bool setupTrustTunnel();
 
     bool startWireGuard(const QString &jsonConfig);
     bool startXray(const QString &jsonConfig);
+    bool startTrustTunnel(const QString &jsonConfig);
 
     void startTunnel();
     void emitConnectionStateIfChanged(Vpn::ConnectionState state);

@@ -3,9 +3,10 @@ import NetworkExtension
 import Network
 import os
 import Darwin
+import VpnClientFramework
 
 enum TunnelProtoType: String {
-  case wireguard, xray
+  case wireguard, xray, trusttunnel
 
 }
 
@@ -55,6 +56,12 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
     
     var activeIfaceIdx: UInt32 = 0
 
+    // TrustTunnel (PacketTunnelProvider+TrustTunnel.swift). Touched only on
+    // trustTunnelQueue.
+    let trustTunnelQueue = DispatchQueue(label: Constants.processQueueName + ".trusttunnel", qos: .userInitiated)
+    var trustTunnelClient: VpnClient?
+    var trustTunnelStartHandled = false
+
     override init() {
         super.init()
         pathMonitor.pathUpdateHandler = { [weak self] path in
@@ -72,8 +79,9 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
 
             guard hasMeaningfulChange, let proto = self.protoType else { return }
 
-            // WireGuard/AWG manages network changes internally in its own adapter.
-            if proto == .wireguard {
+            // WireGuard/AWG and TrustTunnel follow network changes internally
+            // (WireGuardAdapter, and VpnClient's AutoNetworkMonitor).
+            if proto == .wireguard || proto == .trusttunnel {
                 return
             }
 
@@ -199,6 +207,8 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
                 protoType = .wireguard
             } else if (providerConfiguration?[Constants.xrayConfigKey] as? Data) != nil {
                 protoType = .xray
+            } else if (providerConfiguration?[Constants.trustTunnelConfigKey] as? Data) != nil {
+                protoType = .trusttunnel
             }
         }
 
@@ -220,7 +230,8 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
                            completionHandler: completionHandler)
         case .xray:
             startXray(completionHandler: completionHandler)
-
+        case .trusttunnel:
+            startTrustTunnel(completionHandler: completionHandler)
         }
     }
 
@@ -241,6 +252,9 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
         case .xray:
             xrayLog(.info, message: "Stopping tunnel: reason: \(reason.amneziaDescription)")
             stopXray(completionHandler: completionHandler)
+        case .trusttunnel:
+            neLog(.info, title: "TrustTunnel", message: "Stopping tunnel: reason: \(reason.amneziaDescription)")
+            stopTrustTunnel(completionHandler: completionHandler)
         }
     }
   
@@ -255,6 +269,21 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
             handleWireguardStatusMessage(messageData, completionHandler: completionHandler)
         case .xray:
             break;
+        case .trusttunnel:
+            completionHandler?(nil)
+        }
+    }
+
+    override func sleep(completionHandler: @escaping () -> Void) {
+        if protoType == .trusttunnel {
+            trustTunnelSleep()
+        }
+        completionHandler()
+    }
+
+    override func wake() {
+        if protoType == .trusttunnel {
+            trustTunnelWake()
         }
     }
   

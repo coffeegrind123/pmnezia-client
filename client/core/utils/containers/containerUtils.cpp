@@ -166,8 +166,7 @@ QMap<DockerContainer, QString> ContainerUtils::containerDetailedDescriptions()
                       "* Looks like HTTPS browsing to DPI; optional anti-DPI handshake shaping\n"
                       "* Choice of HTTP/2 over TCP or HTTP/3 over UDP per profile\n"
                       "* Works with CA-signed or self-signed endpoint certificates (pinned in the link)\n"
-                      "* Imports tt:// deep links and TrustTunnel client TOML files\n"
-                      "* Not available on iOS or with the macOS Network Extension build") },
+                      "* Imports tt:// deep links and TrustTunnel client TOML files") },
     };
 }
 
@@ -203,13 +202,11 @@ QString ContainerUtils::containerTypeToProtocolString(DockerContainer c)
 bool ContainerUtils::isSupportedByCurrentPlatform(DockerContainer c)
 {
 #if defined(Q_OS_IOS) || defined(MACOS_NE)
-    // TrustTunnel needs upstream's Apple framework inside the packet tunnel
-    // extension, which this fork does not build. The MasterDnsVPN and QQ-DNS
-    // engines are desktop/Android C++ with no extension implementation, so
-    // offering them here only produced a connect that
-    // IosController::connectVpn refused.
-    return c != DockerContainer::TrustTunnel && c != DockerContainer::MasterDnsVpn
-            && c != DockerContainer::QqDns;
+    // The packet tunnel extension runs WireGuard/AWG, Xray and TrustTunnel
+    // (PacketTunnelProvider.swift). The MasterDnsVPN and QQ-DNS engines are
+    // desktop/Android C++ with no extension implementation, so offering them
+    // here only produced a connect that IosController::connectVpn refused.
+    return c != DockerContainer::MasterDnsVpn && c != DockerContainer::QqDns;
 #elif defined(Q_OS_MAC)
     // The mdnsvpn binary has no macOS build yet.
     return c != DockerContainer::MasterDnsVpn;

@@ -126,3 +126,6 @@ set_property(TARGET heiher::hev-socks5-tunnel APPEND PROPERTY IMPORTED_CONFIGURA
 set_property(TARGET heiher::hev-socks5-tunnel APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
 set_property(TARGET heiher::hev-socks5-tunnel APPEND PROPERTY IMPORTED_CONFIGURATIONS RELWITHDEBINFO)
 target_link_libraries(${CLIENT_IOS_NE_TARGET_NAME} PRIVATE heiher::hev-socks5-tunnel)
+
+include(${CLIENT_ROOT_DIR}/cmake/trusttunnel-apple.cmake)
+amnezia_add_trusttunnel_apple(${CLIENT_IOS_NE_TARGET_NAME})
