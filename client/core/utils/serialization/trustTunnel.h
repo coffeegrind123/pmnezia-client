@@ -78,6 +78,20 @@ namespace amnezia::serialization::trusttunnel
     // listener, kill switch off (the app enforces its own).
     QString buildClientToml(const Endpoint &endpoint, const SocksListener &socks);
 
+    // [listener.tun] for TrustTunnelClient's Apple VpnClientFramework, which
+    // reads packets from NEPacketTunnelFlow itself. The routes only tell the
+    // core what the tunnel carries; the network extension installs the real
+    // ones in NEPacketTunnelNetworkSettings.
+    struct TunListener
+    {
+        int mtu = 1350; // upstream's DEFAULT_MTU (trusttunnel/src/config.cpp)
+        QStringList includedRoutes;
+        QStringList excludedRoutes;
+    };
+
+    // Same configuration with a TUN listener instead of SOCKS5.
+    QString buildClientToml(const Endpoint &endpoint, const TunListener &tun);
+
     // A TOML basic string literal, quotes included.
     QString tomlString(const QString &value);
 

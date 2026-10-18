@@ -273,6 +273,32 @@ private slots:
         QCOMPARE(back->upstreamProtocol, e.upstreamProtocol);
     }
 
+    void clientTomlWithTunListener()
+    {
+        auto e = tt::decodeDeepLink(vectorA);
+        QVERIFY(e.has_value());
+        tt::TunListener tun;
+        tun.mtu = 1400;
+        tun.includedRoutes = { QStringLiteral("0.0.0.0/0"), QStringLiteral("::/0") };
+        tun.excludedRoutes = { QStringLiteral("10.0.0.0/8") };
+
+        const QString toml = tt::buildClientToml(*e, tun);
+        const auto tables = tt::toml::parse(toml);
+        QVERIFY(tables.has_value());
+        QVERIFY(!tables->contains(QStringLiteral("listener.socks")));
+        const QJsonObject t = tables->value(QStringLiteral("listener.tun"));
+        QCOMPARE(t.value(QStringLiteral("mtu_size")).toInt(), 1400);
+        QCOMPARE(t.value(QStringLiteral("included_routes")).toArray().size(), 2);
+        QCOMPARE(t.value(QStringLiteral("excluded_routes")).toArray().first().toString(), QStringLiteral("10.0.0.0/8"));
+        QCOMPARE(t.value(QStringLiteral("change_system_dns")).toBool(true), false);
+
+        // The endpoint half is identical to the SOCKS form.
+        const auto back = tt::parseToml(toml);
+        QVERIFY(back.has_value());
+        QCOMPARE(back->hostname, e->hostname);
+        QCOMPARE(back->addresses, e->addresses);
+    }
+
     // ---- model ----
 
     void protocolConfigAnswersEveryVisitor()

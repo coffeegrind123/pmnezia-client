@@ -528,7 +528,11 @@ QString tomlBool(bool b)
 
 } // namespace
 
-QString buildClientToml(const Endpoint &e, const SocksListener &socks)
+namespace
+{
+
+// Everything except the [listener.*] table.
+QString clientTomlBody(const Endpoint &e)
 {
     QString t;
     t += QStringLiteral("loglevel = \"info\"\n");
@@ -551,12 +555,32 @@ QString buildClientToml(const Endpoint &e, const SocksListener &socks)
     t += QStringLiteral("upstream_protocol = %1\n").arg(tomlString(e.upstreamProtocol == http3 ? http3 : http2));
     t += QStringLiteral("anti_dpi = %1\n").arg(tomlBool(e.antiDpi));
     t += QStringLiteral("dns_upstreams = %1\n").arg(tomlArray(e.dnsUpstreams));
+    return t;
+}
+
+} // namespace
+
+QString buildClientToml(const Endpoint &e, const SocksListener &socks)
+{
+    QString t = clientTomlBody(e);
     t += QStringLiteral("\n[listener.socks]\n");
     t += QStringLiteral("address = %1\n").arg(tomlString(socks.address));
     if (!socks.username.isEmpty()) {
         t += QStringLiteral("username = %1\n").arg(tomlString(socks.username));
         t += QStringLiteral("password = %1\n").arg(tomlString(socks.password));
     }
+    return t;
+}
+
+QString buildClientToml(const Endpoint &e, const TunListener &tun)
+{
+    QString t = clientTomlBody(e);
+    t += QStringLiteral("\n[listener.tun]\n");
+    t += QStringLiteral("mtu_size = %1\n").arg(tun.mtu);
+    t += QStringLiteral("included_routes = %1\n").arg(tomlArray(tun.includedRoutes));
+    t += QStringLiteral("excluded_routes = %1\n").arg(tomlArray(tun.excludedRoutes));
+    // The extension owns DNS settings; the core must not try to change them.
+    t += QStringLiteral("change_system_dns = false\n");
     return t;
 }
 
