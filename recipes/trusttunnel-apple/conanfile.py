@@ -1,7 +1,7 @@
 from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration
 from conan.internal.model.pkg_type import PackageType
-from conan.tools.files import get, copy
+from conan.tools.files import download, copy
 from conan.tools.layout import basic_layout
 
 import os
@@ -47,15 +47,29 @@ class TrustTunnelApple(ConanFile):
         pass
 
     def build(self):
-        get(self,
-            f"{self._release}/trusttunnel-apple-v{self.version}/VpnClientFramework-{self.version}.xcframework.zip",
-            sha256=self._sha256[self.version], destination=self.build_folder, strip_root=True)
+        archive = os.path.join(self.build_folder, "framework.zip")
+        download(self,
+                 f"{self._release}/trusttunnel-apple-v{self.version}/VpnClientFramework-{self.version}.xcframework.zip",
+                 archive, sha256=self._sha256[self.version])
+        # Not conan's get(): Python's zipfile writes symlinks out as small text
+        # files, and the macOS slice is a versioned framework whose Headers,
+        # Modules and binary are symlinks into Versions/A. ditto restores them.
+        self.run(f'ditto -x -k "{archive}" "{self.build_folder}"')
+        os.remove(archive)
+
+    @property
+    def _root(self):
+        return os.path.join(self.build_folder, f"VpnClientFramework-{self.version}")
 
     def package(self):
-        shutil.copytree(src=os.path.join(self.build_folder, "VpnClientFramework.xcframework"),
+        shutil.copytree(src=os.path.join(self._root, "VpnClientFramework.xcframework"),
                         dst=os.path.join(self.package_folder, "VpnClientFramework.xcframework"),
                         symlinks=True)
-        copy(self, "LICENSE", src=self.build_folder, dst=os.path.join(self.package_folder, "licenses"))
+        headers = os.path.join(self.package_folder, "VpnClientFramework.xcframework", "macos-arm64_x86_64",
+                               "VpnClientFramework.framework", "Headers")
+        if not os.path.islink(headers):
+            raise RuntimeError(f"{headers} is not a symlink; the framework was unpacked without its symlinks")
+        copy(self, "LICENSE", src=self._root, dst=os.path.join(self.package_folder, "licenses"))
 
     def package_info(self):
         xcframework = os.path.join(self.package_folder, "VpnClientFramework.xcframework")
