@@ -32,7 +32,7 @@ class AmneziaVPN(ConanFile):
 
         if has_ne:
             self.requires("awg-apple/3.1.4")
-            self.requires("hev-socks5-tunnel/2.15.0", options={"as_framework": True})
+            self.requires("hev-socks5-tunnel/2.18.0", options={"as_framework": True})
             self.requires("trusttunnel-apple/1.1.11")
 
         if os == "Android":
