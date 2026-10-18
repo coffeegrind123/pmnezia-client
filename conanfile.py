@@ -51,5 +51,7 @@ class AmneziaVPN(ConanFile):
         # ZLIB-raw-deflate (4). zlib is already a hard dep above; zstd and
         # lz4 are added here so the codec path mirrors upstream's
         # internal/compression/types.go feature surface.
-        self.requires("zstd/1.5.7")
+        # Library only: the zstd CLI programs are useless here, and on iOS
+        # the Xcode generator rejects them as targets without a bundle id.
+        self.requires("zstd/1.5.7", options={"build_programs": False})
         self.requires("lz4/1.10.0")
