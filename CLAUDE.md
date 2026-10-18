@@ -62,7 +62,10 @@ with `gh api repos/coffeegrind123/pmnezia-client/actions/jobs/<job>/logs`.
 ## Upstream upgrade protocol
 
 Run when asked to bring the fork up to date. Previous passes are the merge commits
-`ed0b1fa9a`, `316fd266a`, `8722c6d20`; their messages are the model.
+`ed0b1fa9a`, `316fd266a`, `8722c6d20`, `f3e0b01b3`; their messages are the model.
+`f3e0b01b3` is the model for a design-system-sized merge: take upstream's QML and
+re-apply the fork's removals file by file, then check every qrc entry, PageEnum,
+and `Controller.`/`Model.` member QML uses against the C++ before pushing.
 
 ### 1. Inventory (read-only)
 
