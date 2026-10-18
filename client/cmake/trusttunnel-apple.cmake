@@ -33,10 +33,31 @@ function(amnezia_add_trusttunnel_apple target)
     endif()
     set_target_properties(${target} PROPERTIES XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "${_tt_rpath}")
 
+    # The compiler needs the slice for the SDK being built: linking the
+    # xcframework does not reach Swift's module scan or the bridging-header
+    # dependency scan, which run before Xcode processes the xcframework.
+    set_target_properties(${target} PROPERTIES
+        "XCODE_ATTRIBUTE_FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]"
+            "$(inherited) ${TRUSTTUNNEL_APPLE_XCFRAMEWORK}/ios-arm64"
+        "XCODE_ATTRIBUTE_FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]"
+            "$(inherited) ${TRUSTTUNNEL_APPLE_XCFRAMEWORK}/ios-arm64_x86_64-simulator"
+        "XCODE_ATTRIBUTE_FRAMEWORK_SEARCH_PATHS[sdk=macosx*]"
+            "$(inherited) ${TRUSTTUNNEL_APPLE_XCFRAMEWORK}/macos-arm64_x86_64"
+    )
+
+    # TrustTunnelShim is a Clang module of its own (see its module.modulemap).
+    set(_tt_shim ${CLIENT_ROOT_DIR}/platforms/ios/TrustTunnelShim)
+    get_target_property(_swift_inc ${target} XCODE_ATTRIBUTE_SWIFT_INCLUDE_PATHS)
+    if(NOT _swift_inc)
+        set(_swift_inc "$(inherited)")
+    endif()
+    set_target_properties(${target} PROPERTIES XCODE_ATTRIBUTE_SWIFT_INCLUDE_PATHS "${_swift_inc} ${_tt_shim}")
+    target_include_directories(${target} PRIVATE ${_tt_shim})
+
     target_sources(${target} PRIVATE
         ${CLIENT_ROOT_DIR}/platforms/ios/PacketTunnelProvider+TrustTunnel.swift
         ${CLIENT_ROOT_DIR}/platforms/ios/TrustTunnelConfig.swift
-        ${CLIENT_ROOT_DIR}/platforms/ios/TrustTunnelClientFactory.h
-        ${CLIENT_ROOT_DIR}/platforms/ios/TrustTunnelClientFactory.m
+        ${_tt_shim}/TrustTunnelClientFactory.h
+        ${_tt_shim}/TrustTunnelClientFactory.m
     )
 endfunction()

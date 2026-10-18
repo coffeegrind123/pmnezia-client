@@ -38,7 +38,7 @@ with `gh api repos/coffeegrind123/pmnezia-client/actions/jobs/<job>/logs`.
   `client/core/protocols/trustTunnelProtocol.*`, `client/android/trusttunnel/`,
   `recipes/trusttunnel-client/`, `service/server/trust_tunnel_service.*`; on Apple
   `client/platforms/ios/PacketTunnelProvider+TrustTunnel.swift`,
-  `TrustTunnelConfig.swift`, `TrustTunnelClientFactory.{h,m}`,
+  `TrustTunnelConfig.swift`, `TrustTunnelShim/` (keep it out of the bridging header),
   `IosController::setupTrustTunnel()`, `client/cmake/trusttunnel-apple.cmake`,
   `recipes/trusttunnel-apple/` and `.github/workflows/trusttunnel-apple.yml`), the xhttp
   transport, zxing-cpp instead of ML Kit, the non-matrix Android job and

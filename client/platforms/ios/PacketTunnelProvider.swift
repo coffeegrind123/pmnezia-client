@@ -3,7 +3,6 @@ import NetworkExtension
 import Network
 import os
 import Darwin
-import VpnClientFramework
 
 enum TunnelProtoType: String {
   case wireguard, xray, trusttunnel
@@ -57,9 +56,10 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
     var activeIfaceIdx: UInt32 = 0
 
     // TrustTunnel (PacketTunnelProvider+TrustTunnel.swift). Touched only on
-    // trustTunnelQueue.
+    // trustTunnelQueue. Typed AnyObject so this file need not import
+    // VpnClientFramework (see TrustTunnelShim/module.modulemap).
     let trustTunnelQueue = DispatchQueue(label: Constants.processQueueName + ".trusttunnel", qos: .userInitiated)
-    var trustTunnelClient: VpnClient?
+    var trustTunnelClient: AnyObject?
     var trustTunnelStartHandled = false
 
     override init() {

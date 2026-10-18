@@ -1,0 +1,9 @@
+// Imported only by PacketTunnelProvider+TrustTunnel.swift. Kept out of the
+// bridging header on purpose: VpnClient.h imports the Objective-C
+// NetworkExtension headers, whose NWEndpoint/NWPath then become visible in
+// every Swift file of the extension and collide with Network's (WireGuardKit's
+// Endpoint.swift stopped compiling).
+module TrustTunnelShim {
+    header "TrustTunnelClientFactory.h"
+    export *
+}

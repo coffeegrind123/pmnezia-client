@@ -1,6 +1,7 @@
 import Foundation
 import Network
 import NetworkExtension
+import TrustTunnelShim
 import VpnClientFramework
 
 enum TrustTunnelErrors: Error {
@@ -92,14 +93,18 @@ extension PacketTunnelProvider {
 
     func trustTunnelSleep() {
         trustTunnelQueue.async {
-            self.trustTunnelClient?.notify_sleep()
+            self.vpnClient?.notify_sleep()
         }
     }
 
     func trustTunnelWake() {
         trustTunnelQueue.async {
-            self.trustTunnelClient?.notify_wake()
+            self.vpnClient?.notify_wake()
         }
+    }
+
+    private var vpnClient: VpnClient? {
+        trustTunnelClient as? VpnClient
     }
 
     // Runs on trustTunnelQueue.
@@ -165,7 +170,7 @@ extension PacketTunnelProvider {
 
     // Runs on trustTunnelQueue.
     private func stopTrustTunnelClient() {
-        if let client = trustTunnelClient {
+        if let client = vpnClient {
             _ = client.stop()
             trustTunnelClient = nil
         }
