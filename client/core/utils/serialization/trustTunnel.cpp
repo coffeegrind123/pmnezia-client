@@ -795,7 +795,8 @@ private:
             out = false;
             return true;
         }
-        static const QRegularExpression intRe(QStringLiteral("^[+-]?[0-9](?:_?[0-9])*"));
+        // Anchored by AnchorAtOffsetMatchOption; a "^" would only match at 0.
+        static const QRegularExpression intRe(QStringLiteral("[+-]?[0-9](?:_?[0-9])*"));
         const auto m = intRe.match(m_s, m_pos, QRegularExpression::NormalMatch,
                                    QRegularExpression::AnchorAtOffsetMatchOption);
         if (m.hasMatch()) {
