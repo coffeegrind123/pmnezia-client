@@ -26,7 +26,7 @@ class AmneziaVPN(ConanFile):
                 self.requires("awg-go/3.1.20260828")
 
             self.requires("amnezia-xray-bindings/1.4.0")
-            self.requires("tun2socks/2.6.0")
+            self.requires("tun2socks/2.7.0")
             self.requires("v2ray-rules-dat/202603162227")
             self.requires("trusttunnel-client/1.1.11")
 
