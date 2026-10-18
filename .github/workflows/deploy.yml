@@ -2,9 +2,10 @@ name: 'Build and Release'
 
 on:
   # Build + ship a rolling 'dev-latest' release on every push to the
-  # mainline branch (mirrors coffeeblack-vpn). Apple jobs stay off on push
-  # (their `if: inputs.enable_apple_builds` is falsy without inputs); use
-  # the manual workflow_dispatch below to build them with signing secrets.
+  # mainline branch (mirrors coffeeblack-vpn). The Apple jobs run on every
+  # push too: signed when the signing secrets exist, otherwise with code
+  # signing disabled (deploy/build.sh --no-sign) so a compile or link break
+  # on iOS / macOS shows up on the commit that caused it.
   push:
     branches: [dev, main]
   workflow_dispatch:
@@ -24,11 +25,6 @@ on:
         required: true
         type: boolean
         default: true
-      enable_apple_builds:
-        description: 'Also build iOS/macOS/macOS-NE (requires Apple signing secrets)'
-        required: true
-        type: boolean
-        default: false
 
 permissions:
   contents: write
@@ -219,11 +215,11 @@ jobs:
 
   Build-iOS:
     runs-on: macos-latest
-    if: inputs.enable_apple_builds
 
     env:
       QT_VERSION: 6.10.1
       KEYCHAIN_PASSWORD: ""
+      SIGNING: ${{ secrets.IOS_SIGNING_CERT_BASE64 != '' }}
 
 
     steps:
@@ -240,11 +236,13 @@ jobs:
         grep -E '^[A-Z_]+=' deploy/brand.env >> "$GITHUB_ENV"
         deploy/rebrand.sh
     - uses: ./.github/actions/apple-setup-keychain
+      if: env.SIGNING == 'true'
       id: setup-keychain
       with:
         keychain-password: ${{ env.KEYCHAIN_PASSWORD }}
 
     - name: 'Install signing certificate'
+      if: env.SIGNING == 'true'
       uses: ./.github/actions/apple-install-cert
       with:
         keychain-path: ${{ steps.setup-keychain.outputs.keychain-path }}
@@ -253,11 +251,13 @@ jobs:
         cert-password: ${{ secrets.IOS_SIGNING_CERT_PASSWORD }}
 
     - name: 'Install app provisioning profile'
+      if: env.SIGNING == 'true'
       uses: ./.github/actions/apple-setup-provisioning-profile
       with:
         provisioning_profile_base64: ${{ secrets.IOS_APP_PROVISIONING_PROFILE }}
 
     - name: 'Install NE provisioning profile'
+      if: env.SIGNING == 'true'
       uses: ./.github/actions/apple-setup-provisioning-profile
       with:
         provisioning_profile_base64: ${{ secrets.IOS_NE_PROVISIONING_PROFILE }}
@@ -305,8 +305,14 @@ jobs:
         APPSTORE_CONNECT_KEY_ID: ${{ secrets.APPSTORE_CONNECT_KEY_ID }}
         APPSTORE_CONNECT_ISSUER_ID: ${{ secrets.APPSTORE_CONNECT_ISSUER_ID }}
         APPSTORE_CONNECT_PRIVATE_KEY: ${{ secrets.APPSTORE_CONNECT_PRIVATE_KEY }}
+      # bash + pipefail: without them a failed build.sh was masked by the
+      # sed filters' exit status.
+      shell: bash
       run: |
-        sh deploy/build.sh -t ios | \
+        set -o pipefail
+        sign=()
+        [ "$SIGNING" = "true" ] || sign=(--no-sign)
+        bash deploy/build.sh -t ios "${sign[@]}" | \
           sed -e '/-Xcc -DPROD_AGW_PUBLIC_KEY/,/-Xcc/ { /-Xcc/!d; }' -e '/-Xcc -DPROD_AGW_PUBLIC_KEY/d' | \
           sed -e '/-Xcc -DDEV_AGW_PUBLIC_KEY/,/-Xcc/ { /-Xcc/!d; }' -e '/-Xcc -DDEV_AGW_PUBLIC_KEY/d' | \
           sed -e '/-DPROD_AGW_PUBLIC_KEY/,/-D/ { /-D/!d; }' -e '/-DPROD_AGW_PUBLIC_KEY/d' | \
@@ -316,11 +322,11 @@ jobs:
 
   Build-MacOS:
     runs-on: macos-latest
-    if: inputs.enable_apple_builds
 
     env:
       QT_VERSION: 6.10.1
       KEYCHAIN_PASSWORD: ""
+      SIGNING: ${{ secrets.MAC_APP_CERT_CERT != '' }}
 
 
     steps:
@@ -337,11 +343,15 @@ jobs:
         grep -E '^[A-Z_]+=' deploy/brand.env >> "$GITHUB_ENV"
         deploy/rebrand.sh
     - uses: ./.github/actions/apple-setup-keychain
+      if: env.SIGNING == 'true'
       id: setup-keychain
       with:
         keychain-password: ${{ env.KEYCHAIN_PASSWORD }}
 
+    # Without these, cmake/sign_binaries.cmake and sign_packages.cmake skip
+    # signing and notarization (their identities are empty).
     - uses: ./.github/actions/apple-install-cert
+      if: env.SIGNING == 'true'
       with:
         keychain-path: ${{ steps.setup-keychain.outputs.keychain-path }}
         keychain-password: ${{ env.KEYCHAIN_PASSWORD }}
@@ -349,6 +359,7 @@ jobs:
         cert-password: ${{ secrets.MAC_APP_CERT_PW }}
 
     - uses: ./.github/actions/apple-install-cert
+      if: env.SIGNING == 'true'
       with:
         keychain-path: ${{ steps.setup-keychain.outputs.keychain-path }}
         keychain-password: ${{ env.KEYCHAIN_PASSWORD }}
@@ -413,12 +424,12 @@ jobs:
 
   Build-MacOS-NE:
     runs-on: macos-latest
-    if: inputs.enable_apple_builds
 
     env:
       QT_VERSION: 6.10.1
 
       MAC_TEAM_ID: ${{ secrets.MAC_TEAM_ID }}
+      SIGNING: ${{ secrets.MAC_NE_PROVISIONING_PROFILE != '' }}
 
       MAC_APP_CERT_CERT: ${{ secrets.MAC_APP_CERT_CERT }}
       MAC_SIGNER_ID: ${{ secrets.MAC_SIGNER_ID }}
@@ -435,10 +446,12 @@ jobs:
         fetch-depth: 10
 
     - uses: ./.github/actions/apple-setup-provisioning-profile
+      if: env.SIGNING == 'true'
       with:
         provisioning_profile_base64: ${{ secrets.MAC_APP_PROVISIONING_PROFILE }}
 
     - uses: ./.github/actions/apple-setup-provisioning-profile
+      if: env.SIGNING == 'true'
       with:
         provisioning_profile_base64: ${{ secrets.MAC_NE_PROVISIONING_PROFILE }}
 
@@ -485,10 +498,17 @@ jobs:
     - name: 'Install conan'
       run: pip install "conan==2.26.2"
 
+    # deploy/build_macos_ne.sh was removed in 009ca981d; build.sh owns the
+    # macos-ne target.
     - name: 'Build project'
+      shell: bash
+      env:
+        QT_INSTALL_DIR: ${{ runner.temp }}
       run: |
-        export QT_BIN_DIR="${{ runner.temp }}/Qt/${{ env.QT_VERSION }}/macos/bin"
-        bash deploy/build_macos_ne.sh
+        set -o pipefail
+        sign=()
+        [ "$SIGNING" = "true" ] || sign=(--no-sign)
+        bash deploy/build.sh -t macos-ne "${sign[@]}"
 
     - name: 'Upload unpacked artifact'
       uses: actions/upload-artifact@v7

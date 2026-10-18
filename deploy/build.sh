@@ -32,6 +32,7 @@ while [[ $# -gt 0 ]]; do
         --installer)        installers+=("$2");      shift 2 ;;
         --abi)              abis+=("$2");            shift 2 ;;
         --sign)             : ${SIGN:=true};         shift   ;;
+        --no-sign)          : ${NO_SIGN:=true};      shift   ;;
         --aab)              : ${BUILD_AAB=true};     shift   ;;
         --apk)              : ${BUILD_APK=true};     shift   ;;
         --help|-h|?)
@@ -45,6 +46,8 @@ while [[ $# -gt 0 ]]; do
             echo "  --installer <name|all>    - specify an installer(s) to build. allowed to be used multiple times"
             echo "  --abi                     - specify Android ABIs for target to build for. all by default"
             echo "  --sign                    - whether to sign the resulting files. only appicable to Android"
+            echo "  --no-sign                 - Apple (ios, macos-ne): build with code signing disabled, to verify"
+            echo "                              that everything compiles and links without signing credentials"
             echo "  --aab                     - whether to build AAB. only applicable to Android"
             echo "  --apk                     - whether to build APK. only applicable to Android"
             exit 0
@@ -110,13 +113,13 @@ case "$TARGET" in
         ;;
     macos-ne)
         MACOS_NE=TRUE
-        DEPLOY=1
+        [[ -z "$NO_SIGN" ]] && DEPLOY=1
         no_installers=1
         : ${CMAKE_GENERATOR:="Xcode"}
         : ${CMAKE_PREFIX_PATH:="$QT_ROOT_PATH"/macos}
         ;;
     ios)
-        DEPLOY=1
+        [[ -z "$NO_SIGN" ]] && DEPLOY=1
         no_installers=1
         : ${CMAKE_GENERATOR:="Xcode"}
         : ${CMAKE_OSX_SYSROOT=iphoneos}
@@ -213,8 +216,21 @@ if [[ -n "$FORCE" ]]; then
     run_traced rm -rf "$BUILD_PATH"
 fi
 
+# Unsigned Apple verification build. DEPLOY (manual signing with provisioning
+# profiles) is left off above; these settings make Xcode skip signing
+# entirely, overriding the targets' own CODE_SIGN_* and DEVELOPMENT_TEAM. The
+# result is not installable; it proves the targets compile and link.
+build_args=()
+if [[ -n "$NO_SIGN" && ( "$TARGET" == "ios" || "$TARGET" == "macos-ne" ) ]]; then
+    nosign=(CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY= CODE_SIGN_ENTITLEMENTS= DEVELOPMENT_TEAM= PROVISIONING_PROFILE_SPECIFIER=)
+    for setting in "${nosign[@]}"; do
+        args+=("-DCMAKE_XCODE_ATTRIBUTE_${setting%%=*}=${setting#*=}")
+    done
+    build_args=(-- "${nosign[@]}")
+fi
+
 run_traced cmake -S "$SOURCE_PATH" -B "$BUILD_PATH" "${args[@]}"
-run_traced cmake --build "$BUILD_PATH" --config "$CMAKE_BUILD_TYPE" --parallel "$JOBS"
+run_traced cmake --build "$BUILD_PATH" --config "$CMAKE_BUILD_TYPE" --parallel "$JOBS" "${build_args[@]}"
 
 if [[ -n "$BUILD_AAB" ]]; then
     run_traced cmake --build "$BUILD_PATH" --config "$CMAKE_BUILD_TYPE" --parallel "$JOBS" -t "aab"
