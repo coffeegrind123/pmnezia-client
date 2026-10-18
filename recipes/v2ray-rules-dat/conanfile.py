@@ -6,7 +6,7 @@ import os
 
 class V2rayRulesDat(ConanFile):
     name = "v2ray-rules-dat"
-    version = "202603162227"
+    version = "202610032254"
 
     def layout(self):
         basic_layout(self, build_folder=".")
@@ -14,9 +14,9 @@ class V2rayRulesDat(ConanFile):
     def source(self):
         # TODO(ygurov): build from source instead of plain copying
         download(self, filename="geoip.dat", url=f"https://github.com/Loyalsoldier/v2ray-rules-dat/releases/download/{self.version}/geoip.dat",
-            sha256="e48b925d985d7bf33cfee76f309241af0f1779699963b69363dec2c4740041d1")
+            sha256="391b522361c52804e486a98b53d97f3d9c1d3e4e4217bb34954774a0b456b9fd")
         download(self, filename="geosite.dat", url=f"https://github.com/Loyalsoldier/v2ray-rules-dat/releases/download/{self.version}/geosite.dat",
-            sha256="a2f83e25b8be3f089cfdd9423fc7b6eda5a0d4060919917902711d65acac1e0c")
+            sha256="59b6ed33176b6f03debcfa3105d42de268475ffa8a1e010f481985256e375262")
 
     def package(self):
         copy(self, "*.dat", src=self.build_folder, dst=self.package_folder)
