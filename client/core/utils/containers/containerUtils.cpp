@@ -204,8 +204,12 @@ bool ContainerUtils::isSupportedByCurrentPlatform(DockerContainer c)
 {
 #if defined(Q_OS_IOS) || defined(MACOS_NE)
     // TrustTunnel needs upstream's Apple framework inside the packet tunnel
-    // extension, which this fork does not build.
-    return c != DockerContainer::TrustTunnel;
+    // extension, which this fork does not build. The MasterDnsVPN and QQ-DNS
+    // engines are desktop/Android C++ with no extension implementation, so
+    // offering them here only produced a connect that
+    // IosController::connectVpn refused.
+    return c != DockerContainer::TrustTunnel && c != DockerContainer::MasterDnsVpn
+            && c != DockerContainer::QqDns;
 #elif defined(Q_OS_MAC)
     // The mdnsvpn binary has no macOS build yet.
     return c != DockerContainer::MasterDnsVpn;
