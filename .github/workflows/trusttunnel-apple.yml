@@ -92,6 +92,13 @@ jobs:
           mv conan/conan_provider.cmake cmake/conan_provider.cmake
           rm conan/conanfiles.tar.gz
 
+      # Source builds of BoringSSL, dns-libs and friends dominate the run.
+      - name: Cache Conan packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.conan2/p
+          key: ${{ runner.os }}-ttapple-conan-${{ inputs.version }}-${{ inputs.native_libs_common }}
+
       - name: Bootstrap Conan dependencies
         run: |
           set -euo pipefail
@@ -133,10 +140,16 @@ jobs:
           set -euo pipefail
           out="$RUNNER_TEMP/out"
           mkdir -p "$out"
-          cd ttc/platform/apple/build/framework
-          cp ../../../../LICENSE VpnClientFramework.xcframework/LICENSE
+          # Zip layout: VpnClientFramework-<ver>/{VpnClientFramework.xcframework,LICENSE}.
+          # LICENSE stays outside the bundle so Xcode's xcframework checks
+          # see an untouched bundle.
+          stage="$RUNNER_TEMP/VpnClientFramework-${TT_VERSION}"
+          mkdir -p "$stage"
+          ditto ttc/platform/apple/build/framework/VpnClientFramework.xcframework \
+            "$stage/VpnClientFramework.xcframework"
+          cp ttc/LICENSE "$stage/LICENSE"
           zip_name="VpnClientFramework-${TT_VERSION}.xcframework.zip"
-          ditto -c -k --sequesterRsrc --keepParent VpnClientFramework.xcframework "$out/$zip_name"
+          ditto -c -k --sequesterRsrc --keepParent "$stage" "$out/$zip_name"
           cd "$out"
           shasum -a 256 "$zip_name" | tee "$zip_name.sha256"
           tag="trusttunnel-apple-v${TT_VERSION}"
