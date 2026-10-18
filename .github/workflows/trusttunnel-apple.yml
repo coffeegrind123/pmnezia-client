@@ -1,0 +1,155 @@
+name: 'TrustTunnel Apple framework'
+
+# Builds TrustTunnelClient's VpnClientFramework.xcframework (iOS, iOS
+# simulator, macOS) from upstream source and publishes it as a release asset
+# of this repo, which recipes/trusttunnel-apple then downloads by sha256.
+#
+# Why not upstream's prebuilt: AdGuard publishes the same framework only to
+# GitHub Packages (Maven), which needs a read:packages token even though the
+# package is public, and this repo carries no secrets. Upstream's own public
+# macOS CI shows the build needs no credentials: the @adguard/oss Conan
+# packages are exported from the public DnsLibs / NativeLibsCommon repos and
+# everything else comes from conancenter anonymously.
+#
+# Dispatch only: the result is pinned by sha256 in the recipe, so a rebuild
+# never silently changes what the app links.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'TrustTunnelClient stable release (no v prefix)'
+        required: true
+        type: string
+        default: '1.1.11'
+      native_libs_common:
+        description: 'NativeLibsCommon release whose conanfiles.tar.gz to use (must match the version conanfile.py pins)'
+        required: true
+        type: string
+        default: '8.1.54'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-latest
+    env:
+      TT_VERSION: ${{ inputs.version }}
+      NLC_VERSION: ${{ inputs.native_libs_common }}
+      # Upstream's run-tests-public.yml pins this Conan line.
+      CONAN_VER: '2.12'
+    steps:
+      - name: Checkout TrustTunnelClient v${{ inputs.version }}
+        uses: actions/checkout@v4
+        with:
+          repository: TrustTunnel/TrustTunnelClient
+          ref: v${{ inputs.version }}
+          path: ttc
+          fetch-depth: 0
+
+      - name: Refuse a pre-release tag
+        run: |
+          set -euo pipefail
+          case "$TT_VERSION" in
+            *-*) echo "::error::$TT_VERSION is a pre-release; stable releases only"; exit 1 ;;
+          esac
+
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+
+      - name: Install tools
+        run: |
+          set -euo pipefail
+          brew install ninja
+          pip install "conan~=$CONAN_VER"
+          # rustup honours ttc/rust-toolchain.toml; add every Apple target the
+          # deeplink FFI staticlib is built for.
+          cd ttc
+          rustup show active-toolchain || rustup toolchain install
+          rustup target add aarch64-apple-ios aarch64-apple-ios-sim x86_64-apple-ios \
+            aarch64-apple-darwin x86_64-apple-darwin
+
+      - name: Pin the NativeLibsCommon conanfiles
+        run: |
+          set -euo pipefail
+          cd ttc
+          # cmake/conan_bootstrap.cmake fetches releases/latest, which has
+          # already moved past the version conanfile.py pins. Fetch the pinned
+          # one up front; the bootstrap skips its download when the provider
+          # file exists.
+          grep -q "native_libs_common/${NLC_VERSION}@" conanfile.py \
+            || { echo "::error::conanfile.py does not pin native_libs_common/${NLC_VERSION}"; exit 1; }
+          mkdir -p conan
+          curl -fsSL -o conan/conanfiles.tar.gz \
+            "https://github.com/AdguardTeam/NativeLibsCommon/releases/download/v${NLC_VERSION}/conanfiles.tar.gz"
+          tar -xzf conan/conanfiles.tar.gz -C conan
+          mv conan/conan_provider.cmake cmake/conan_provider.cmake
+          rm conan/conanfiles.tar.gz
+
+      - name: Bootstrap Conan dependencies
+        run: |
+          set -euo pipefail
+          cd ttc
+          conan profile detect --force
+          python3 scripts/bootstrap_conan_deps.py
+
+      - name: Build VpnClientFramework.xcframework
+        run: |
+          set -euo pipefail
+          cd ttc/platform/apple
+          # The VpnClientFramework Xcode scheme only runs this script; call it
+          # directly so no Xcode project, CocoaPods or signing is involved.
+          SRCROOT="$PWD" CONFIGURATION=Release TT_CLIENT_VERSION="$TT_VERSION" \
+            bash VpnClient/build_client.sh
+          test -d build/framework/VpnClientFramework.xcframework
+
+      - name: Check the framework
+        run: |
+          set -euo pipefail
+          cd ttc/platform/apple/build/framework/VpnClientFramework.xcframework
+          find . -maxdepth 2 -type d -name '*.framework' -print
+          for bin in ios-arm64/VpnClientFramework.framework/VpnClientFramework \
+                     ios-arm64_x86_64-simulator/VpnClientFramework.framework/VpnClientFramework \
+                     macos-arm64_x86_64/VpnClientFramework.framework/Versions/A/VpnClientFramework; do
+            lipo -info "$bin"
+            # BoringSSL is linked in statically; it must not leak into the
+            # extension's symbol space next to the app's OpenSSL.
+            if nm -gU "$bin" | grep -E ' _(SSL|EVP|BIO)_' ; then
+              echo "::error::$bin exports TLS symbols"; exit 1
+            fi
+            otool -L "$bin"
+          done
+
+      - name: Package and publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          out="$RUNNER_TEMP/out"
+          mkdir -p "$out"
+          cd ttc/platform/apple/build/framework
+          cp ../../../../LICENSE VpnClientFramework.xcframework/LICENSE
+          zip_name="VpnClientFramework-${TT_VERSION}.xcframework.zip"
+          ditto -c -k --sequesterRsrc --keepParent VpnClientFramework.xcframework "$out/$zip_name"
+          cd "$out"
+          shasum -a 256 "$zip_name" | tee "$zip_name.sha256"
+          tag="trusttunnel-apple-v${TT_VERSION}"
+          notes="TrustTunnelClient v${TT_VERSION} VpnClientFramework.xcframework, built from upstream source by
+          ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
+          (NativeLibsCommon conanfiles v${NLC_VERSION}). Pinned by sha256 in recipes/trusttunnel-apple.
+          sha256: $(cut -d' ' -f1 "$zip_name.sha256")"
+          if gh release view "$tag" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$tag" "$zip_name" "$zip_name.sha256" -R "$GITHUB_REPOSITORY" --clobber
+            gh release edit "$tag" -R "$GITHUB_REPOSITORY" --notes "$notes"
+          else
+            gh release create "$tag" "$zip_name" "$zip_name.sha256" -R "$GITHUB_REPOSITORY" \
+              --title "TrustTunnel Apple framework v${TT_VERSION}" --notes "$notes" --prerelease
+          fi
+          echo "### VpnClientFramework ${TT_VERSION}" >> "$GITHUB_STEP_SUMMARY"
+          echo "\`$(cat "$zip_name.sha256")\`" >> "$GITHUB_STEP_SUMMARY"
