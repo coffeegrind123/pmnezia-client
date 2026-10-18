@@ -37,9 +37,9 @@ server over SSH has been removed, along with every protocol coffeeblack-vpn does
 | **AmneziaWG** | Primary | Obfuscated WireGuard over UDP. Low latency, full tunnel. Containers `amnezia-awg` and `amnezia-awg2`. |
 | **WireGuard** | Fallback | coffeeblack-vpn's AmneziaWG 3 obfuscation knobs are off by default, so a configuration issued without them carries no `Jc`/`S1–S4`/`H1–H4` lines and imports as plain WireGuard. Same protocol implementation. |
 | **XRay** | Censorship-resistant | VLESS + Reality + Vision over TCP, and the `xhttp` stream mode (HTTP/2 over a secret path). |
-| **MasterDnsVPN** | Blackout survival | DNS tunnel carrying TCP/SOCKS5 inside DNS queries. Native C++ engine. |
-| **QQ-DNS** | Blackout survival | UDP-over-DNS carrying the AmneziaWG datapath itself, for networks where only port 53 escapes. |
-| **TrustTunnel** | Censorship-resistant | [AdGuard's protocol](https://github.com/TrustTunnel/TrustTunnel): HTTP CONNECT streams inside HTTP/2 (TLS over TCP) or HTTP/3 (QUIC over UDP), with UDP multiplexed alongside. Runs upstream's `trusttunnel_client` 1.1.11 in SOCKS5 mode under tun2socks. Windows, Linux, macOS (non-NE) and Android `arm64-v8a`/`armeabi-v7a`/`x86_64`; not iOS, the macOS Network Extension build or Android `x86`. |
+| **MasterDnsVPN** | Blackout survival | DNS tunnel carrying TCP/SOCKS5 inside DNS queries. Native C++ engine. Desktop and Android only. |
+| **QQ-DNS** | Blackout survival | UDP-over-DNS carrying the AmneziaWG datapath itself, for networks where only port 53 escapes. Desktop and Android only. |
+| **TrustTunnel** | Censorship-resistant | [AdGuard's protocol](https://github.com/TrustTunnel/TrustTunnel): HTTP CONNECT streams inside HTTP/2 (TLS over TCP) or HTTP/3 (QUIC over UDP), with UDP multiplexed alongside. Desktop and Android run upstream's `trusttunnel_client` 1.1.11 in SOCKS5 mode under tun2socks; iOS and the macOS Network Extension build link its `VpnClientFramework` into the packet tunnel extension. Windows, Linux, macOS, iOS and Android `arm64-v8a`/`armeabi-v7a`/`x86_64`; not Android `x86`. |
 
 The protocol name **AmneziaWG** is upstream's and is deliberately preserved — coffeeblack-vpn serves it under that
 name and the configuration format uses it.
@@ -61,8 +61,8 @@ Pre-built binaries are published as a rolling pre-release:
 The application checks this repository's releases on start-up and can download and run the installer itself, so a
 `dev-latest` build updates in place.
 
-macOS and iOS builds are not produced by default; they require Apple signing credentials and are gated behind a
-workflow input. Android builds carry no Google Play dependencies and run on devices without Play Services.
+macOS and iOS are built on every push but only signed (installable) when the repository has Apple signing
+credentials; without them CI builds them unsigned to check that they compile and link. Android builds carry no Google Play dependencies and run on devices without Play Services.
 
 > Because this is a fork, GitHub does not show a *Releases* widget on the repository home page and the build is
 > marked as a pre-release, so it never receives the "Latest" badge. Use the link above.
@@ -193,9 +193,10 @@ that no rewritten URL contains a doubled scheme, and that every file referenced 
 ## Releases
 
 The **Build and Release** workflow (`.github/workflows/deploy.yml`) runs on every push to `dev` or `main`, building
-Linux, Windows and Android in parallel and refreshing the rolling `dev-latest` pre-release.
+Linux, Windows, Android, iOS, macOS and macOS-NE in parallel and refreshing the rolling `dev-latest` pre-release.
+The Apple jobs sign when the signing secrets exist and otherwise run `deploy/build.sh --no-sign`.
 
-To build Apple targets or publish under a different tag, dispatch it manually from the
+To publish under a different tag, dispatch it manually from the
 [Actions tab](https://github.com/coffeegrind123/pmnezia-client/actions/workflows/deploy.yml) or:
 
 ```bash
@@ -207,7 +208,6 @@ gh workflow run deploy.yml --repo coffeegrind123/pmnezia-client --ref dev
 | `release_tag` | `dev-latest` | Rolling tag; an existing release on this tag is deleted and recreated. |
 | `release_name` | `Dev build (masterdnsvpn + xhttp)` | Release title; version and short SHA are appended. |
 | `prerelease` | `true` | Mark as pre-release. Push-triggered builds are always pre-releases. |
-| `enable_apple_builds` | `false` | Also build iOS, macOS and macOS-NE. Requires Apple signing credentials. |
 
 > **Artifact naming is a contract.** CPack emits `PmneziaVPN_<ver>_<platform>_x64.<ext>` and `upload-artifact` runs
 > with `archive: false`, so each artifact is named after its file. The upload globs and the download pattern in

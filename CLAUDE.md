@@ -11,9 +11,9 @@ coffeeblack-vpn servers (`coffeegrind123/coffeeblack-vpn`, local
 No Qt, conan, Go or Android builds locally, in this container or a sibling one —
 see the global CLAUDE.md. Verification is the `deploy.yml` workflow: every push to
 `dev` builds Linux, Windows and Android and refreshes the `dev-latest`
-pre-release. Apple targets only build on
-`gh workflow run deploy.yml --ref dev -f enable_apple_builds=true` (needs signing
-secrets). Locally: edit, `python3 -m py_compile` recipes, `git merge-tree`, and
+pre-release. iOS, macOS and macOS-NE build on every push too: signed when the
+signing secrets exist, otherwise with `deploy/build.sh --no-sign`, which proves
+they compile and link but produces nothing installable. Locally: edit, `python3 -m py_compile` recipes, `git merge-tree`, and
 read sources.
 
 Watch a run: `gh run watch <id> -R coffeegrind123/pmnezia-client --exit-status`.
@@ -36,7 +36,11 @@ with `gh api repos/coffeegrind123/pmnezia-client/actions/jobs/<job>/logs`.
 - Fork features that must survive every merge: MasterDnsVPN (`client/masterdnsvpn/`),
   QQ-DNS (`client/qqdns/`), TrustTunnel (`client/core/utils/serialization/trustTunnel.*`,
   `client/core/protocols/trustTunnelProtocol.*`, `client/android/trusttunnel/`,
-  `recipes/trusttunnel-client/`, `service/server/trust_tunnel_service.*`), the xhttp
+  `recipes/trusttunnel-client/`, `service/server/trust_tunnel_service.*`; on Apple
+  `client/platforms/ios/PacketTunnelProvider+TrustTunnel.swift`,
+  `TrustTunnelConfig.swift`, `TrustTunnelClientFactory.{h,m}`,
+  `IosController::setupTrustTunnel()`, `client/cmake/trusttunnel-apple.cmake`,
+  `recipes/trusttunnel-apple/` and `.github/workflows/trusttunnel-apple.yml`), the xhttp
   transport, zxing-cpp instead of ML Kit, the non-matrix Android job and
   `Publish-Release` in `deploy.yml`.
 - A new protocol must be added to **every** `std::visit` in
@@ -115,10 +119,19 @@ building: bump `version` and every per-asset sha256 together from
 Stable releases only (its `-rc`/`-beta` tags are pre-releases). Before bumping, read
 upstream's `trusttunnel/src/trusttunnel_client.cpp` and `config.cpp` diff: the
 `connectedLogLine` constant, the `-c` flag and the `[endpoint]`/`[listener.socks]`
-keys `buildClientToml()` writes must still hold.
+/`[listener.tun]` keys `buildClientToml()` writes must still hold.
+
+`recipes/trusttunnel-apple` is the same release's `VpnClientFramework.xcframework`
+for the iOS / macOS network extension, built from source by
+`gh workflow run trusttunnel-apple.yml -R coffeegrind123/pmnezia-client -f version=<ver> -f native_libs_common=<nlc>`
+(`<nlc>` is the `native_libs_common/<v>@adguard/oss` pin in upstream's
+`conanfile.py` at that tag). Copy the sha256 the run publishes into the recipe.
+Also check `platform/apple/VpnClient/VpnClient.h` for signature changes: v1.3.0
+replaces `start:` with `start:fallIntoRecovery:`.
 
 ### 4. Ship
 
-Push `dev` and watch the run to green on Linux, Windows and Android. Report what
-CI could not cover (Apple unless dispatched). A pass is not finished while CI is
+Push `dev` and watch the run to green on Linux, Windows, Android and the Apple
+jobs. Report what CI could not cover: without signing secrets the Apple jobs only
+prove the build, not that the app runs on a device. A pass is not finished while CI is
 red.
