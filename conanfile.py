@@ -50,5 +50,5 @@ class AmneziaVPN(ConanFile):
         # ZLIB-raw-deflate (4). zlib is already a hard dep above; zstd and
         # lz4 are added here so the codec path mirrors upstream's
         # internal/compression/types.go feature surface.
-        self.requires("zstd/1.5.6")
+        self.requires("zstd/1.5.7")
         self.requires("lz4/1.10.0")
