@@ -1,5 +1,6 @@
 #include "coreController.h"
 
+#include <QCoreApplication>
 #include <QDirIterator>
 #include <QTranslator>
 #include <QTimer>
@@ -17,6 +18,9 @@
 
 #if defined(Q_OS_IOS)
     #include "platforms/ios/ios_controller.h"
+#endif
+
+#if defined(Q_OS_IOS) || defined(MACOS_NE)
     #include "core/utils/swiftBridge.h"
 #endif
 
@@ -124,7 +128,6 @@ void CoreController::initControllers()
 
     if (m_engine) {
         m_focusController = new FocusController(m_engine, this);
-        setQmlContextProperty("FocusController", m_focusController);
     }
 
     m_importController = new ImportUiController(m_importCoreController, this);
@@ -135,6 +138,9 @@ void CoreController::initControllers()
 
     m_settingsUiController = new SettingsUiController(m_settingsController, m_serversController, this);
     setQmlContextProperty("SettingsController", m_settingsUiController);
+
+    m_logsUiController = new LogsUiController(m_settingsController, this);
+    setQmlContextProperty("LogsController", m_logsUiController);
 
     m_pageController = new PageController(m_serversController, m_settingsController, this);
     setQmlContextProperty("PageController", m_pageController);
@@ -195,7 +201,7 @@ void CoreController::initAppleController()
 
 void CoreController::initLogging()
 {
-#if !defined(Q_OS_ANDROID) && !defined(Q_OS_IOS)
+#ifndef Q_OS_ANDROID
     bool enabled = m_appSettingsRepository->isSaveLogs();
     if (enabled) {
         if (!Logger::init(false)) {
@@ -203,6 +209,11 @@ void CoreController::initLogging()
         }
     }
     Logger::setServiceLogsEnabled(enabled);
+#endif
+#if defined(Q_OS_IOS) || defined(MACOS_NE)
+    if (m_appSettingsRepository->isSaveLogs()) {
+        SWIFT_BRIDGE_NAMESPACE::toggleLogging(true);
+    }
 #endif
 }
 

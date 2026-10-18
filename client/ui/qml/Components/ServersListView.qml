@@ -1,29 +1,21 @@
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Layouts
-
-import SortFilterProxyModel 0.2
 
 import PageEnum 1.0
-import ContainerProps 1.0
-import ContainersModelFilters 1.0
 import Style 1.0
 
-import "./"
 import "../Controls2"
-import "../Controls2/TextTypes"
-import "../Config"
 
 ListViewType {
     id: root
 
     property int selectedIndex: ServersUiController.getServerIndexById(ServersUiController.defaultServerId)
 
-    anchors.top: serversMenuHeader.bottom
-    anchors.right: parent.right
-    anchors.left: parent.left
-    anchors.bottom: parent.bottom
-    anchors.topMargin: 16
+    signal serverSettingsOpened()
+
+    leftMargin: 16
+    rightMargin: 16
+    bottomMargin: 16
 
     model: ServersModel
 
@@ -34,88 +26,44 @@ ListViewType {
         }
     }
 
-    delegate: Item {
-        id: menuContentDelegate
-        objectName: "menuContentDelegate"
+    ButtonGroup {
+        id: serversRadioButtonGroup
+        objectName: "serversRadioButtonGroup"
+    }
 
-        property variant delegateData: model
-        property VerticalRadioButton serverRadioButtonProperty: serverRadioButton
+    function openServerSettings(serverId) {
+        ServersUiController.setProcessedServerId(serverId)
+        PageController.goToPage(PageEnum.PageSettingsServerInfo)
 
-        implicitWidth: root.width
-        implicitHeight: serverRadioButtonContent.implicitHeight
+        root.serverSettingsOpened()
+    }
 
-        ColumnLayout {
-            id: serverRadioButtonContent
-            objectName: "serverRadioButtonContent"
+    delegate: ServerListItem {
+        objectName: "serverRadioButton"
 
-            anchors.fill: parent
-            anchors.rightMargin: 16
-            anchors.leftMargin: 16
+        width: root.width - root.leftMargin - root.rightMargin
 
-            spacing: 0
+        text: name
+        subtitle: serverDescription
+        subtitleColor: AmneziaStyle.color.textTertiary
+        showSeparator: index < root.count - 1
 
-            RowLayout {
-                objectName: "serverRadioButtonRowLayout"
+        checked: index === root.selectedIndex
+        checkable: !ConnectionController.isConnected
 
-                Layout.fillWidth: true
+        ButtonGroup.group: serversRadioButtonGroup
 
-                VerticalRadioButton {
-                    id: serverRadioButton
-                    objectName: "serverRadioButton"
-
-                    Layout.fillWidth: true
-
-                    text: name
-                    descriptionText: serverDescription
-                    descriptionColor: AmneziaStyle.color.mutedGray
-
-                    checked: index === root.selectedIndex
-                    checkable: !ConnectionController.isConnected
-
-                    ButtonGroup.group: serversRadioButtonGroup
-
-                    onClicked: {
-                        if (ConnectionController.isConnected) {
-                            PageController.showNotificationMessage(qsTr("Unable change server while there is an active connection"))
-                            return
-                        }
-
-                        root.selectedIndex = index
-
-                        ServersUiController.setDefaultServerAtIndex(index)
-                    }
-
-                    Keys.onEnterPressed: serverRadioButton.clicked()
-                    Keys.onReturnPressed: serverRadioButton.clicked()
-                }
-
-                ImageButtonType {
-                    id: serverInfoButton
-                    objectName: "serverInfoButton"
-
-                    image: "qrc:/images/controls/settings.svg"
-                    imageColor: AmneziaStyle.color.paleGray
-
-                    implicitWidth: 56
-                    implicitHeight: 56
-
-                    z: 1
-
-                    onClicked: function() {
-                        ServersUiController.setProcessedServerId(serverId)
-
-                        PageController.goToPage(PageEnum.PageSettingsServerInfo)
-
-                        drawer.closeTriggered()
-                    }
-                }
+        onClicked: {
+            if (ConnectionController.isConnected) {
+                PageController.showNotificationMessage(qsTr("Unable change server while there is an active connection"))
+                return
             }
 
-            DividerType {
-                Layout.fillWidth: true
-                Layout.leftMargin: 0
-                Layout.rightMargin: 0
-            }
+            root.selectedIndex = index
+
+            ServersUiController.setDefaultServerAtIndex(index)
         }
+
+        onSettingsRequested: root.openServerSettings(serverId)
     }
 }

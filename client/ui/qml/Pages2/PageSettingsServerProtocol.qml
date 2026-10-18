@@ -5,7 +5,6 @@ import QtQuick.Layouts
 import SortFilterProxyModel 0.2
 
 import PageEnum 1.0
-import ContainerProps 1.0
 import Style 1.0
 
 import "./"
@@ -17,40 +16,21 @@ import "../Components"
 PageType {
     id: root
 
-
-    BackButtonType {
-        id: backButton
-
-        anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.topMargin: 20 + PageController.safeAreaTopMargin
-        
-        onFocusChanged: {
-            if (this.activeFocus) {
-                listView.positionViewAtBeginning()
-            }
-        }
-    }
-
     ListViewType {
         id: listView
 
-        anchors.top: backButton.bottom
-        anchors.bottom: parent.bottom
-        anchors.right: parent.right
-        anchors.left: parent.left
+        anchors.fill: parent
 
         header: ColumnLayout {
             width: listView.width
 
-            BaseHeaderType {
-                Layout.fillWidth: true
-                Layout.leftMargin: 16
-                Layout.rightMargin: 16
-                Layout.bottomMargin: 32
+            spacing: 0
 
-                headerText: ContainersModel.getProcessedContainerName() + qsTr(" settings")
+            NavigationBarType {
+                Layout.fillWidth: true
+                Layout.bottomMargin: 16
+
+                title: ContainersModel.getProcessedContainerName() + qsTr(" settings")
             }
 
         }
@@ -62,18 +42,22 @@ PageType {
 
             width: listView.width
 
+            spacing: 0
+
             property bool isClientSettingsVisible: true
 
-            LabelWithButtonType {
+            ListItemType {
                 id: clientSettings
 
                 Layout.fillWidth: true
+                Layout.leftMargin: 16
+                Layout.rightMargin: 16
 
                 text: protocolName + qsTr(" connection settings")
-                rightImageSource: "qrc:/images/controls/chevron-right.svg"
+                trailingIconSource: "qrc:/images/controls/chevron-right.svg"
                 visible: delegateContent.isClientSettingsVisible
 
-                clickedFunction: function() {
+                onClicked: {
                     if (isClientProtocolExists) {
                         ServersUiController.openClientSettings(ServersUiController.processedServerId, ServersUiController.processedContainerIndex, protocolIndex)
                         PageController.goToPage(clientProtocolPage);
@@ -81,18 +65,19 @@ PageType {
                         PageController.showNotificationMessage(qsTr("Click the \"connect\" button to create a connection configuration"))
                     }
                 }
-
-                MouseArea {
-                    anchors.fill: clientSettings
-                    cursorShape: Qt.PointingHandCursor
-                    enabled: false
-                }
             }
 
-            DividerType {
-                visible: delegateContent.isClientSettingsVisible
-            }
+        }
 
+        footer: ColumnLayout {
+            width: listView.width
+
+            spacing: 0
+
+            Item {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 16 + PageController.safeAreaBottomMargin
+            }
         }
     }
 }

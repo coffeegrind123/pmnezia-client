@@ -17,28 +17,23 @@ import "../Components"
 PageType {
     id: root
 
-    BackButtonType {
-        id: backButton
-
-        anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.topMargin: 20 + PageController.safeAreaTopMargin
-
-        onFocusChanged: {
-            if (this.activeFocus) {
-                listView.positionViewAtBeginning()
-            }
-        }
-    }
-
     ListViewType {
         id: listView
 
-        anchors.top: backButton.bottom
+        anchors.top: parent.top
         anchors.bottom: parent.bottom
         anchors.left: parent.left
         anchors.right: parent.right
+
+        header: NavigationBarType {
+            width: listView.width
+            height: implicitHeight + 16
+
+            title: qsTr("TrustTunnel settings")
+            description: qsTr("Traffic rides HTTP/2 or HTTP/3 requests to the endpoint, which looks like an " +
+                         "ordinary website to anyone without the credentials. The hostname, user and " +
+                         "certificate come from the endpoint and cannot be changed here.")
+        }
 
         model: TrustTunnelConfigModel
 
@@ -59,17 +54,7 @@ PageType {
                 return cleaned
             }
 
-            BaseHeaderType {
-                Layout.fillWidth: true
-                Layout.leftMargin: 16
-                Layout.rightMargin: 16
-                headerText: qsTr("TrustTunnel settings")
-                descriptionText: qsTr("Traffic rides HTTP/2 or HTTP/3 requests to the endpoint, which looks like an " +
-                                      "ordinary website to anyone without the credentials. The hostname, user and " +
-                                      "certificate come from the endpoint and cannot be changed here.")
-            }
-
-            TextFieldWithHeaderType {
+            TextFieldType {
                 Layout.fillWidth: true
                 Layout.topMargin: 32
                 Layout.leftMargin: 16
@@ -80,7 +65,7 @@ PageType {
                 textField.text: hostname
             }
 
-            TextFieldWithHeaderType {
+            TextFieldType {
                 Layout.fillWidth: true
                 Layout.topMargin: 16
                 Layout.leftMargin: 16
@@ -91,7 +76,7 @@ PageType {
                 textField.text: username
             }
 
-            TextFieldWithHeaderType {
+            TextFieldType {
                 id: addressesTextField
 
                 Layout.fillWidth: true
@@ -115,7 +100,7 @@ PageType {
                 checkEmptyText: true
             }
 
-            TextFieldWithHeaderType {
+            TextFieldType {
                 Layout.fillWidth: true
                 Layout.topMargin: 16
                 Layout.leftMargin: 16
@@ -144,20 +129,20 @@ PageType {
 
                 enabled: listView.enabled
 
-                rootButtonText: upstreamProtocol === "http3" ? qsTr("HTTP/3 (QUIC over UDP)") : qsTr("HTTP/2 (TLS over TCP)")
+                text: upstreamProtocol === "http3" ? qsTr("HTTP/3 (QUIC over UDP)") : qsTr("HTTP/2 (TLS over TCP)")
+                descriptionText: qsTr("Transport")
                 headerText: qsTr("Transport")
 
-                listView: ListViewWithRadioButtonType {
-                    rootWidth: root.width
+                listView: RadioListType {
 
                     model: ListModel {
                         ListElement { name: qsTr("HTTP/2 (TLS over TCP)"); value: "http2" }
                         ListElement { name: qsTr("HTTP/3 (QUIC over UDP)"); value: "http3" }
                     }
 
-                    clickedFunction: function() {
+                    onActivated: {
                         upstreamProtocol = model.get(selectedIndex).value
-                        upstreamProtocolDropDown.menuVisible = false
+                        upstreamProtocolDropDown.close()
                     }
 
                     Component.onCompleted: {
@@ -166,7 +151,7 @@ PageType {
                 }
             }
 
-            SwitcherType {
+            SwitchRowType {
                 Layout.fillWidth: true
                 Layout.topMargin: 16
                 Layout.leftMargin: 16
@@ -183,7 +168,7 @@ PageType {
                 }
             }
 
-            SwitcherType {
+            SwitchRowType {
                 Layout.fillWidth: true
                 Layout.topMargin: 16
                 Layout.leftMargin: 16
@@ -199,7 +184,7 @@ PageType {
                 }
             }
 
-            SwitcherType {
+            SwitchRowType {
                 id: skipVerificationSwitch
 
                 Layout.fillWidth: true
@@ -219,22 +204,18 @@ PageType {
                 }
             }
 
-            WarningType {
+            NotificationType {
                 Layout.fillWidth: true
                 Layout.topMargin: 8
                 Layout.leftMargin: 16
                 Layout.rightMargin: 16
 
                 visible: skipVerification
-
-                backGroundColor: AmneziaStyle.color.transparent
-                iconPath: "qrc:/images/controls/alert-circle.svg"
-                imageColor: AmneziaStyle.color.goldenApricot
-                textColor: AmneziaStyle.color.goldenApricot
-                textString: qsTr("Without verification anyone on the path can impersonate the endpoint and read the tunnel credentials.")
+                variant: NotificationType.Warning
+                text: qsTr("Without verification anyone on the path can impersonate the endpoint and read the tunnel credentials.")
             }
 
-            TextFieldWithHeaderType {
+            TextFieldType {
                 Layout.fillWidth: true
                 Layout.topMargin: 16
                 Layout.leftMargin: 16
@@ -251,17 +232,13 @@ PageType {
                 }
             }
 
-            BasicButtonType {
+            ButtonType {
                 Layout.fillWidth: true
                 Layout.topMargin: 24
                 Layout.leftMargin: 16
                 Layout.rightMargin: 16
 
-                defaultColor: AmneziaStyle.color.transparent
-                hoveredColor: AmneziaStyle.color.translucentWhite
-                pressedColor: AmneziaStyle.color.sheerWhite
-                textColor: AmneziaStyle.color.paleGray
-                borderWidth: 1
+                variant: ButtonType.Secondary
 
                 text: qsTr("Copy tt:// link")
 
@@ -271,7 +248,7 @@ PageType {
                 }
             }
 
-            BasicButtonType {
+            ButtonType {
                 id: saveButton
 
                 Layout.fillWidth: true
@@ -293,7 +270,7 @@ PageType {
                     var noButtonText = qsTr("Cancel")
 
                     var yesButtonFunction = function() {
-                        if (ConnectionController.isConnected && ServersModel.getDefaultServerData("defaultContainer") === ServersUiController.processedContainerIndex) {
+                        if (ConnectionController.isConnected && ServersUiController.serverDefaultContainer(ServersUiController.defaultServerId) === ServersUiController.processedContainerIndex) {
                             PageController.showNotificationMessage(qsTr("Unable change settings while there is an active connection"))
                             return
                         }

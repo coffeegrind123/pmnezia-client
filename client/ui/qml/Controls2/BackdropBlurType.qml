@@ -9,6 +9,7 @@ Item {
     property Item sourceItem
     property real blurPadding: 40
     property real blurRadius: 50
+    property real radius: height / 2
     property color tintColor: Qt.alpha(AmneziaStyle.color.textStaticWhite, 0.10)
     property color borderColor: Qt.alpha(AmneziaStyle.color.textStaticWhite, 0.75)
 
@@ -16,8 +17,11 @@ Item {
         anchors.fill: parent
 
         layer.enabled: true
-        layer.effect: OpacityMaskEffect {
+        layer.effect: MultiEffect {
+            maskEnabled: true
             maskSource: backdropMask
+            maskThresholdMin: 0.5
+            maskSpreadAtMin: 1.0
         }
 
         Item {
@@ -42,18 +46,14 @@ Item {
                 visible: false
             }
 
-            // MultiEffect replaces Qt5Compat's FastBlur here. Unlike the
-            // ColorOverlay/OpacityMask cases this is purely decorative frosted
-            // glass, so the two blurs' differing kernels are not observable.
-            // MultiEffect expresses radius as blur (0..1) scaled by blurMax
-            // (pixels, clamped by Qt to 2..64).
             MultiEffect {
                 anchors.fill: parent
                 source: backdrop
                 autoPaddingEnabled: false
                 blurEnabled: true
-                blur: 1.0
-                blurMax: Math.max(2, Math.min(64, Math.round(root.blurRadius)))
+                blurMax: 64
+                blur: root.blurRadius <= 20 ? 0.73 : 0.9
+                blurMultiplier: root.blurRadius <= 20 ? 0 : 0.5
             }
         }
     }
@@ -62,13 +62,14 @@ Item {
         id: backdropMask
 
         anchors.fill: parent
-        radius: height / 2
+        radius: root.radius
         visible: false
+        layer.enabled: true
     }
 
     Rectangle {
         anchors.fill: parent
-        radius: height / 2
+        radius: root.radius
 
         color: root.tintColor
         border.color: root.borderColor

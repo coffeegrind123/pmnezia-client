@@ -35,6 +35,7 @@ public:
         InstallPageOrderRole,
 
         IsVpnContainerRole,
+        HasClientSettingsPageRole,
     };
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;

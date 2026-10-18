@@ -20,20 +20,10 @@ PageType {
 
     property var containersDropDownRef: null
 
+    function openServerInfo() {
+        ServersUiController.setProcessedServerId(ServersUiController.defaultServerId)
 
-    Connections {
-        target: Qt.application
-
-        function onStateChanged() {
-            if (Qt.application.state !== Qt.ApplicationActive) {
-                if (drawer.isOpened) {
-                    drawer.closeTriggered()
-                }
-                if (homeSplitTunnelingDrawer.isOpened) {
-                    homeSplitTunnelingDrawer.closeTriggered()
-                }
-            }
-        }
+        PageController.goToPage(PageEnum.PageSettingsServerInfo)
     }
 
     Connections {
@@ -42,28 +32,29 @@ PageType {
         target: PageController
 
         function onRestorePageHomeState(isContainerInstalled) {
-            drawer.openTriggered()
+            drawer.open()
             if (isContainerInstalled && root.containersDropDownRef) {
-                root.containersDropDownRef.rootButtonClickedFunction()
+                root.containersDropDownRef.open()
             }
         }
     }
-
 
     Item {
         objectName: "homeColumnItem"
 
         anchors.fill: parent
-        anchors.bottomMargin: drawer.collapsedHeight
+        anchors.bottomMargin: collapsedBar.height
 
         ColumnLayout {
             objectName: "homeColumnLayout"
 
             anchors.fill: parent
             anchors.topMargin: 12 + PageController.safeAreaTopMargin
-            anchors.bottomMargin: 16
+            anchors.bottomMargin: 12
 
-            BasicButtonType {
+            spacing: 0
+
+            HomeInfoButton {
                 id: loggingButton
                 objectName: "loggingButton"
 
@@ -71,97 +62,48 @@ PageType {
 
                 Layout.alignment: Qt.AlignHCenter
 
-                implicitHeight: 36
-
-                defaultColor: AmneziaStyle.color.transparent
-                hoveredColor: AmneziaStyle.color.translucentWhite
-                pressedColor: AmneziaStyle.color.sheerWhite
-                disabledColor: AmneziaStyle.color.mutedGray
-                textColor: AmneziaStyle.color.mutedGray
-                borderWidth: 0
-
                 visible: isLoggingEnabled ? true : false
+                largeText: true
                 text: qsTr("Logging enabled")
-
-                Keys.onEnterPressed: this.clicked()
-                Keys.onReturnPressed: this.clicked()
 
                 onClicked: {
                     PageController.goToPage(PageEnum.PageSettingsLogging)
                 }
             }
 
-            BasicButtonType {
-                id: devGatewayButton
-                objectName: "devGatewayButton"
+            Item {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.topMargin: 16
+                Layout.bottomMargin: 28
 
-                property bool isDevGatewayEnabled: SettingsController.isDevGatewayEnv
+                ConnectButton {
+                    id: connectButton
+                    objectName: "connectButton"
 
-                Layout.alignment: Qt.AlignHCenter
-
-                implicitHeight: 36
-
-                defaultColor: AmneziaStyle.color.transparent
-                hoveredColor: AmneziaStyle.color.translucentWhite
-                pressedColor: AmneziaStyle.color.sheerWhite
-                disabledColor: AmneziaStyle.color.mutedGray
-                textColor: AmneziaStyle.color.mutedGray
-                borderWidth: 0
-
-                visible: SettingsController.isDevModeEnabled && isDevGatewayEnabled
-                text: qsTr("Dev gateway enabled")
-
-                Keys.onEnterPressed: this.clicked()
-                Keys.onReturnPressed: this.clicked()
-
-                onClicked: {
-                    PageController.goToPage(PageEnum.PageDevMenu)
+                    anchors.centerIn: parent
+                    width: Math.min(implicitWidth, parent.width, parent.height)
+                    height: width
                 }
             }
 
-            ConnectButton {
-                id: connectButton
-                objectName: "connectButton"
-
-                Layout.fillHeight: true
-                Layout.alignment: Qt.AlignCenter
-            }
-
-            BasicButtonType {
+            HomeInfoButton {
                 id: splitTunnelingButton
                 objectName: "splitTunnelingButton"
 
-                Layout.alignment: Qt.AlignHCenter | Qt.AlignBottom
-                leftPadding: 16
-                rightPadding: 16
-
-                implicitHeight: 36
-
-                defaultColor: AmneziaStyle.color.transparent
-                hoveredColor: AmneziaStyle.color.translucentWhite
-                pressedColor: AmneziaStyle.color.sheerWhite
-                disabledColor: AmneziaStyle.color.mutedGray
-                textColor: AmneziaStyle.color.mutedGray
-                borderWidth: 0
-
-                buttonTextLabel.lineHeight: 20
-                buttonTextLabel.font.pixelSize: 14
-                buttonTextLabel.font.weight: 500
+                Layout.alignment: Qt.AlignHCenter
+                Layout.maximumWidth: parent.width - 32
 
                 property bool isSplitTunnelingEnabled: IpSplitTunnelingController.isSplitTunnelingEnabled || AppSplitTunnelingController.isSplitTunnelingEnabled ||
                                                        ServersUiController.isDefaultServerDefaultContainerHasSplitTunneling
 
                 text: isSplitTunnelingEnabled ? qsTr("Split tunneling enabled") : qsTr("Split tunneling disabled")
 
-                leftImageSource: isSplitTunnelingEnabled ? "qrc:/images/controls/split-tunneling.svg" : ""
-                leftImageColor: ""
+                leftImageSource: "qrc:/images/controls/split-tunneling.svg"
                 rightImageSource: "qrc:/images/controls/chevron-down.svg"
 
-                Keys.onEnterPressed: this.clicked()
-                Keys.onReturnPressed: this.clicked()
-
                 onClicked: {
-                    homeSplitTunnelingDrawer.openTriggered()
+                    homeSplitTunnelingDrawer.open()
                 }
 
                 HomeSplitTunnelingDrawer {
@@ -175,275 +117,241 @@ PageType {
         }
     }
 
-    DrawerType2 {
+    Item {
+        id: collapsedBar
+        objectName: "collapsedBar"
+
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+
+        height: drawer.contentTopOffset + collapsedSummary.height
+
+        Rectangle {
+            anchors.fill: parent
+            anchors.bottomMargin: -border.width
+
+            topLeftRadius: 16
+            topRightRadius: 16
+            color: drawer.defaultColor
+            border.color: drawer.borderColor
+            border.width: 1
+        }
+
+        SheetGrabberType {
+            anchors.top: parent.top
+            anchors.topMargin: 16
+            anchors.horizontalCenter: parent.horizontalCenter
+        }
+
+        MouseArea {
+            id: collapsedBarMouseArea
+
+            property real pressY: 0
+            property bool dragStarted: false
+
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            preventStealing: true
+
+            onPressed: function(mouse) {
+                pressY = mouse.y
+                dragStarted = false
+            }
+            onPositionChanged: function(mouse) {
+                if (!pressed) {
+                    return
+                }
+                if (!dragStarted && pressY - mouse.y > Application.styleHints.startDragDistance) {
+                    dragStarted = true
+                    drawer.beginDrag()
+                }
+                if (dragStarted) {
+                    drawer.dragTo(drawer.closedY + mouse.y - pressY)
+                }
+            }
+            onReleased: {
+                if (dragStarted) {
+                    drawer.endDrag()
+                }
+            }
+            onClicked: {
+                if (!dragStarted) {
+                    drawer.open()
+                }
+            }
+        }
+
+        HomeServerSummary {
+            id: collapsedSummary
+
+            anchors.top: parent.top
+            anchors.topMargin: drawer.contentTopOffset
+            anchors.left: parent.left
+            anchors.right: parent.right
+
+            expanded: false
+            pressed: collapsedBarMouseArea.pressed
+
+            onExpandRequested: drawer.open()
+            onServerInfoRequested: root.openServerInfo()
+        }
+    }
+
+    SheetType {
         id: drawer
         objectName: "drawerProtocol"
 
-        anchors.fill: parent
+        bottomY: root.height
+        closedY: root.height - collapsedBar.height
+        borderColor: AmneziaStyle.color.borderSoft
+        expandedHeight: Qt.platform.os !== "ios" ? root.height * 0.9 : screen.height * 0.77
 
-        collapsedStateContent: Item {
+        Item {
             objectName: "ProtocolDrawerCollapsedContent"
 
-            implicitHeight: Qt.platform.os !== "ios" ? root.height * 0.9 : screen.height * 0.77
-            Component.onCompleted: {
-                drawer.expandedHeight = implicitHeight
-            }
+            anchors.fill: parent
 
-            ColumnLayout {
-                id: collapsed
-                objectName: "collapsedColumnLayout"
+            HomeServerSummary {
+                id: expandedSummary
 
                 anchors.left: parent.left
                 anchors.right: parent.right
-                spacing: 0
 
-                Component.onCompleted: {
-                    drawer.collapsedHeight = collapsed.implicitHeight
-                }
+                expanded: true
 
-                DividerType {
-                    Layout.topMargin: 10
-                    Layout.fillWidth: false
-                    Layout.preferredWidth: 20
-                    Layout.preferredHeight: 2
-                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                }
-
-                RowLayout {
-                    objectName: "rowLayout"
-
-                    Layout.topMargin: 14
-                    Layout.leftMargin: 24
-                    Layout.rightMargin: 24
-                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-
-                    spacing: 0
-
-                    Connections {
-                        objectName: "drawerConnections"
-
-                        target: drawer
-                        function onCursorEntered() {
-                            if (drawer.isCollapsedStateActive) {
-                                collapsedButtonChevron.backgroundColor = collapsedButtonChevron.hoveredColor
-                                collapsedButtonHeader.opacity = 0.8
-                            } else {
-                                collapsedButtonHeader.opacity = 1
-                            }
-                        }
-
-                        function onCursorExited() {
-                            if (drawer.isCollapsedStateActive) {
-                                collapsedButtonChevron.backgroundColor = collapsedButtonChevron.defaultColor
-                                collapsedButtonHeader.opacity = 1
-                            } else {
-                                collapsedButtonHeader.opacity = 1
-                            }
-                        }
-
-                        function onPressed(pressed, entered) {
-                            if (drawer.isCollapsedStateActive) {
-                                collapsedButtonChevron.backgroundColor = pressed ? collapsedButtonChevron.pressedColor : entered ? collapsedButtonChevron.hoveredColor : collapsedButtonChevron.defaultColor
-                                collapsedButtonHeader.opacity = 0.7
-                            } else {
-                                collapsedButtonHeader.opacity = 1
-                            }
-                        }
-                    }
-
-                    Header1TextType {
-                        id: collapsedButtonHeader
-                        objectName: "collapsedButtonHeader"
-
-                        Layout.maximumWidth: drawer.width - 48 - 18 - 12
-
-                        maximumLineCount: 2
-                        elide: Qt.ElideRight
-
-                        text: ServersUiController.defaultServerName
-                        horizontalAlignment: Qt.AlignHCenter
-
-                        Behavior on opacity {
-                            PropertyAnimation { duration: 200 }
-                        }
-                    }
-
-                    ImageButtonType {
-                        id: collapsedButtonChevron
-                        objectName: "collapsedButtonChevron"
-
-                        Layout.leftMargin: 8
-
-                        visible: drawer.isCollapsedStateActive()
-
-                        hoverEnabled: false
-                        image: "qrc:/images/controls/chevron-down.svg"
-                        imageColor: AmneziaStyle.color.paleGray
-
-                        icon.width: 18
-                        icon.height: 18
-                        backgroundRadius: 16
-                        horizontalPadding: 4
-                        topPadding: 4
-                        bottomPadding: 3
-
-                        Keys.onEnterPressed: this.clicked()
-                        Keys.onReturnPressed: this.clicked()
-
-                        onClicked: {
-                            if (drawer.isCollapsedStateActive()) {
-                                drawer.openTriggered()
-                            }
-                        }
-                    }
-                }
-
-                RowLayout {
-                    objectName: "rowLayoutLabel"
-                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                    Layout.topMargin: 8
-                    Layout.bottomMargin: drawer.isCollapsedStateActive ? 44 : 16
-                    spacing: 0
-
-                    BasicButtonType {
-                        enabled: false
-                        hoverEnabled: enabled
-
-                        implicitHeight: 36
-
-                        leftPadding: 16
-                        rightPadding: 16
-
-                        defaultColor: AmneziaStyle.color.transparent
-                        hoveredColor: AmneziaStyle.color.translucentWhite
-                        pressedColor: AmneziaStyle.color.sheerWhite
-                        disabledColor: AmneziaStyle.color.transparent
-                        textColor: AmneziaStyle.color.mutedGray
-
-                        buttonTextLabel.lineHeight: 16
-                        buttonTextLabel.font.pixelSize: 13
-                        buttonTextLabel.font.weight: 400
-
-                        text: drawer.isCollapsedStateActive ? ServersUiController.defaultServerDescriptionCollapsed : ServersUiController.defaultServerDescriptionExpanded
-                        rightImageSource: hoverEnabled ? "qrc:/images/controls/chevron-down.svg" : ""
-
-                        Keys.onEnterPressed: this.clicked()
-                        Keys.onReturnPressed: this.clicked()
-
-                        onClicked: {
-                            ServersUiController.setProcessedServerId(ServersUiController.defaultServerId)
-
-                            PageController.goToPage(PageEnum.PageSettingsServerInfo)
-                        }
-                    }
-                }
-
+                onServerInfoRequested: root.openServerInfo()
             }
 
             ColumnLayout {
                 id: serversMenuHeader
                 objectName: "serversMenuHeader"
 
-                anchors.top: collapsed.bottom
+                anchors.top: expandedSummary.bottom
                 anchors.right: parent.right
                 anchors.left: parent.left
 
-                RowLayout {
-                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                    spacing: 8
+                spacing: 0
 
-                    DropDownType {
-                        id: containersDropDown
-                        objectName: "containersDropDown"
+                ButtonType {
+                    id: containersDropDown
+                    objectName: "containersDropDown"
 
-                        Component.onCompleted: root.containersDropDownRef = containersDropDown
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.maximumWidth: parent.width - 32
+                    Layout.topMargin: 16
 
-                        rootButtonImageColor: AmneziaStyle.color.midnightBlack
-                        rootButtonBackgroundColor: AmneziaStyle.color.paleGray
-                        rootButtonBackgroundHoveredColor: AmneziaStyle.color.mistyGray
-                        rootButtonBackgroundPressedColor: AmneziaStyle.color.cloudyGray
-                        rootButtonHoveredBorderColor: AmneziaStyle.color.transparent
-                        rootButtonDefaultBorderColor: AmneziaStyle.color.transparent
-                        rootButtonTextTopMargin: 8
-                        rootButtonTextBottomMargin: 8
+                    text: ServersUiController.defaultServerDefaultContainerName
+                    rightImageSource: "qrc:/images/controls/chevron-down.svg"
 
-                        enabled: drawer.isOpened
-
-                        text: ServersUiController.defaultServerDefaultContainerName
-                        textColor: AmneziaStyle.color.midnightBlack
-                        headerText: qsTr("VPN protocol")
-                        headerBackButtonImage: "qrc:/images/controls/arrow-left.svg"
-
-                        rootButtonClickedFunction: function() {
-                            containersDropDown.openTriggered()
-                        }
-
-                        drawerParent: root
-
-                        listView: HomeContainersListView {
-                            id: containersListView
-                            objectName: "containersListView"
-
-                            rootWidth: root.width
-
-                            Connections {
-                                objectName: "rowLayoutConnections"
-
-                                target: ServersUiController
-
-                                function onDefaultServerIdChanged() {
-                                    updateContainersModelFilters()
-                                }
-                            }
-
-                            function updateContainersModelFilters() {
-                                proxyDefaultServerContainersModel.filters = ContainersModelFilters.getInstalledProtocolsListFilters()
-                            }
-
-                            model: SortFilterProxyModel {
-                                id: proxyDefaultServerContainersModel
-                                sourceModel: DefaultServerContainersModel
-
-                                sorters: [
-                                    RoleSorter { roleName: "isInstalled"; sortOrder: Qt.DescendingOrder }
-                                ]
-                            }
-
-                            Component.onCompleted: updateContainersModelFilters()
-                        }
-                    }
+                    onClicked: containersSheet.open()
                 }
 
-                Header2Type {
+                BodyTextType {
                     Layout.fillWidth: true
-                    Layout.topMargin: 48
+                    Layout.topMargin: containersDropDown.visible ? 24 : 16
                     Layout.leftMargin: 16
                     Layout.rightMargin: 16
 
-                    headerText: qsTr("Servers")
+                    text: qsTr("Servers")
+                    color: AmneziaStyle.color.textTertiary
                 }
-            }
-
-            ButtonGroup {
-                id: serversRadioButtonGroup
-                objectName: "serversRadioButtonGroup"
             }
 
             ServersListView {
                 id: serversMenuContent
                 objectName: "serversMenuContent"
 
-                isFocusable: false
+                anchors.top: serversMenuHeader.bottom
+                anchors.right: parent.right
+                anchors.left: parent.left
+                anchors.bottom: parent.bottom
+                anchors.topMargin: 12
 
-                Connections {
-                    target: drawer
-
-                    // this item shouldn't be focused when drawer is closed
-                    function onIsOpenedChanged() {
-                        serversMenuContent.isFocusable = drawer.isOpened
-                    }
-                }
+                onServerSettingsOpened: drawer.close()
             }
         }
     }
+
+    SheetType {
+        id: containersSheet
+        objectName: "containersSheet"
+
+        expandedHeight: windowHeight * 0.9
+
+        Component.onCompleted: root.containersDropDownRef = containersSheet
+
+        ColumnLayout {
+            anchors.fill: parent
+
+            spacing: 0
+
+            Item {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 48
+
+                IconButtonType {
+                    x: 16
+                    y: 4
+
+                    size: IconButtonType.Small
+                    icon.source: "qrc:/images/controls/arrow-left.svg"
+                    Accessible.name: qsTr("Back")
+
+                    onClicked: containersSheet.close()
+                }
+            }
+
+            HeaderType {
+                Layout.fillWidth: true
+                Layout.topMargin: 12
+                Layout.leftMargin: 16
+                Layout.rightMargin: 16
+                Layout.bottomMargin: 16
+
+                headerText: qsTr("VPN protocol")
+                descriptionText: qsTr("Select an installed protocol")
+            }
+
+            HomeContainersListView {
+                id: containersListView
+                objectName: "containersListView"
+
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                bottomMargin: 16 + PageController.safeAreaBottomMargin
+
+                onActivated: containersSheet.close()
+
+                Connections {
+                    objectName: "rowLayoutConnections"
+
+                    target: ServersUiController
+
+                    function onDefaultServerIdChanged() {
+                        containersListView.updateContainersModelFilters()
+                    }
+                }
+
+                function updateContainersModelFilters() {
+                    proxyDefaultServerContainersModel.filters = ContainersModelFilters.getInstalledProtocolsListFilters()
+                }
+
+                model: SortFilterProxyModel {
+                    id: proxyDefaultServerContainersModel
+                    sourceModel: DefaultServerContainersModel
+
+                    sorters: [
+                        RoleSorter { roleName: "isInstalled"; sortOrder: Qt.DescendingOrder }
+                    ]
+                }
+
+                Component.onCompleted: updateContainersModelFilters()
+            }
+        }
+    }
+
+
 }

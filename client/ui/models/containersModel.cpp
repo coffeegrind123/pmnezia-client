@@ -64,6 +64,7 @@ QVariant ContainersModel::data(const QModelIndex &index, int role) const
     case IsCurrentlyProcessedRole: return container == static_cast<DockerContainer>(m_processedContainerIndex);
     case IsSupportedRole: return ContainerUtils::isSupportedByCurrentPlatform(container);
     case IsVpnContainerRole: return ContainerUtils::containerService(container) == ServiceType::Vpn;
+    case HasClientSettingsPageRole: return ContainerUtils::hasStructuredClientSettings(container);
     case InstallPageOrderRole: return ContainerUtils::installPageOrder(container);
     }
 
@@ -134,5 +135,6 @@ QHash<int, QByteArray> ContainersModel::roleNames() const
     roles[InstallPageOrderRole] = "installPageOrder";
     
     roles[IsVpnContainerRole] = "isVpnContainer";
+    roles[HasClientSettingsPageRole] = "hasClientSettingsPage";
     return roles;
 }

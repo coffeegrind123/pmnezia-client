@@ -34,23 +34,26 @@ PageType {
         delegate: ColumnLayout {
             width: listView.width
 
-            LabelWithButtonType {
+            ListItemType {
                 Layout.fillWidth: true
+                Layout.leftMargin: 16
+                Layout.rightMargin: 16
 
                 visible: isVisible
 
                 text: title
-                descriptionText: description
-                textColor: tColor
+                subtitle: description
+                destructive: isDestructive
 
-                clickedFunction: function() {
+                onClicked: {
                     clickedHandler()
                 }
             }
+        }
 
-            DividerType {
-                visible: isVisible
-            }
+        footer: Item {
+            width: listView.width
+            height: 16 + PageController.safeAreaBottomMargin
         }
     }
 
@@ -64,7 +67,7 @@ PageType {
         property bool isVisible: true
         readonly property string title: qsTr("Remove server from application")
         readonly property string description: ""
-        readonly property var tColor: AmneziaStyle.color.vibrantRed
+        readonly property bool isDestructive: true
         readonly property var clickedHandler: function() {
             var headerText = qsTr("Do you want to remove the server from application?")
             var descriptionText = qsTr("All installed AmneziaVPN services will still remain on the server.")
@@ -87,4 +90,6 @@ PageType {
             showQuestionDrawer(headerText, descriptionText, yesButtonText, noButtonText, yesButtonFunction, noButtonFunction)
         }
     }
+
+
 }

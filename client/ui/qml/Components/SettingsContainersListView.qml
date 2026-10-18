@@ -1,33 +1,36 @@
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Controls.impl
 import QtQuick.Layouts
-
-import SortFilterProxyModel 0.2
 
 import PageEnum 1.0
 import Style 1.0
 
 import "../Controls2"
-import "../Controls2/TextTypes"
-
 
 ListViewType {
     id: root
 
     anchors.fill: parent
 
-    delegate: ColumnLayout {
-        width: root.width
+    delegate: Item {
+        id: delegateRoot
 
+        implicitWidth: root.width
+        implicitHeight: containerItem.implicitHeight
 
-        LabelWithButtonType {
-            Layout.fillWidth: true
+        ListItemType {
+            id: containerItem
+
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.leftMargin: 16
+            anchors.rightMargin: 16
 
             text: name
-            descriptionText: description
-            rightImageSource: isInstalled ? "qrc:/images/controls/chevron-right.svg" : ""
+            subtitle: description
+            trailingIconSource: isInstalled ? "qrc:/images/controls/chevron-right.svg" : ""
 
-            clickedFunction: function() {
+            onClicked: {
                 if (!isInstalled) {
                     return
                 }
@@ -36,20 +39,19 @@ ListViewType {
                 ServersUiController.processedContainerIndex = containerIndex
                 ServersUiController.updateProtocols(ServersUiController.processedServerId, containerIndex)
 
-                if (isThirdPartyConfig) {
+                // Imported configs open as raw text, unless the protocol has a
+                // structured settings page (its config is not a text blob).
+                if (isThirdPartyConfig && !hasClientSettingsPage) {
                     PageController.goToPage(PageEnum.PageProtocolRaw)
                 } else {
                     PageController.goToPage(PageEnum.PageSettingsServerProtocol)
                 }
             }
-
-            MouseArea {
-                anchors.fill: parent
-                cursorShape: Qt.PointingHandCursor
-                enabled: false
-            }
         }
+    }
 
-        DividerType {}
+    footer: Item {
+        width: root.width
+        height: 16 + PageController.safeAreaBottomMargin
     }
 }

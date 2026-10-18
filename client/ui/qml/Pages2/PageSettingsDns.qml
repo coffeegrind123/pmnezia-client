@@ -8,152 +8,134 @@ import Style 1.0
 import "./"
 import "../Controls2"
 import "../Config"
-import "../Controls2/TextTypes"
 import "../Components"
 
 PageType {
     id: root
 
-    BackButtonType {
-        id: backButton
+    FlickableType {
+        id: flickable
 
         anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.topMargin: 20 + PageController.safeAreaTopMargin
+        anchors.bottom: buttons.top
 
-        onFocusChanged: {
-            if (this.activeFocus) {
-                listView.positionViewAtBeginning()
-            }
-        }
-    }
+        contentHeight: content.implicitHeight
 
-    ListViewType {
-        id: listView
+        ColumnLayout {
+            id: content
 
-        anchors.top: backButton.bottom
-        anchors.bottom: parent.bottom
-        anchors.right: parent.right
-        anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
 
-        header: ColumnLayout {
-            width: listView.width
-            spacing: 16
+            spacing: 0
 
-            BaseHeaderType {
+            NavigationBarType {
                 Layout.fillWidth: true
-                Layout.leftMargin: 16
-                Layout.rightMargin: 16
 
-                headerText: qsTr("DNS servers")
+                title: qsTr("DNS servers")
+                description: qsTr("Used while the VPN is connected, unless the imported config specifies its own")
             }
 
-            ParagraphTextType {
-                Layout.fillWidth: true
-                Layout.leftMargin: 16
-                Layout.rightMargin: 16
-                
-                text: qsTr("Used while the VPN is connected, unless the imported config specifies its own")
-            }
-        }
-
-        model: 1 // fake model to force the ListView to be created without a model
-
-        delegate: ColumnLayout {
-            width: listView.width
-            spacing: 16
-
-            TextFieldWithHeaderType {
-                id: primaryDns
-
-                Layout.fillWidth: true
-                Layout.leftMargin: 16
-                Layout.rightMargin: 16
-
-                headerText: qsTr("Primary DNS")
-
-                textField.text: SettingsController.primaryDns
-                textField.validator: RegularExpressionValidator {
-                    regularExpression: ServersUiController.ipAddressRegExp()
-                }
-            }
-
-            TextFieldWithHeaderType {
-                id: secondaryDns
-
-                Layout.fillWidth: true
-                Layout.leftMargin: 16
-                Layout.rightMargin: 16
-
-                headerText: qsTr("Secondary DNS")
-
-                textField.text: SettingsController.secondaryDns
-                textField.validator: RegularExpressionValidator {
-                    regularExpression: ServersUiController.ipAddressRegExp()
-                }
-            }
-
-            BasicButtonType {
-                id: restoreDefaultButton
-
+            ColumnLayout {
                 Layout.fillWidth: true
                 Layout.topMargin: 16
                 Layout.leftMargin: 16
                 Layout.rightMargin: 16
+                Layout.bottomMargin: 16
 
-                defaultColor: AmneziaStyle.color.transparent
-                hoveredColor: AmneziaStyle.color.translucentWhite
-                pressedColor: AmneziaStyle.color.sheerWhite
-                disabledColor: AmneziaStyle.color.mutedGray
-                textColor: AmneziaStyle.color.paleGray
-                borderWidth: 1
+                spacing: 12
 
-                text: qsTr("Restore default")
+                TextFieldType {
+                    id: primaryDns
 
-                clickedFunc: function() {
-                    var headerText = qsTr("Restore default DNS settings?")
-                    var yesButtonText = qsTr("Continue")
-                    var noButtonText = qsTr("Cancel")
+                    Layout.fillWidth: true
 
-                    var yesButtonFunction = function() {
-                        SettingsController.primaryDns = "1.1.1.1"
-                        primaryDns.textField.text = SettingsController.primaryDns
-                        SettingsController.secondaryDns = "1.0.0.1"
-                        secondaryDns.textField.text = SettingsController.secondaryDns
-                        PageController.showNotificationMessage(qsTr("Settings have been reset"))
+                    headerText: qsTr("Primary DNS")
+
+                    textField.text: SettingsController.primaryDns
+                    textField.validator: RegularExpressionValidator {
+                        regularExpression: ServersUiController.ipAddressRegExp()
                     }
-                    var noButtonFunction = function() {
-                    }
+                }
 
-                    showQuestionDrawer(headerText, "", yesButtonText, noButtonText, yesButtonFunction, noButtonFunction)
+                TextFieldType {
+                    id: secondaryDns
+
+                    Layout.fillWidth: true
+
+                    headerText: qsTr("Secondary DNS")
+
+                    textField.text: SettingsController.secondaryDns
+                    textField.validator: RegularExpressionValidator {
+                        regularExpression: ServersUiController.ipAddressRegExp()
+                    }
                 }
             }
+        }
+    }
 
-            BasicButtonType {
-                id: saveButton
+    ColumnLayout {
+        id: buttons
 
-                Layout.fillWidth: true
-                Layout.margins: 16
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.leftMargin: 16
+        anchors.rightMargin: 16
+        anchors.bottomMargin: 8 + PageController.safeAreaBottomMargin
 
-                text: qsTr("Save")
+        spacing: 12
 
-                clickedFunc: function() {
-                    if (primaryDns.textField.text === "") {
-                        primaryDns.errorText = qsTr("Primary DNS cannot be empty")
-                        return
-                    }
-                    primaryDns.errorText = ""
-                    secondaryDns.errorText = ""
+        ButtonType {
+            id: restoreDefaultButton
 
-                    if (primaryDns.textField.text !== SettingsController.primaryDns) {
-                        SettingsController.primaryDns = primaryDns.textField.text
-                    }
-                    if (secondaryDns.textField.text !== SettingsController.secondaryDns) {
-                        SettingsController.secondaryDns = secondaryDns.textField.text
-                    }
-                    PageController.showNotificationMessage(qsTr("Settings saved"))
+            Layout.fillWidth: true
+
+            variant: ButtonType.Secondary
+            text: qsTr("Restore default")
+
+            onClicked: {
+                var headerText = qsTr("Restore default DNS settings?")
+                var yesButtonText = qsTr("Continue")
+                var noButtonText = qsTr("Cancel")
+
+                var yesButtonFunction = function() {
+                    SettingsController.primaryDns = "1.1.1.1"
+                    primaryDns.textField.text = SettingsController.primaryDns
+                    SettingsController.secondaryDns = "1.0.0.1"
+                    secondaryDns.textField.text = SettingsController.secondaryDns
+                    PageController.showNotificationMessage(qsTr("Settings have been reset"))
                 }
+                var noButtonFunction = function() {
+                }
+
+                showQuestionDrawer(headerText, "", yesButtonText, noButtonText, yesButtonFunction, noButtonFunction)
+            }
+        }
+
+        ButtonType {
+            id: saveButton
+
+            Layout.fillWidth: true
+
+            text: qsTr("Save")
+
+            onClicked: {
+                if (primaryDns.textField.text === "") {
+                    primaryDns.errorText = qsTr("Primary DNS cannot be empty")
+                    return
+                }
+                primaryDns.errorText = ""
+                secondaryDns.errorText = ""
+
+                if (primaryDns.textField.text !== SettingsController.primaryDns) {
+                    SettingsController.primaryDns = primaryDns.textField.text
+                }
+                if (secondaryDns.textField.text !== SettingsController.secondaryDns) {
+                    SettingsController.secondaryDns = secondaryDns.textField.text
+                }
+                PageController.showNotificationMessage(qsTr("Settings saved"))
             }
         }
     }

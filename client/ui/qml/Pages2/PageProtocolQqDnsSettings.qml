@@ -17,28 +17,24 @@ import "../Components"
 PageType {
     id: root
 
-    BackButtonType {
-        id: backButton
-
-        anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.topMargin: 20 + PageController.safeAreaTopMargin
-
-        onFocusChanged: {
-            if (this.activeFocus) {
-                listView.positionViewAtBeginning()
-            }
-        }
-    }
-
     ListViewType {
         id: listView
 
-        anchors.top: backButton.bottom
+        anchors.top: parent.top
         anchors.bottom: parent.bottom
         anchors.left: parent.left
         anchors.right: parent.right
+
+        header: NavigationBarType {
+            width: listView.width
+            height: implicitHeight + 16
+
+            title: qsTr("QQ-DNS settings")
+            description: qsTr("UDP-over-DNS transport — the AmneziaWG datapath itself carried inside DNS " +
+                         "queries that traverse public resolvers. A blackout-survival path for when only " +
+                         "port 53 escapes; not a low-latency one. Both ends must be authoritative for an " +
+                         "NS-delegated subdomain.")
+        }
 
         model: QqDnsConfigModel
 
@@ -49,18 +45,7 @@ PageType {
 
             spacing: 0
 
-            BaseHeaderType {
-                Layout.fillWidth: true
-                Layout.leftMargin: 16
-                Layout.rightMargin: 16
-                headerText: qsTr("QQ-DNS settings")
-                descriptionText: qsTr("UDP-over-DNS transport — the AmneziaWG datapath itself carried inside DNS " +
-                                      "queries that traverse public resolvers. A blackout-survival path for when only " +
-                                      "port 53 escapes; not a low-latency one. Both ends must be authoritative for an " +
-                                      "NS-delegated subdomain.")
-            }
-
-            TextFieldWithHeaderType {
+            TextFieldType {
                 id: sendDomainsTextArea
 
                 Layout.fillWidth: true
@@ -87,7 +72,7 @@ PageType {
                 checkEmptyText: true
             }
 
-            TextFieldWithHeaderType {
+            TextFieldType {
                 id: recvDomainsTextArea
 
                 Layout.fillWidth: true
@@ -114,7 +99,7 @@ PageType {
                 checkEmptyText: true
             }
 
-            TextFieldWithHeaderType {
+            TextFieldType {
                 id: dnsIpsTextArea
 
                 Layout.fillWidth: true
@@ -141,7 +126,7 @@ PageType {
                 checkEmptyText: true
             }
 
-            TextFieldWithHeaderType {
+            TextFieldType {
                 id: receivePortTextField
 
                 Layout.fillWidth: true
@@ -165,7 +150,7 @@ PageType {
                 checkEmptyText: true
             }
 
-            TextFieldWithHeaderType {
+            TextFieldType {
                 id: maxDomainLenTextField
 
                 Layout.fillWidth: true
@@ -189,7 +174,7 @@ PageType {
                 checkEmptyText: true
             }
 
-            BasicButtonType {
+            ButtonType {
                 id: saveButton
 
                 Layout.fillWidth: true
@@ -211,7 +196,7 @@ PageType {
                     var noButtonText = qsTr("Cancel")
 
                     var yesButtonFunction = function() {
-                        if (ConnectionController.isConnected && ServersModel.getDefaultServerData("defaultContainer") === ServersUiController.processedContainerIndex) {
+                        if (ConnectionController.isConnected && ServersUiController.serverDefaultContainer(ServersUiController.defaultServerId) === ServersUiController.processedContainerIndex) {
                             PageController.showNotificationMessage(qsTr("Unable change settings while there is an active connection"))
                             return
                         }

@@ -3,7 +3,9 @@
 
 #include <QObject>
 #include <QQmlContext>
+#include <QSharedPointer>
 #include <QThread>
+#include <QTranslator>
 
 #if !defined(Q_OS_ANDROID) && !defined(Q_OS_IOS)
     #include "ui/utils/systemTrayNotificationHandler.h"
@@ -17,6 +19,7 @@
 #include "core/controllers/selfhosted/importController.h"
 #include "ui/controllers/qml/pageController.h"
 #include "ui/controllers/settingsUiController.h"
+#include "ui/controllers/logsUiController.h"
 #include "ui/controllers/serversUiController.h"
 #include "ui/controllers/ipSplitTunnelingUiController.h"
 #include "ui/controllers/systemController.h"
@@ -133,6 +136,7 @@ private:
     ImportUiController* m_importController;
     ImportController* m_importCoreController;
     SettingsUiController* m_settingsUiController;
+    LogsUiController* m_logsUiController;
     ServersUiController* m_serversUiController;
     IpSplitTunnelingUiController* m_ipSplitTunnelingUiController;
     SystemController* m_systemController;

@@ -24,6 +24,7 @@ set(HEADERS ${HEADERS}
     ${CLIENT_ROOT_DIR}/core/controllers/allowedDnsController.h
     ${CLIENT_ROOT_DIR}/core/controllers/connectionController.h
     ${CLIENT_ROOT_DIR}/core/controllers/settingsController.h
+    ${CLIENT_ROOT_DIR}/core/controllers/logsController.h
     ${CLIENT_ROOT_DIR}/core/controllers/updateController.h
     ${CLIENT_ROOT_DIR}/core/repositories/secureServersRepository.h
     ${CLIENT_ROOT_DIR}/core/repositories/secureAppSettingsRepository.h
@@ -41,7 +42,6 @@ set(HEADERS ${HEADERS}
     ${CLIENT_ROOT_DIR}/core/utils/serialization/trustTunnel.h
     ${CLIENT_ROOT_DIR}/../common/logger/logger.h
     ${CLIENT_ROOT_DIR}/../common/crypto/cryptoUtils.h
-    ${CLIENT_ROOT_DIR}/ui/utils/qmlUtils.h
     ${CLIENT_ROOT_DIR}/core/utils/osSignalHandler.h
     ${CLIENT_ROOT_DIR}/core/utils/swiftBridge.h
     ${CLIENT_ROOT_DIR}/core/utils/utilities.h
@@ -108,6 +108,7 @@ set(SOURCES ${SOURCES}
     ${CLIENT_ROOT_DIR}/core/controllers/allowedDnsController.cpp
     ${CLIENT_ROOT_DIR}/core/controllers/connectionController.cpp
     ${CLIENT_ROOT_DIR}/core/controllers/settingsController.cpp
+    ${CLIENT_ROOT_DIR}/core/controllers/logsController.cpp
     ${CLIENT_ROOT_DIR}/core/controllers/updateController.cpp
     ${CLIENT_ROOT_DIR}/core/repositories/secureServersRepository.cpp
     ${CLIENT_ROOT_DIR}/core/repositories/secureAppSettingsRepository.cpp
@@ -121,7 +122,6 @@ set(SOURCES ${SOURCES}
     ${CLIENT_ROOT_DIR}/core/utils/serialization/trustTunnel.cpp
     ${CLIENT_ROOT_DIR}/../common/logger/logger.cpp
     ${CLIENT_ROOT_DIR}/../common/crypto/cryptoUtils.cpp
-    ${CLIENT_ROOT_DIR}/ui/utils/qmlUtils.cpp
     ${CLIENT_ROOT_DIR}/core/utils/serverConfigUtils.cpp
     ${CLIENT_ROOT_DIR}/core/utils/osSignalHandler.cpp
     ${CLIENT_ROOT_DIR}/core/utils/utilities.cpp

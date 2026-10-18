@@ -302,7 +302,8 @@ def main():
     save_png(tiles[256], "client/images/icon.png")
     save_png(tiles[512], "deploy/data/linux/AmneziaVPN.png")
     write_ico({px: tiles[px] for px in (16, 24, 32, 48, 64, 128, 256)}, "client/images/app.ico")
-    save_png(render(lockup_svg(1440, 1200, wm, mark_frac=0.46), 1440, 1200), "client/images/amneziaBigLogo.png")
+    # Start and About page logo; upstream's 153x131 SVG replaced amneziaBigLogo.png.
+    write_text("client/images/amneziaLogo.svg", lockup_svg(153, 131, wm, mark_frac=0.46) + "\n")
     save_png(render(lockup_svg(150, 22, wm, layout="inline"), 150, 22), "client/images/AmneziaVPN.png")
     write_text("client/images/AmneziaVPN_Full_logo.svg", masters["logo-stacked.svg"] + "\n")
     write_text("client/images/controls/amnezia.svg",

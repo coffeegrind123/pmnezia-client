@@ -17,72 +17,48 @@ import "../Components"
 PageType {
     id: root
 
-    ColumnLayout {
-        id: header
-
-        anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.right: parent.right
-
-        anchors.topMargin: 20 + PageController.safeAreaTopMargin
-
-        BackButtonType {
-            id: backButton
-        }
-
-        BaseHeaderType {
-            Layout.fillWidth: true
-            Layout.leftMargin: 16
-            Layout.rightMargin: 16
-
-            headerText: qsTr("Servers")
-        }
-    }
-
     ListViewType {
         id: servers
         objectName: "servers"
 
-        width: parent.width
-        anchors.top: header.bottom
-        anchors.topMargin: 16
-        anchors.bottom: parent.bottom
-        anchors.left: parent.left
-        anchors.right: parent.right
+        anchors.fill: parent
 
+        header: NavigationBarType {
+            width: servers.width
+            height: implicitHeight + 16
+
+            title: qsTr("Servers")
+        }
 
         model: ServersModel
 
         delegate: Item {
             implicitWidth: servers.width
-            implicitHeight: delegateContent.implicitHeight
+            implicitHeight: server.implicitHeight
 
-            ColumnLayout {
-                id: delegateContent
+            ListItemType {
+                id: server
 
-                anchors.top: parent.top
                 anchors.left: parent.left
                 anchors.right: parent.right
+                anchors.leftMargin: 16
+                anchors.rightMargin: 16
 
-                LabelWithButtonType {
-                    id: server
-                    Layout.fillWidth: true
+                text: name
 
-                    text: name
+                subtitle: hostName
+                trailingIconSource: "qrc:/images/controls/chevron-right.svg"
 
-
-                    descriptionText: hostName
-                    rightImageSource: "qrc:/images/controls/chevron-right.svg"
-
-                    clickedFunction: function() {
-                        ServersUiController.setProcessedServerId(serverId)
-
-                        PageController.goToPage(PageEnum.PageSettingsServerInfo)
-                    }
+                onClicked: {
+                    ServersUiController.setProcessedServerId(serverId)
+                    PageController.goToPage(PageEnum.PageSettingsServerInfo)
                 }
-
-                DividerType {}
             }
+        }
+
+        footer: Item {
+            width: servers.width
+            height: 16 + PageController.safeAreaBottomMargin
         }
     }
 }

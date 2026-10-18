@@ -17,28 +17,23 @@ import "../Components"
 PageType {
     id: root
 
-    BackButtonType {
-        id: backButton
-
-        anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.topMargin: 20 + PageController.safeAreaTopMargin
-
-        onFocusChanged: {
-            if (this.activeFocus) {
-                listView.positionViewAtBeginning()
-            }
-        }
-    }
-
     ListViewType {
         id: listView
 
-        anchors.top: backButton.bottom
+        anchors.top: parent.top
         anchors.bottom: parent.bottom
         anchors.left: parent.left
         anchors.right: parent.right
+
+        header: NavigationBarType {
+            width: listView.width
+            height: implicitHeight + 16
+
+            title: qsTr("MasterDnsVPN settings")
+            description: qsTr("DNS-tunnel transport — encrypted TCP traffic carried inside DNS queries " +
+                         "that traverse public resolvers. Requires you to own a domain and create an " +
+                         "NS delegation pointing the tunnel subdomain at this server's public IP.")
+        }
 
         model: MasterDnsVpnConfigModel
 
@@ -49,17 +44,7 @@ PageType {
 
             spacing: 0
 
-            BaseHeaderType {
-                Layout.fillWidth: true
-                Layout.leftMargin: 16
-                Layout.rightMargin: 16
-                headerText: qsTr("MasterDnsVPN settings")
-                descriptionText: qsTr("DNS-tunnel transport — encrypted TCP traffic carried inside DNS queries " +
-                                      "that traverse public resolvers. Requires you to own a domain and create an " +
-                                      "NS delegation pointing the tunnel subdomain at this server's public IP.")
-            }
-
-            TextFieldWithHeaderType {
+            TextFieldType {
                 id: domainsTextArea
 
                 Layout.fillWidth: true
@@ -86,7 +71,7 @@ PageType {
                 checkEmptyText: true
             }
 
-            TextFieldWithHeaderType {
+            TextFieldType {
                 id: portTextField
 
                 Layout.fillWidth: true
@@ -122,7 +107,7 @@ PageType {
 
                 enabled: listView.enabled
 
-                rootButtonText: {
+                text: {
                     switch (encryptionMethod) {
                     case 0: return qsTr("None (no encryption)")
                     case 1: return qsTr("XOR (lightweight)")
@@ -134,10 +119,11 @@ PageType {
                     }
                 }
 
+                descriptionText: qsTr("Encryption method")
+
                 headerText: qsTr("Encryption method")
 
-                listView: ListViewWithRadioButtonType {
-                    rootWidth: root.width
+                listView: RadioListType {
 
                     model: ListModel {
                         ListElement { name: qsTr("None (no encryption)"); value: 0 }
@@ -148,9 +134,9 @@ PageType {
                         ListElement { name: qsTr("AES-256-GCM (strongest)"); value: 5 }
                     }
 
-                    clickedFunction: function() {
+                    onActivated: {
                         encryptionMethod = model.get(selectedIndex).value
-                        encryptionMethodDropDown.menuVisible = false
+                        encryptionMethodDropDown.close()
                     }
 
                     Component.onCompleted: {
@@ -169,7 +155,7 @@ PageType {
             // is bare ChaCha20 without Poly1305 — so on 0/1/2 an active
             // on-path attacker can tamper with tunnel payloads undetected.
             // Mirrors the advisory coffeeblack-vpn writes into server_config.toml.
-            WarningType {
+            NotificationType {
                 objectName: "nonAeadEncryptionWarning"
 
                 Layout.fillWidth: true
@@ -178,12 +164,8 @@ PageType {
                 Layout.rightMargin: 16
 
                 visible: encryptionMethod < 3 || encryptionMethod > 5
-
-                backGroundColor: AmneziaStyle.color.transparent
-                iconPath: "qrc:/images/controls/alert-circle.svg"
-                imageColor: AmneziaStyle.color.goldenApricot
-                textColor: AmneziaStyle.color.goldenApricot
-                textString: qsTr("This method is not authenticated encryption — an active on-path attacker can tamper with tunnel payloads undetected. Use AES-256-GCM unless you have a specific reason not to. Changing it requires re-issuing every client config, since the method is baked into each one.")
+                variant: NotificationType.Warning
+                text: qsTr("This method is not authenticated encryption — an active on-path attacker can tamper with tunnel payloads undetected. Use AES-256-GCM unless you have a specific reason not to. Changing it requires re-issuing every client config, since the method is baked into each one.")
             }
 
             // Outbound mode: SOCKS5 = clients choose the destination per stream;
@@ -199,21 +181,22 @@ PageType {
 
                 enabled: listView.enabled
 
-                rootButtonText: protocolType !== "" ? protocolType : qsTr("SOCKS5")
+                text: protocolType !== "" ? protocolType : qsTr("SOCKS5")
+
+                descriptionText: qsTr("Outbound mode")
 
                 headerText: qsTr("Outbound mode")
 
-                listView: ListViewWithRadioButtonType {
-                    rootWidth: root.width
+                listView: RadioListType {
 
                     model: ListModel {
                         ListElement { name: qsTr("SOCKS5 (per-stream destination)"); value: "SOCKS5" }
                         ListElement { name: qsTr("TCP (forward to fixed target)"); value: "TCP" }
                     }
 
-                    clickedFunction: function() {
+                    onActivated: {
                         protocolType = model.get(selectedIndex).value
-                        protocolTypeDropDown.menuVisible = false
+                        protocolTypeDropDown.close()
                     }
 
                     Component.onCompleted: {
@@ -231,7 +214,7 @@ PageType {
             // Local SOCKS5 listen port the bundled client-side mdnsvpn binary
             // opens on 127.0.0.1. tun2socks dials this on connect; the value
             // is also baked into the share-config TOML.
-            TextFieldWithHeaderType {
+            TextFieldType {
                 id: listenPortTextField
 
                 Layout.fillWidth: true
@@ -255,7 +238,7 @@ PageType {
                 checkEmptyText: true
             }
 
-            BasicButtonType {
+            ButtonType {
                 id: saveButton
 
                 Layout.fillWidth: true
@@ -277,7 +260,7 @@ PageType {
                     var noButtonText = qsTr("Cancel")
 
                     var yesButtonFunction = function() {
-                        if (ConnectionController.isConnected && ServersModel.getDefaultServerData("defaultContainer") === ServersUiController.processedContainerIndex) {
+                        if (ConnectionController.isConnected && ServersUiController.serverDefaultContainer(ServersUiController.defaultServerId) === ServersUiController.processedContainerIndex) {
                             PageController.showNotificationMessage(qsTr("Unable change settings while there is an active connection"))
                             return
                         }

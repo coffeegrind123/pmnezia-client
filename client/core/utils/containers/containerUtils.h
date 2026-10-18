@@ -39,6 +39,10 @@ namespace amnezia
 
         bool isAwgContainer(DockerContainer container);
 
+        // Protocols whose imported config is structured data edited on their
+        // own settings page, not a native text config shown raw.
+        bool hasStructuredClientSettings(DockerContainer container);
+
         QJsonObject getProtocolConfigFromContainer(const Proto protocol, const QJsonObject &containerConfig);
 
         int installPageOrder(DockerContainer container);

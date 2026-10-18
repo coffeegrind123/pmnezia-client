@@ -233,6 +233,12 @@ bool ContainerUtils::isAwgContainer(DockerContainer container)
     return container == DockerContainer::Awg || container == DockerContainer::Awg2;
 }
 
+bool ContainerUtils::hasStructuredClientSettings(DockerContainer container)
+{
+    return container == DockerContainer::MasterDnsVpn || container == DockerContainer::QqDns
+            || container == DockerContainer::TrustTunnel;
+}
+
 QJsonObject ContainerUtils::getProtocolConfigFromContainer(const Proto protocol, const QJsonObject &containerConfig)
 {
     QString protocolConfigString = containerConfig.value(ProtocolUtils::protoToString(protocol))

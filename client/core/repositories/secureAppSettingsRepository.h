@@ -117,4 +117,3 @@ private:
 };
 
 #endif // SECUREAPPSETTINGSREPOSITORY_H
-
