@@ -267,6 +267,12 @@ jobs:
       with:
         xcode-version: '26.1'
 
+    # Xcode 26 ships platforms separately and the runner's 26.1 lacks iOS
+    # ("iOS 26.1 Platform Not Installed" from ibtool on the launch screen).
+    - name: 'Install the iOS platform'
+      shell: bash
+      run: xcodebuild -downloadPlatform iOS
+
     - name: 'Install desktop Qt'
       uses: jurplel/install-qt-action@v3
       with:
