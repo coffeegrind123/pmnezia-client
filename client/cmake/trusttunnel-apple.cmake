@@ -9,7 +9,11 @@ function(amnezia_add_trusttunnel_apple target)
         message(FATAL_ERROR "trusttunnel-apple did not export TRUSTTUNNEL_APPLE_XCFRAMEWORK")
     endif()
 
-    target_link_libraries(${target} PRIVATE trusttunnel::vpnclient-framework)
+    # Link the xcframework by path: the generated imported target carries
+    # no per-config IMPORTED_LOCATION (conan-io/conan#20034, the same issue
+    # the hev-socks5-tunnel block works around), and CMake >= 3.28 resolves
+    # an .xcframework path to the right slice itself.
+    target_link_libraries(${target} PRIVATE "${TRUSTTUNNEL_APPLE_XCFRAMEWORK}")
 
     set_target_properties(${target} PROPERTIES
         XCODE_EMBED_FRAMEWORKS "${TRUSTTUNNEL_APPLE_XCFRAMEWORK}"
